@@ -297,21 +297,30 @@ SCAN --> PREVIEW[등록 미리보기]
     <th>설정</th>
     <th>내용</th>
 </tr>
+
 <tr>
-    <td>외부 뷰어 경로</td>
-    <td>외부 이미지 뷰어 실행 파일 경로</td>
+    <td>PHPSESSID</td>
+    <td>Pixiv 연동용 로그인 쿠키</td>
 </tr>
+
 <tr>
-    <td>기본 정렬</td>
-    <td>작가 목록 기본 정렬 기준</td>
+    <td>기본 Pixiv 폴더</td>
+    <td>스캔 화면 기본 경로</td>
 </tr>
+
 <tr>
-    <td>UI 설정</td>
-    <td>테마, 글자 크기, 창 크기 등</td>
+    <td>DB 백업</td>
+    <td>SQLite DB 백업</td>
 </tr>
+
 <tr>
-    <td>데이터 경로</td>
-    <td>DB, 백업, 내보내기 폴더 경로</td>
+    <td>DB 복원</td>
+    <td>백업 파일 복원</td>
+</tr>
+
+<tr>
+    <td>CSV 내보내기</td>
+    <td>작가 목록 CSV 저장</td>
 </tr>
 </table>
 
@@ -321,24 +330,28 @@ SCAN --> PREVIEW[등록 미리보기]
 
 <table>
 <tr>
-    <th>상태</th>
-    <th>표시 의미</th>
+    <td>latest</td>
+    <td>로컬과 Pixiv 작품 수가 동일</td>
 </tr>
+
 <tr>
-    <td>최신</td>
-    <td>로컬 최신 작품과 Pixiv 최신 작품이 같음</td>
+    <td>need_update</td>
+    <td>Pixiv에 신규 작품 존재</td>
 </tr>
+
 <tr>
-    <td>업데이트 있음</td>
-    <td>Pixiv 최신 작품이 로컬 최신 작품과 다름</td>
+    <td>unknown</td>
+    <td>Pixiv 작품 정보를 가져오지 못함</td>
 </tr>
+
 <tr>
-    <td>확인 안함</td>
-    <td>Pixiv 최신 작품 ID가 입력되지 않음</td>
+    <td>updated</td>
+    <td>최근 업데이트 확인 완료</td>
 </tr>
+
 <tr>
-    <td>경로 오류</td>
-    <td>등록된 로컬 폴더가 존재하지 않음</td>
+    <td>error</td>
+    <td>요청 실패</td>
 </tr>
 </table>
 

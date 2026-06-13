@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from app.services.folder_scan_service import FolderScanService
 from app.services.artwork_status_service import ArtworkStatusService
 from app.services.artist_service import ArtistService
@@ -21,23 +23,40 @@ def test_artwork_status():
         "12345,67890,99999",
     )
 
-    assert result.status in [
-        "up_to_date",
-        "outdated",
-        "unknown",
-    ]
+    assert result.status == "need_update"
+    assert result.local_count == 2
+    assert result.pixiv_count == 3
+    assert result.missing_count == 1
+    assert result.missing_ids == ["99999"]
 
 
 def test_artist_create():
+    test_artist_folder = Path("./test_data/test_artist-999999")
+
+    test_artist_folder.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    test_image = test_artist_folder / "123456789_p0.png"
+
+    if not test_image.exists():
+        test_image.write_bytes(b"test")
+
     service = ArtistService()
 
-    artist = service.create_artist(
-        folder_path="./test_data",
+    artist_id = service.create_artist(
+        folder_path=str(test_artist_folder),
         rating=3,
         memo="test",
     )
 
+    artist = service.get_artist(artist_id)
+
     assert artist is not None
+    assert artist["pixiv_id"] == "999999"
+    assert artist["rating"] == 3
+    assert artist["memo"] == "test"
 
 
 def test_settings():

@@ -141,6 +141,24 @@ REQ --> CONFIG[설정 관리]
     <td>작가 폴더 작품 수 계산</td>
 </tr>
 
+<tr>
+    <td>W-08</td>
+    <td>Pixiv 업데이트 확인</td>
+    <td>PHPSESSID를 이용하여 Pixiv 최신 작품 목록 조회</td>
+</tr>
+
+<tr>
+    <td>W-09</td>
+    <td>다중 작가 업데이트 확인</td>
+    <td>선택한 여러 작가를 순차적으로 검사</td>
+</tr>
+
+<tr>
+    <td>W-10</td>
+    <td>누락 작품 계산</td>
+    <td>로컬에 없는 작품 ID 계산</td>
+</tr>
+
 </table>
 
 
@@ -202,6 +220,24 @@ REQ --> CONFIG[설정 관리]
     <td>S-03</td>
     <td>UI 설정</td>
     <td>프로그램 표시 설정 저장</td>
+</tr>
+
+<tr>
+    <td>S-04</td>
+    <td>PHPSESSID 저장</td>
+    <td>Pixiv 연동용 로그인 쿠키 저장</td>
+</tr>
+
+<tr>
+    <td>S-05</td>
+    <td>기본 Pixiv 폴더 설정</td>
+    <td>스캔 화면 기본 경로 저장</td>
+</tr>
+
+<tr>
+    <td>S-06</td>
+    <td>DB 백업 및 복원</td>
+    <td>SQLite 파일 백업 및 복원</td>
 </tr>
 
 </table>

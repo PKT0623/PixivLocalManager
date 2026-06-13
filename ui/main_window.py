@@ -57,11 +57,17 @@ class MainWindow(QMainWindow):
         if hasattr(detail_page, "back_requested"):
             detail_page.back_requested.connect(lambda: self.show_page("artists"))
 
+        if hasattr(detail_page, "artist_updated"):
+            detail_page.artist_updated.connect(self._handle_artist_updated)
+
     def show_page(self, page_name: str):
         page = self.pages.get(page_name)
 
         if page is None:
             return
+
+        if page_name == "artists" and hasattr(page, "load_artists"):
+            page.load_artists()
 
         self.page_stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_name)
@@ -76,3 +82,12 @@ class MainWindow(QMainWindow):
             detail_page.set_artist(artist_id)
 
         self.show_page("artist_detail")
+
+    def _handle_artist_updated(self, artist_id: int):
+        artists_page = self.pages.get("artists")
+
+        if artists_page is None:
+            return
+
+        if hasattr(artists_page, "load_artists"):
+            artists_page.load_artists()

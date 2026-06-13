@@ -1,10 +1,14 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
+    QPushButton,
     QTableWidget,
     QTableWidgetItem,
 )
+
+from ui.widgets.status_badge import StatusBadge
 
 
 class ArtistTable(QTableWidget):
@@ -39,7 +43,7 @@ class ArtistTable(QTableWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setColumnCount(7)
+        self.setColumnCount(8)
 
         self.setHorizontalHeaderLabels(
             [
@@ -50,6 +54,7 @@ class ArtistTable(QTableWidget):
                 "상태",
                 "평점",
                 "메모",
+                "Pixiv",
             ]
         )
 
@@ -60,6 +65,7 @@ class ArtistTable(QTableWidget):
         self.setSortingEnabled(False)
 
         self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(32)
 
         header = self.horizontalHeader()
         header.setSectionsClickable(True)
@@ -69,11 +75,14 @@ class ArtistTable(QTableWidget):
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(4, QHeaderView.Fixed)
         header.setSectionResizeMode(5, QHeaderView.Fixed)
         header.setSectionResizeMode(6, QHeaderView.Stretch)
+        header.setSectionResizeMode(7, QHeaderView.ResizeToContents)
 
+        self.setColumnWidth(4, 120)
         self.setColumnWidth(5, 100)
+        self.setColumnWidth(7, 80)
 
         self.cellDoubleClicked.connect(self._handle_cell_double_clicked)
 
@@ -93,9 +102,10 @@ class ArtistTable(QTableWidget):
             self._set_item(row, 1, artist.get("artist_name"))
             self._set_item(row, 2, artist.get("pixiv_id"))
             self._set_item(row, 3, artist.get("folder_artwork_count", 0))
-            self._set_item(row, 4, artist.get("update_status"))
+            self._set_status_badge(row, artist.get("update_status"))
             self._set_item(row, 5, artist.get("rating", 0))
             self._set_item(row, 6, artist.get("memo"))
+            self._set_pixiv_button(row, artist.get("pixiv_id"))
 
     def set_rating_display_mode(self, mode: str):
         if mode not in ("stars", "number"):
@@ -114,6 +124,27 @@ class ArtistTable(QTableWidget):
             item.setTextAlignment(Qt.AlignCenter)
 
         self.setItem(row, column, item)
+
+    def _set_status_badge(self, row: int, status):
+        badge = StatusBadge(status)
+
+        self.setCellWidget(row, 4, badge)
+        self.setRowHeight(row, 32)
+
+    def _set_pixiv_button(self, row: int, pixiv_id):
+        pixiv_id = str(pixiv_id or "").strip()
+
+        button = QPushButton("열기")
+        button.setEnabled(bool(pixiv_id))
+
+        if pixiv_id:
+            button.clicked.connect(
+                lambda checked=False, target_pixiv_id=pixiv_id: self._open_pixiv_page(
+                    target_pixiv_id
+                )
+            )
+
+        self.setCellWidget(row, 7, button)
 
     def _format_value(self, column: int, value) -> str:
         if column == 4:
@@ -160,6 +191,13 @@ class ArtistTable(QTableWidget):
 
         return stars
 
+    def _open_pixiv_page(self, pixiv_id: str):
+        if not pixiv_id:
+            return
+
+        url = QUrl(f"https://www.pixiv.net/users/{pixiv_id}")
+        QDesktopServices.openUrl(url)
+
     def _handle_header_clicked(self, column: int):
         sort_field = self.COLUMN_SORT_FIELDS.get(column)
 
@@ -169,6 +207,9 @@ class ArtistTable(QTableWidget):
         self.sort_requested.emit(sort_field)
 
     def _handle_cell_double_clicked(self, row: int, column: int):
+        if column == 7:
+            return
+
         if row < 0 or row >= len(self.artist_ids):
             return
 

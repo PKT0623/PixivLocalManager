@@ -71,6 +71,26 @@ class ArtistRepository:
 
             return dict(row)
 
+    def get_by_pixiv_id(self, pixiv_id: str):
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT *
+                FROM artists
+                WHERE pixiv_id = ?
+                """,
+                (pixiv_id,),
+            )
+
+            row = cursor.fetchone()
+
+            if row is None:
+                return None
+
+            return dict(row)
+
     def get_all(self) -> list[dict]:
         with get_connection() as conn:
             cursor = conn.cursor()

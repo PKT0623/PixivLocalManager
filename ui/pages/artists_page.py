@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.services.artist_service import ArtistService
+from ui.dialogs.update_check_dialog import UpdateCheckDialog
 from ui.widgets.artist_table import ArtistTable
 
 
@@ -58,10 +59,12 @@ class ArtistsPage(QWidget):
         self.search_input.setPlaceholderText("작가명 또는 Pixiv ID 검색")
 
         self.rating_toggle_button = QPushButton("평점: 별")
+        self.update_check_button = QPushButton("업데이트 확인")
         self.refresh_button = QPushButton("새로고침")
 
         search_layout.addWidget(self.search_input, 1)
         search_layout.addWidget(self.rating_toggle_button)
+        search_layout.addWidget(self.update_check_button)
         search_layout.addWidget(self.refresh_button)
 
         self.artist_table = ArtistTable()
@@ -101,6 +104,7 @@ class ArtistsPage(QWidget):
     def _connect_signals(self):
         self.search_input.textChanged.connect(self._filter_artists)
         self.rating_toggle_button.clicked.connect(self._toggle_rating_display)
+        self.update_check_button.clicked.connect(self._open_update_check_dialog)
         self.refresh_button.clicked.connect(self.load_artists)
         self.artist_table.artist_selected.connect(self.artist_selected.emit)
         self.artist_table.sort_requested.connect(self._handle_sort_requested)
@@ -129,6 +133,13 @@ class ArtistsPage(QWidget):
 
         artists = self._sort_artists(artists)
         self.artist_table.set_artists(artists)
+
+    def _open_update_check_dialog(self):
+        dialog = UpdateCheckDialog(self.all_artists, self)
+        dialog.update_finished.connect(self.load_artists)
+        dialog.exec()
+
+        self.load_artists()
 
     def _handle_sort_requested(self, sort_field: str):
         if sort_field == "update_status":

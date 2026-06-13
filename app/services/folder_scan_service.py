@@ -24,7 +24,9 @@ class FolderScanService:
         ".bmp",
     }
 
-    PIXIV_ID_PATTERN = re.compile(r"\[(\d+)\]|\((\d+)\)|(\d{5,})")
+    BRACKETED_PIXIV_ID_PATTERN = re.compile(r"[\[\(](\d{5,})[\]\)]")
+    TRAILING_PIXIV_ID_PATTERN = re.compile(r"[-_ ]+(\d{5,})$")
+    ANY_PIXIV_ID_PATTERN = re.compile(r"(\d{5,})")
     ARTWORK_ID_PATTERN = re.compile(r"(\d{5,})")
 
     def scan_folder(self, folder_path: str) -> FolderScanResult:
@@ -53,25 +55,53 @@ class FolderScanService:
         )
 
     def _parse_artist_folder_name(self, folder_name: str) -> tuple[str, str]:
-        match = self.PIXIV_ID_PATTERN.search(folder_name)
+        folder_name = folder_name.strip()
+
+        match = self._find_pixiv_id_match(folder_name)
 
         if match is None:
-            return folder_name.strip(), ""
+            return folder_name, ""
 
-        pixiv_id = next(group for group in match.groups() if group)
+        pixiv_id = match.group(1)
 
-        artist_name = folder_name.replace(f"[{pixiv_id}]", "")
-        artist_name = artist_name.replace(f"({pixiv_id})", "")
-        artist_name = artist_name.replace(pixiv_id, "")
+        artist_name = (
+            folder_name[: match.start()]
+            + folder_name[match.end():]
+        )
         artist_name = artist_name.strip(" _-")
 
         return artist_name.strip(), pixiv_id
+
+    def _find_pixiv_id_match(self, folder_name: str):
+        trailing_match = self.TRAILING_PIXIV_ID_PATTERN.search(folder_name)
+
+        if trailing_match is not None:
+            return trailing_match
+
+        bracket_matches = list(
+            self.BRACKETED_PIXIV_ID_PATTERN.finditer(folder_name)
+        )
+
+        if bracket_matches:
+            return bracket_matches[-1]
+
+        any_matches = list(
+            self.ANY_PIXIV_ID_PATTERN.finditer(folder_name)
+        )
+
+        if any_matches:
+            return any_matches[-1]
+
+        return None
 
     def _get_image_files(self, folder_path: Path) -> list[Path]:
         image_files: list[Path] = []
 
         for file_path in folder_path.rglob("*"):
-            if file_path.is_file() and file_path.suffix.lower() in self.IMAGE_EXTENSIONS:
+            if (
+                file_path.is_file()
+                and file_path.suffix.lower() in self.IMAGE_EXTENSIONS
+            ):
                 image_files.append(file_path)
 
         return image_files
