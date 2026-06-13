@@ -109,11 +109,14 @@ PLM --> PIXIV[Pixiv 연동]
 <tr><td>Pixiv 작가 페이지 및 로컬 폴더 열기</td></tr>
 
 <tr>
-    <td rowspan="3">작품 관리</td>
-    <td>로컬 최신 작품 ID 계산</td>
+    <td rowspan="6">작품 관리</td>
+    <td>로컬 최신 작품 ID 3개 계산</td>
 </tr>
-<tr><td>Pixiv 최신 작품 ID 수동 입력</td></tr>
+<tr><td>Pixiv 최신 작품 ID 3개 저장</td></tr>
 <tr><td>업데이트 상태 표시</td></tr>
+<tr><td>작가 폴더 용량 계산</td></tr>
+<tr><td>작가 폴더 파일 수 계산</td></tr>
+<tr><td>작가 폴더 작품 수 계산</td></tr>
 
 <tr>
     <td rowspan="3">데이터 관리</td>
@@ -129,6 +132,7 @@ PLM --> PIXIV[Pixiv 연동]
 <tr><td>기본 정렬 설정</td></tr>
 <tr><td>UI 설정</td></tr>
 </table>
+
 
 ---
 
