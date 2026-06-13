@@ -42,7 +42,7 @@ APP --> SIDEBAR[Sidebar]
 APP --> CONTENT[Content Area]
 
 SIDEBAR --> DASHBOARD[대시보드]
-SIDEBAR --> REGISTER[폴더 등록]
+SIDEBAR --> SCAN[폴더 등록]
 SIDEBAR --> ARTISTS[작가 목록]
 SIDEBAR --> SETTINGS[설정]
 
@@ -117,12 +117,12 @@ flowchart TD
 MAIN[메인 창]
 
 MAIN --> DASHBOARD[대시보드]
-MAIN --> REGISTER[폴더 등록]
+MAIN --> SCAN[폴더 등록]
 MAIN --> ARTISTS[작가 목록]
 MAIN --> SETTINGS[설정]
 
 ARTISTS --> DETAIL[작가 상세]
-REGISTER --> PREVIEW[등록 미리보기]
+SCAN --> PREVIEW[등록 미리보기]
 ```
 
 ---

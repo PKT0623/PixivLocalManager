@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 
-class SettingsPage(QWidget):
+class ScanPage(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -12,10 +12,10 @@ class SettingsPage(QWidget):
         layout.setContentsMargins(32, 32, 32, 32)
         layout.setSpacing(12)
 
-        title_label = QLabel("설정")
+        title_label = QLabel("폴더 스캔")
         title_label.setObjectName("pageTitle")
 
-        description_label = QLabel("DB 경로, 백업, 내보내기 같은 프로그램 설정을 관리하는 화면입니다.")
+        description_label = QLabel("Pixiv 이미지 폴더를 선택하고 파일명을 분석해 DB에 등록하는 화면입니다.")
         description_label.setObjectName("pageDescription")
 
         layout.addWidget(title_label)
