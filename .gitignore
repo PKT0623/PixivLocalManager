@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+
+# VSCode
+.vscode/
+
+# Database
+*.db
+*.sqlite3
+
+# Backup
+backups/
+
+# Export
+exports/
+
+# Thumbnail Cache
+thumbnails/
+
+# Build
+build/
+dist/
+*.spec
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
