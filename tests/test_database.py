@@ -18,9 +18,14 @@ def run_test() -> None:
         artist_name="테스트 작가",
         pixiv_id="987654321",
         folder_path="D:/Pixiv/테스트 작가",
+        folder_size_bytes=1024 * 1024 * 5,
+        folder_file_count=25,
+        folder_artwork_count=10,
         rating=3,
         status="normal",
         memo="생성 테스트",
+        local_latest_artwork_ids='["111", "112", "113"]',
+        pixiv_latest_artwork_ids='["211", "212", "213"]',
     )
 
     artist_id = artist_repository.create(artist)
@@ -31,9 +36,14 @@ def run_test() -> None:
 
     if saved_artist is not None:
         saved_artist.artist_name = "수정된 테스트 작가"
+        saved_artist.folder_size_bytes = 1024 * 1024 * 10
+        saved_artist.folder_file_count = 40
+        saved_artist.folder_artwork_count = 15
         saved_artist.rating = 5
         saved_artist.status = "favorite"
         saved_artist.memo = "수정 테스트"
+        saved_artist.local_latest_artwork_ids = '["121", "122", "123"]'
+        saved_artist.pixiv_latest_artwork_ids = '["221", "222", "223"]'
 
         artist_repository.update(saved_artist)
 
@@ -48,11 +58,25 @@ def run_test() -> None:
     print()
     print("=== AppSettingRepository 테스트 ===")
 
-    setting_repository.set("download_root", "D:/Pixiv")
-    setting_repository.set("thread_count", "4")
-    setting_repository.set("theme", "dark")
+    setting_repository.set(
+        "download_root",
+        "D:/Pixiv",
+    )
 
-    print("Get 성공:", setting_repository.get("download_root"))
+    setting_repository.set(
+        "thread_count",
+        "4",
+    )
+
+    setting_repository.set(
+        "theme",
+        "dark",
+    )
+
+    print(
+        "Get 성공:",
+        setting_repository.get("download_root"),
+    )
 
     print("Get All 성공:")
 

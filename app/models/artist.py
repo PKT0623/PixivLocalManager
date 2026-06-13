@@ -7,17 +7,20 @@ class Artist:
     id: int | None = None
 
     artist_name: str = ""
-    pixiv_id: int = 0
+    pixiv_id: str = ""
 
     folder_path: str = ""
+    folder_size_bytes: int = 0
+    folder_file_count: int = 0
+    folder_artwork_count: int = 0
 
     rating: int = 0
     status: str = "normal"
 
     memo: str = ""
 
-    local_latest_artwork_id: str = ""
-    pixiv_latest_artwork_id: str = ""
+    local_latest_artwork_ids: str = ""
+    pixiv_latest_artwork_ids: str = ""
 
     update_status: str = "unknown"
 
