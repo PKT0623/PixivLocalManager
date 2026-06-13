@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual Environment
 .venv/
+venv/
 
 # VSCode
 .vscode/
@@ -12,6 +13,7 @@ __pycache__/
 # Database
 *.db
 *.sqlite3
+*.sqlite
 
 # Backup
 backups/
@@ -22,6 +24,13 @@ exports/
 # Thumbnail Cache
 thumbnails/
 
+# Logs
+*.log
+
+# Test / Dev Data (중요)
+test_data/
+tests/__pycache__/
+
 # Build
 build/
 dist/
@@ -30,6 +39,10 @@ dist/
 # OS
 Thumbs.db
 Desktop.ini
+.DS_Store
 
-# Logs
-*.log
+# Pytest
+.pytest_cache/
+
+# Mypy / type check
+.mypy_cache/

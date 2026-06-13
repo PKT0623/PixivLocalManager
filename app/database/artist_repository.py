@@ -1,12 +1,11 @@
 from datetime import datetime
 
 from app.database.connection import get_connection
-from app.models import Artist
 
 
 class ArtistRepository:
 
-    def create(self, artist: Artist) -> int:
+    def create_artist(self, artist: dict) -> int:
         with get_connection() as conn:
             cursor = conn.cursor()
 
@@ -34,19 +33,19 @@ class ArtistRepository:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    artist.artist_name,
-                    artist.pixiv_id,
-                    artist.folder_path,
-                    artist.folder_size_bytes,
-                    artist.folder_file_count,
-                    artist.folder_artwork_count,
-                    artist.rating,
-                    artist.status,
-                    artist.memo,
-                    artist.local_latest_artwork_ids,
-                    artist.pixiv_latest_artwork_ids,
-                    artist.update_status,
-                    artist.last_checked_at,
+                    artist["artist_name"],
+                    artist["pixiv_id"],
+                    artist["folder_path"],
+                    artist["folder_size_bytes"],
+                    artist["folder_file_count"],
+                    artist["folder_artwork_count"],
+                    artist["rating"],
+                    artist["status"],
+                    artist["memo"],
+                    artist["local_latest_artwork_ids"],
+                    artist["pixiv_latest_artwork_ids"],
+                    artist["update_status"],
+                    artist["last_checked_at"],
                     now,
                     now,
                 ),
@@ -56,7 +55,7 @@ class ArtistRepository:
 
             return cursor.lastrowid
 
-    def get_by_id(self, artist_id: int) -> Artist | None:
+    def get_by_id(self, artist_id: int):
         with get_connection() as conn:
             cursor = conn.cursor()
 
@@ -70,9 +69,9 @@ class ArtistRepository:
             if row is None:
                 return None
 
-            return Artist(**dict(row))
+            return dict(row)
 
-    def get_all(self) -> list[Artist]:
+    def get_all(self) -> list[dict]:
         with get_connection() as conn:
             cursor = conn.cursor()
 
@@ -82,12 +81,9 @@ class ArtistRepository:
 
             rows = cursor.fetchall()
 
-            return [
-                Artist(**dict(row))
-                for row in rows
-            ]
+            return [dict(row) for row in rows]
 
-    def update(self, artist: Artist) -> None:
+    def update_artist(self, artist_id: int, artist: dict) -> None:
         with get_connection() as conn:
             cursor = conn.cursor()
 
@@ -112,27 +108,27 @@ class ArtistRepository:
                 WHERE id = ?
                 """,
                 (
-                    artist.artist_name,
-                    artist.pixiv_id,
-                    artist.folder_path,
-                    artist.folder_size_bytes,
-                    artist.folder_file_count,
-                    artist.folder_artwork_count,
-                    artist.rating,
-                    artist.status,
-                    artist.memo,
-                    artist.local_latest_artwork_ids,
-                    artist.pixiv_latest_artwork_ids,
-                    artist.update_status,
-                    artist.last_checked_at,
+                    artist["artist_name"],
+                    artist["pixiv_id"],
+                    artist["folder_path"],
+                    artist["folder_size_bytes"],
+                    artist["folder_file_count"],
+                    artist["folder_artwork_count"],
+                    artist["rating"],
+                    artist["status"],
+                    artist["memo"],
+                    artist["local_latest_artwork_ids"],
+                    artist["pixiv_latest_artwork_ids"],
+                    artist["update_status"],
+                    artist["last_checked_at"],
                     datetime.now().isoformat(),
-                    artist.id,
+                    artist_id,
                 ),
             )
 
             conn.commit()
 
-    def delete(self, artist_id: int) -> None:
+    def delete_artist(self, artist_id: int) -> None:
         with get_connection() as conn:
             cursor = conn.cursor()
 
