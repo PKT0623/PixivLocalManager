@@ -4,7 +4,7 @@ from ui.pages.artist_detail_page import ArtistDetailPage
 from ui.pages.artists_page import ArtistsPage
 from ui.pages.dashboard_page import DashboardPage
 from ui.pages.scan_page import ScanPage
-from ui.pages.settings_page import SettingsPage
+from ui.pages.settings import SettingsPage
 from ui.widgets.sidebar import Sidebar
 
 
