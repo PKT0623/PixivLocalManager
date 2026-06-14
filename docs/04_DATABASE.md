@@ -7,68 +7,78 @@
     <th>항목</th>
     <th>내용</th>
 </tr>
+
 <tr>
-    <td>DB</td>
+    <td>DBMS</td>
     <td>SQLite</td>
 </tr>
+
 <tr>
     <td>DB 파일</td>
     <td>data/pixiv_manager.db</td>
 </tr>
+
 <tr>
-    <td>설정 파일</td>
-    <td>data/config.ini</td>
+    <td>설정 저장</td>
+    <td>app_settings 테이블</td>
 </tr>
+
 <tr>
-    <td>백업</td>
-    <td>JSON</td>
+    <td>백업 방식</td>
+    <td>SQLite 파일 복사</td>
 </tr>
+
 <tr>
     <td>내보내기</td>
     <td>CSV</td>
 </tr>
+
 </table>
 
 ---
 
-## V1 데이터 구조
+# 데이터 모델
 
 ```mermaid
 erDiagram
 
 ARTISTS {
-    integer id PK
-    string artist_name
-    string pixiv_id
+    INTEGER id PK
 
-    string folder_path
-    integer folder_size_bytes
-    integer folder_file_count
-    integer folder_artwork_count
+    TEXT artist_name
+    TEXT pixiv_id
 
-    integer rating
-    string status
-    string memo
+    TEXT folder_path
 
-    string local_latest_artwork_ids
-    string pixiv_latest_artwork_ids
+    INTEGER folder_artwork_count
 
-    string update_status
-    string last_checked_at
+    INTEGER rating
 
-    string created_at
-    string updated_at
+    TEXT status
+    TEXT update_status
+
+    INTEGER missing_artwork_count
+
+    TEXT memo
+
+    TEXT last_checked_at
+    TEXT last_scan_at
+
+    TEXT created_at
+    TEXT updated_at
 }
 
 APP_SETTINGS {
-    string key PK
-    string value
+    TEXT key PK
+    TEXT value
 }
 ```
 
 ---
 
-## artists 테이블
+# 테이블 구조
+
+## artists
 
 <table>
 <tr>
@@ -80,49 +90,37 @@ APP_SETTINGS {
 <tr>
     <td>id</td>
     <td>INTEGER</td>
-    <td>내부 관리 ID</td>
+    <td>내부 식별자</td>
 </tr>
 
 <tr>
     <td>artist_name</td>
     <td>TEXT</td>
-    <td>작가명 (한글, 일본어, 영어, 숫자, 특수문자, 이모티콘 지원)</td>
+    <td>작가명</td>
 </tr>
 
 <tr>
     <td>pixiv_id</td>
     <td>TEXT</td>
-    <td>Pixiv 작가 ID</td>
+    <td>Pixiv 사용자 ID</td>
 </tr>
 
 <tr>
     <td>folder_path</td>
     <td>TEXT</td>
-    <td>로컬 작가 폴더 경로</td>
-</tr>
-
-<tr>
-    <td>folder_size_bytes</td>
-    <td>INTEGER</td>
-    <td>작가 폴더 전체 용량(Byte)</td>
-</tr>
-
-<tr>
-    <td>folder_file_count</td>
-    <td>INTEGER</td>
-    <td>작가 폴더 전체 파일 수</td>
+    <td>로컬 폴더 경로</td>
 </tr>
 
 <tr>
     <td>folder_artwork_count</td>
     <td>INTEGER</td>
-    <td>작가 폴더 작품 수</td>
+    <td>로컬 작품 수</td>
 </tr>
 
 <tr>
     <td>rating</td>
     <td>INTEGER</td>
-    <td>사용자 평점</td>
+    <td>사용자 평점 (0~10)</td>
 </tr>
 
 <tr>
@@ -132,73 +130,52 @@ APP_SETTINGS {
 </tr>
 
 <tr>
-    <td>memo</td>
-    <td>TEXT</td>
-    <td>작가 메모</td>
-</tr>
-
-<tr>
-    <td>local_latest_artwork_ids</td>
-    <td>TEXT</td>
-    <td>로컬 최신 작품 ID 3개(JSON 문자열)</td>
-</tr>
-
-<tr>
-    <td>pixiv_latest_artwork_ids</td>
-    <td>TEXT</td>
-    <td>Pixiv 최신 작품 ID 3개(JSON 문자열)</td>
-</tr>
-
-<tr>
     <td>update_status</td>
     <td>TEXT</td>
-    <td>최신 / 업데이트 있음 / 확인 안함</td>
+    <td>업데이트 상태</td>
+</tr>
+
+<tr>
+    <td>missing_artwork_count</td>
+    <td>INTEGER</td>
+    <td>누락 작품 수</td>
+</tr>
+
+<tr>
+    <td>memo</td>
+    <td>TEXT</td>
+    <td>사용자 메모</td>
 </tr>
 
 <tr>
     <td>last_checked_at</td>
     <td>TEXT</td>
-    <td>마지막 확인 날짜</td>
+    <td>마지막 업데이트 확인 시각</td>
+</tr>
+
+<tr>
+    <td>last_scan_at</td>
+    <td>TEXT</td>
+    <td>마지막 폴더 스캔 시각</td>
 </tr>
 
 <tr>
     <td>created_at</td>
     <td>TEXT</td>
-    <td>등록 날짜</td>
+    <td>등록 시각</td>
 </tr>
 
 <tr>
     <td>updated_at</td>
     <td>TEXT</td>
-    <td>수정 날짜</td>
+    <td>수정 시각</td>
 </tr>
 
 </table>
 
 ---
 
-## 최신 작품 ID 저장 예시
-
-```json
-{
-    "local_latest_artwork_ids": [
-        "123456789",
-        "123456788",
-        "123456787"
-    ],
-    "pixiv_latest_artwork_ids": [
-        "223456789",
-        "223456788",
-        "223456787"
-    ]
-}
-```
-
-실제 DB에는 JSON 문자열 형태로 저장된다.
-
----
-
-## app_settings 테이블
+## app_settings
 
 <table>
 <tr>
@@ -210,7 +187,7 @@ APP_SETTINGS {
 <tr>
     <td>key</td>
     <td>TEXT</td>
-    <td>설정 이름</td>
+    <td>설정 키</td>
 </tr>
 
 <tr>
@@ -223,133 +200,164 @@ APP_SETTINGS {
 
 ---
 
-## 작가 상태값
+# 상태값 정의
+
+## status
 
 <table>
 <tr>
-    <th>상태</th>
-    <th>의미</th>
+    <th>값</th>
+    <th>설명</th>
 </tr>
 
 <tr>
-    <td>normal</td>
-    <td>기본 상태</td>
+    <td>active</td>
+    <td>활성</td>
 </tr>
 
 <tr>
-    <td>favorite</td>
-    <td>즐겨찾기</td>
-</tr>
-
-<tr>
-    <td>pending</td>
-    <td>확인 필요</td>
-</tr>
-
-<tr>
-    <td>hold</td>
-    <td>보류</td>
-</tr>
-
-<tr>
-    <td>hidden</td>
-    <td>숨김</td>
+    <td>inactive</td>
+    <td>비활성</td>
 </tr>
 
 </table>
 
 ---
 
-## 업데이트 상태값
+## update_status
 
 <table>
 <tr>
-    <th>상태</th>
-    <th>조건</th>
+    <th>값</th>
+    <th>설명</th>
 </tr>
 
 <tr>
     <td>unknown</td>
-    <td>Pixiv 최신 작품 정보 없음</td>
+    <td>아직 확인하지 않음</td>
 </tr>
 
 <tr>
-    <td>latest</td>
-    <td>로컬 최신 작품 ID와 Pixiv 최신 작품 ID가 같음</td>
+    <td>up_to_date</td>
+    <td>최신 상태</td>
 </tr>
 
 <tr>
-    <td>outdated</td>
-    <td>로컬 최신 작품 ID와 Pixiv 최신 작품 ID가 다름</td>
+    <td>need_update</td>
+    <td>업데이트 필요</td>
+</tr>
+
+<tr>
+    <td>updated</td>
+    <td>업데이트 완료</td>
+</tr>
+
+<tr>
+    <td>error</td>
+    <td>오류 발생</td>
 </tr>
 
 </table>
 
 ---
 
-## V1에서 제외하는 테이블
+# 인덱스
 
 <table>
 <tr>
-    <th>테이블</th>
-    <th>제외 이유</th>
+    <th>대상</th>
+    <th>목적</th>
 </tr>
 
 <tr>
-    <td>artworks</td>
-    <td>작품 상세 관리는 V2 이후 구현</td>
+    <td>pixiv_id</td>
+    <td>중복 방지 및 조회</td>
 </tr>
 
 <tr>
-    <td>tags</td>
-    <td>태그 관리는 V2 이후 구현</td>
-</tr>
-
-<tr>
-    <td>artwork_tags</td>
-    <td>작품-태그 연결은 V2 이후 구현</td>
-</tr>
-
-<tr>
-    <td>collections</td>
-    <td>컬렉션 기능은 V2 이후 구현</td>
+    <td>artist_name</td>
+    <td>검색 성능 향상</td>
 </tr>
 
 </table>
 
 ---
 
-## 데이터 저장 원칙
+# Repository 구조
+
+```mermaid
+flowchart LR
+
+ArtistRepository --> artists
+
+AppSettingRepository --> app_settings
+```
+
+---
+
+# 데이터 저장 원칙
 
 <table>
 <tr>
     <th>원칙</th>
-    <th>내용</th>
+    <th>설명</th>
 </tr>
 
 <tr>
-    <td>작가 ID 기준</td>
-    <td>작가명은 변경될 수 있으므로 Pixiv ID를 핵심 기준으로 사용</td>
+    <td>Pixiv ID 기준</td>
+    <td>작가 식별은 Pixiv ID 우선</td>
 </tr>
 
 <tr>
     <td>로컬 우선</td>
-    <td>폴더명과 파일명에서 가능한 정보를 먼저 추출</td>
+    <td>폴더 구조 기반 데이터 수집</td>
 </tr>
 
 <tr>
-    <td>Pixiv 요청 최소화</td>
-    <td>자동 수집보다 수동 입력 및 캐시 중심</td>
+    <td>수동 업데이트</td>
+    <td>필요할 때만 Pixiv 조회</td>
 </tr>
 
 <tr>
-    <td>백업 가능</td>
-    <td>SQLite 데이터를 JSON으로 내보낼 수 있도록 구성</td>
+    <td>SQLite 단일 DB</td>
+    <td>배포 및 백업 단순화</td>
 </tr>
 
 <tr>
     <td>확장 가능</td>
-    <td>V2에서 작품, 태그, 컬렉션 테이블 추가 가능하도록 설계</td>
+    <td>V2에서 작품 테이블 추가 가능</td>
+</tr>
+
+</table>
+
+---
+
+# V1 제외 테이블
+
+<table>
+<tr>
+    <th>테이블</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>artworks</td>
+    <td>작품 상세 관리</td>
+</tr>
+
+<tr>
+    <td>tags</td>
+    <td>태그 관리</td>
+</tr>
+
+<tr>
+    <td>artwork_tags</td>
+    <td>작품-태그 연결</td>
+</tr>
+
+<tr>
+    <td>collections</td>
+    <td>컬렉션 기능</td>
 </tr>
 
 </table>

@@ -1,66 +1,94 @@
 # 시스템 흐름도 (System Flow)
 
-## 전체 사용 흐름
+## 전체 시스템 흐름
 
 ```mermaid
 flowchart LR
 
 START[프로그램 실행]
 
-START --> DASHBOARD[대시보드]
+START --> INIT[DB 초기화]
 
-DASHBOARD --> REGISTER[폴더 등록]
-DASHBOARD --> ARTISTS[작가 목록]
-DASHBOARD --> SETTINGS[설정]
+INIT --> MAIN[메인 윈도우]
 
-REGISTER --> SCAN[폴더 스캔]
-SCAN --> PARSE[작가명-ID 파싱]
-PARSE --> SAVE[DB 저장]
+MAIN --> DASHBOARD[대시보드]
+MAIN --> SCAN[폴더 스캔]
+MAIN --> ARTISTS[작가 목록]
+MAIN --> SETTINGS[설정]
 
-SAVE --> ARTISTS
+ARTISTS --> DETAIL[작가 상세]
+ARTISTS --> UPDATE[업데이트 확인]
 ```
 
 ---
 
-## 작가 등록 흐름
+## 프로그램 구조
 
 ```mermaid
 flowchart LR
 
-A[폴더 선택]
+UI[UI Layer]
 
-A --> B[폴더 스캔]
+SERVICE[Service Layer]
 
-B --> C[작가명-ID 추출]
+REPO[Repository Layer]
 
-C --> D{중복 여부}
+DB[(SQLite)]
 
-D -- 신규 --> E[등록]
-
-D -- 기존 --> F[업데이트]
-
-E --> G[DB 저장]
-F --> G
-
-G --> H[작가 목록 갱신]
+UI --> SERVICE
+SERVICE --> REPO
+REPO --> DB
 ```
 
 ---
 
-## 작가 조회 흐름
+## 폴더 스캔 흐름
 
 ```mermaid
 flowchart LR
 
-A[작가 목록]
+A[루트 폴더 선택]
+
+A --> B[하위 폴더 탐색]
+
+B --> C[이미지 포함 폴더 확인]
+
+C --> D[작가명 / Pixiv ID 파싱]
+
+D --> E{기존 등록 여부}
+
+E -- 신규 --> F[작가 등록]
+
+E -- 기존 --> G[작가 정보 갱신]
+
+F --> H[DB 저장]
+G --> H
+
+H --> I[스캔 로그 출력]
+
+I --> J[작가 목록 갱신]
+```
+
+---
+
+## 작가 목록 흐름
+
+```mermaid
+flowchart LR
+
+A[작가 목록 조회]
 
 A --> B[검색]
 
 A --> C[정렬]
 
-A --> D[작가 선택]
+A --> D[상태 정렬]
 
-D --> E[상세 정보 표시]
+A --> E[평점 표시 변경]
+
+A --> F[작가 선택]
+
+F --> G[작가 상세 이동]
 ```
 
 ---
@@ -70,55 +98,146 @@ D --> E[상세 정보 표시]
 ```mermaid
 flowchart LR
 
-DETAIL[작가 상세]
+A[작가 선택]
 
-DETAIL --> PIXIV[Pixiv 페이지 열기]
+A --> B[상세 정보 표시]
 
-DETAIL --> FOLDER[로컬 폴더 열기]
+B --> C[작가명 수정]
 
-DETAIL --> EDIT[정보 수정]
+B --> D[평점 수정]
 
-DETAIL --> INFO[폴더 정보 확인]
+B --> E[메모 수정]
 
-INFO --> SIZE[폴더 용량]
+B --> F[폴더 경로 수정]
 
-INFO --> FILES[파일 수]
+C --> G[저장]
+D --> G
+E --> G
+F --> G
 
-INFO --> ARTWORKS[작품 수]
+G --> H[DB 업데이트]
 
-DETAIL --> UPDATE[최신 작품 상태 확인]
+H --> I[작가 목록 갱신]
 ```
 
 ---
 
-## 최신 작품 확인 흐름
+## Pixiv 업데이트 확인 흐름
 
 ```mermaid
 flowchart LR
 
-A[작가 선택]
+A[업데이트 확인]
 
-A --> B[로컬 폴더 분석]
+A --> B[작가 선택]
 
-B --> C[작품 ID 추출]
+B --> C[최근 확인 작가 제외]
 
-C --> D[최신 작품 ID 3개 계산]
+C --> D[업데이트 작업 시작]
 
-D --> E[폴더 용량 계산]
+D --> E[Pixiv API 요청]
 
-E --> F[파일 수 계산]
+E --> F[작품 수 조회]
 
-F --> G[작품 수 계산]
+F --> G[로컬 작품 수 비교]
 
-G --> H[DB 저장]
+G --> H{최신 여부}
 
-H --> I[Pixiv 최신 작품 ID 3개 입력]
+H -- 최신 --> I[up_to_date]
 
-I --> J{동일 여부}
+H -- 차이 있음 --> J[need_update]
 
-J -- 동일 --> K[최신]
+I --> K[DB 저장]
+J --> K
 
-J -- 다름 --> L[업데이트 있음]
+K --> L[로그 출력]
+
+L --> M[다음 작가]
+```
+
+---
+
+## 업데이트 작업 흐름
+
+```mermaid
+flowchart LR
+
+START[작업 시작]
+
+START --> CHECK[작가 처리]
+
+CHECK --> WAIT[5~10초 대기]
+
+WAIT --> CHECK
+
+CHECK --> REST{20명 처리}
+
+REST -- 예 --> BREAK[3~5분 휴식]
+
+BREAK --> CHECK
+
+REST -- 아니오 --> NEXT[다음 작가]
+
+NEXT --> CHECK
+```
+
+---
+
+## 설정 저장 흐름
+
+```mermaid
+flowchart LR
+
+A[설정 화면]
+
+A --> B[기본 Pixiv 폴더]
+
+A --> C[PHPSESSID]
+
+B --> D[설정 저장]
+C --> D
+
+D --> E[AppSetting 저장]
+```
+
+---
+
+## DB 백업 흐름
+
+```mermaid
+flowchart LR
+
+A[DB 백업]
+
+A --> B[SQLite DB 확인]
+
+B --> C[무결성 검사]
+
+C --> D[백업 폴더 선택]
+
+D --> E[DB 파일 복사]
+
+E --> F[백업 완료]
+```
+
+---
+
+## DB 복원 흐름
+
+```mermaid
+flowchart LR
+
+A[DB 복원]
+
+A --> B[복원 파일 선택]
+
+B --> C[SQLite 검증]
+
+C --> D[안전 백업 생성]
+
+D --> E[DB 파일 복원]
+
+E --> F[프로그램 재시작]
 ```
 
 ---
@@ -128,47 +247,17 @@ J -- 다름 --> L[업데이트 있음]
 ```mermaid
 flowchart LR
 
-A[내보내기]
+A[CSV 내보내기]
 
-A --> B[CSV 생성]
+A --> B[저장 위치 선택]
 
-B --> C[파일 저장]
+B --> C[작가 데이터 조회]
 
-C --> D[완료]
-```
+C --> D[CSV 생성]
 
----
+D --> E[파일 저장]
 
-## 백업 흐름
-
-```mermaid
-flowchart LR
-
-A[백업]
-
-A --> B[DB 읽기]
-
-B --> C[JSON 생성]
-
-C --> D[백업 저장]
-```
-
----
-
-## 복원 흐름
-
-```mermaid
-flowchart LR
-
-A[복원]
-
-A --> B[JSON 선택]
-
-B --> C[데이터 검증]
-
-C --> D[DB 복원]
-
-D --> E[완료]
+E --> F[완료]
 ```
 
 ---
@@ -178,35 +267,41 @@ D --> E[완료]
 ```mermaid
 flowchart TD
 
-MAIN[메인 창]
+MAIN[MainWindow]
 
-MAIN --> DASHBOARD[대시보드]
+MAIN --> DASHBOARD[Dashboard]
 
-MAIN --> REGISTER[폴더 등록]
+MAIN --> SCAN[Scan]
 
-MAIN --> ARTISTS[작가 목록]
+MAIN --> ARTISTS[Artists]
 
-MAIN --> SETTINGS[설정]
+MAIN --> SETTINGS[Settings]
 
-ARTISTS --> DETAIL[작가 상세]
+ARTISTS --> DETAIL[Artist Detail]
+
+ARTISTS --> UPDATE[Update Check Dialog]
 ```
 
 ---
 
-## V1 데이터 흐름
+## 데이터 흐름
 
 ```mermaid
 flowchart LR
 
-FOLDER[로컬 폴더]
+FOLDER[Pixiv 폴더]
 
-FOLDER --> SCAN[폴더 스캔]
+FOLDER --> SCAN[Folder Scan Service]
 
-SCAN --> SQLITE[(SQLite)]
+SCAN --> DB[(SQLite)]
 
-SQLITE --> UI[프로그램 UI]
+DB --> REPO[Repository]
+
+REPO --> SERVICE[Service Layer]
+
+SERVICE --> UI[UI Layer]
 
 UI --> CSV[CSV Export]
 
-UI --> JSON[JSON Backup]
+UI --> BACKUP[DB Backup]
 ```
