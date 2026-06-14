@@ -7,10 +7,19 @@ from PySide6.QtWidgets import (
 
 from .actions import ArtistTableActions
 from .columns import (
+    COLUMN_NO,
+    COLUMN_ARTIST_NAME,
+    COLUMN_ARTWORK_COUNT,
+    COLUMN_FAVORITE,
+    COLUMN_FILE_COUNT,
     COLUMN_HEADERS,
-    COLUMN_PIXIV_BUTTON,
-    COLUMN_STATUS,
+    COLUMN_LAST_VIEWED_AT,
+    COLUMN_MEMO,
+    COLUMN_SHORTCUTS,
+    COLUMN_PIXIV_ID,
     COLUMN_RATING,
+    COLUMN_STATUS,
+    COLUMN_TAGS,
     COLUMNS,
 )
 from .row_renderer import ArtistTableRowRenderer
@@ -19,6 +28,7 @@ from .row_renderer import ArtistTableRowRenderer
 class ArtistTable(QTableWidget):
     artist_selected = Signal(int)
     sort_requested = Signal(str)
+    favorite_toggled = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -26,7 +36,7 @@ class ArtistTable(QTableWidget):
         self.artist_ids = []
         self.artists = []
         self.rating_display_mode = "stars"
-        self.pixiv_button_column = COLUMN_PIXIV_BUTTON
+        self.shortcut_column = COLUMN_SHORTCUTS
 
         self.actions = ArtistTableActions(self)
         self.row_renderer = ArtistTableRowRenderer(self)
@@ -44,7 +54,7 @@ class ArtistTable(QTableWidget):
         self.setSortingEnabled(False)
 
         self.verticalHeader().setVisible(False)
-        self.verticalHeader().setDefaultSectionSize(32)
+        self.verticalHeader().setDefaultSectionSize(42)
 
         header = self.horizontalHeader()
         header.setSectionsClickable(True)
@@ -54,26 +64,47 @@ class ArtistTable(QTableWidget):
 
         self._setup_header_resize_modes(header)
 
+        self.cellClicked.connect(
+            self.actions.handle_cell_clicked
+        )
         self.cellDoubleClicked.connect(
             self.actions.handle_cell_double_clicked
         )
 
     def _setup_header_resize_modes(self, header):
+        fixed_columns = (
+            COLUMN_NO,
+            COLUMN_FAVORITE,
+            COLUMN_PIXIV_ID,
+            COLUMN_ARTWORK_COUNT,
+            COLUMN_FILE_COUNT,
+            COLUMN_STATUS,
+            COLUMN_RATING,
+            COLUMN_LAST_VIEWED_AT,
+            COLUMN_SHORTCUTS,
+        )
+
+        stretch_columns = (
+            COLUMN_ARTIST_NAME,
+            COLUMN_TAGS,
+            COLUMN_MEMO,
+        )
+
         for column in COLUMNS:
-            if column.index in (COLUMN_STATUS, COLUMN_RATING):
+            if column.index in fixed_columns:
                 header.setSectionResizeMode(
                     column.index,
                     QHeaderView.Fixed,
+                )
+            elif column.index in stretch_columns:
+                header.setSectionResizeMode(
+                    column.index,
+                    QHeaderView.Stretch,
                 )
             elif column.width is not None:
                 header.setSectionResizeMode(
                     column.index,
                     QHeaderView.ResizeToContents,
-                )
-            elif column.index in (1, 6):
-                header.setSectionResizeMode(
-                    column.index,
-                    QHeaderView.Stretch,
                 )
             else:
                 header.setSectionResizeMode(

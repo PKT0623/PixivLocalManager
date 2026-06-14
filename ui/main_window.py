@@ -15,7 +15,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Pixiv Local Manager")
-        self.resize(1200, 800)
+        self.resize(1500, 900)
+        self.setMinimumSize(1200, 760)
 
         self.sidebar = Sidebar()
         self.page_stack = QStackedWidget()

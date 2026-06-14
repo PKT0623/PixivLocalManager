@@ -1,16 +1,25 @@
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidgetItem
 
-from .cell_widgets import create_pixiv_button, create_status_badge
+from .cell_widgets import (
+    create_favorite_button,
+    create_shortcut_buttons,
+    create_status_badge,
+)
 from .columns import (
     COLUMN_ARTIST_NAME,
     COLUMN_ARTWORK_COUNT,
+    COLUMN_FAVORITE,
+    COLUMN_FILE_COUNT,
+    COLUMN_LAST_VIEWED_AT,
     COLUMN_MEMO,
     COLUMN_NO,
-    COLUMN_PIXIV_BUTTON,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
+    COLUMN_SHORTCUTS,
     COLUMN_STATUS,
+    COLUMN_TAGS,
 )
 from .formatters import format_cell_value
 
@@ -27,13 +36,44 @@ class ArtistTableRowRenderer:
     ):
         self.table.artist_ids.append(artist.get("id"))
 
-        self.set_item(row, COLUMN_NO, index)
-        self.set_item(row, COLUMN_ARTIST_NAME, artist.get("artist_name"))
-        self.set_item(row, COLUMN_PIXIV_ID, artist.get("pixiv_id"))
+        is_hidden = bool(artist.get("is_hidden", 0))
+
+        self.set_item(
+            row,
+            COLUMN_NO,
+            index,
+            is_hidden,
+        )
+
+        self.set_favorite_button(
+            row,
+            artist.get("id"),
+            artist.get("is_favorite", 0),
+        )
+
+        self.set_item(
+            row,
+            COLUMN_ARTIST_NAME,
+            artist.get("artist_name"),
+            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_PIXIV_ID,
+            artist.get("pixiv_id"),
+            is_hidden,
+        )
         self.set_item(
             row,
             COLUMN_ARTWORK_COUNT,
             artist.get("folder_artwork_count", 0),
+            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_FILE_COUNT,
+            artist.get("folder_file_count", 0),
+            is_hidden,
         )
 
         self.set_status_badge(
@@ -41,11 +81,34 @@ class ArtistTableRowRenderer:
             artist.get("update_status"),
         )
 
-        self.set_item(row, COLUMN_RATING, artist.get("rating", 0))
-        self.set_item(row, COLUMN_MEMO, artist.get("memo"))
-
-        self.set_pixiv_button(
+        self.set_item(
             row,
+            COLUMN_RATING,
+            artist.get("rating", 0),
+            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_TAGS,
+            artist.get("artist_tags", ""),
+            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_LAST_VIEWED_AT,
+            artist.get("last_viewed_at"),
+            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_MEMO,
+            artist.get("memo"),
+            is_hidden,
+        )
+
+        self.set_shortcut_buttons(
+            row,
+            artist.get("folder_path"),
             artist.get("pixiv_id"),
         )
 
@@ -54,6 +117,7 @@ class ArtistTableRowRenderer:
         row: int,
         column: int,
         value,
+        is_hidden: bool = False,
     ):
         text = format_cell_value(
             column,
@@ -66,12 +130,40 @@ class ArtistTableRowRenderer:
 
         if column in (
             COLUMN_NO,
+            COLUMN_PIXIV_ID,
             COLUMN_ARTWORK_COUNT,
+            COLUMN_FILE_COUNT,
             COLUMN_RATING,
+            COLUMN_LAST_VIEWED_AT,
         ):
             item.setTextAlignment(Qt.AlignCenter)
 
+        if is_hidden:
+            self.apply_hidden_style(item)
+
         self.table.setItem(row, column, item)
+
+    def apply_hidden_style(self, item: QTableWidgetItem):
+        item.setBackground(QColor("#e3e3e3"))
+        item.setForeground(QColor("#777777"))
+
+    def set_favorite_button(
+        self,
+        row: int,
+        artist_id,
+        is_favorite,
+    ):
+        widget = create_favorite_button(
+            artist_id,
+            bool(is_favorite),
+            self.table.favorite_toggled.emit,
+        )
+
+        self.table.setCellWidget(
+            row,
+            COLUMN_FAVORITE,
+            widget,
+        )
 
     def set_status_badge(
         self,
@@ -81,20 +173,23 @@ class ArtistTableRowRenderer:
         badge = create_status_badge(status)
 
         self.table.setCellWidget(row, COLUMN_STATUS, badge)
-        self.table.setRowHeight(row, 32)
+        self.table.setRowHeight(row, 42)
 
-    def set_pixiv_button(
+    def set_shortcut_buttons(
         self,
         row: int,
+        folder_path,
         pixiv_id,
     ):
-        button = create_pixiv_button(
+        widget = create_shortcut_buttons(
+            folder_path,
             pixiv_id,
+            self.table.actions.open_folder,
             self.table.actions.open_pixiv_page,
         )
 
         self.table.setCellWidget(
             row,
-            COLUMN_PIXIV_BUTTON,
-            button,
+            COLUMN_SHORTCUTS,
+            widget,
         )

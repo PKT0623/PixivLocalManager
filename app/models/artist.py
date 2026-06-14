@@ -17,6 +17,10 @@ class Artist:
     rating: int = 0
     status: str = "normal"
 
+    is_favorite: bool = False
+    is_hidden: bool = False
+    artist_tags: str = ""
+
     memo: str = ""
 
     local_latest_artwork_ids: str = ""
@@ -25,6 +29,7 @@ class Artist:
     update_status: str = "unknown"
 
     last_checked_at: datetime | None = None
+    last_viewed_at: datetime | None = None
 
     created_at: datetime | None = None
     updated_at: datetime | None = None

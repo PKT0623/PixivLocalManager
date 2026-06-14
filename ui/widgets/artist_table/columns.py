@@ -10,14 +10,18 @@ class ArtistTableColumn:
 
 
 COLUMNS = [
-    ArtistTableColumn(0, "No"),
-    ArtistTableColumn(1, "작가명", "artist_name"),
-    ArtistTableColumn(2, "Pixiv ID"),
-    ArtistTableColumn(3, "작품 수", "folder_artwork_count"),
-    ArtistTableColumn(4, "상태", "update_status", 120),
-    ArtistTableColumn(5, "평점", "rating", 100),
-    ArtistTableColumn(6, "메모"),
-    ArtistTableColumn(7, "Pixiv", None, 80),
+    ArtistTableColumn(0, "No", None, 50),
+    ArtistTableColumn(1, "즐겨찾기", None, 70),
+    ArtistTableColumn(2, "작가명", "artist_name"),
+    ArtistTableColumn(3, "Pixiv ID", None, 85),
+    ArtistTableColumn(4, "작품 수", "folder_artwork_count", 65),
+    ArtistTableColumn(5, "파일 수", "folder_file_count", 65),
+    ArtistTableColumn(6, "상태", "update_status", 120),
+    ArtistTableColumn(7, "평점", "rating", 100),
+    ArtistTableColumn(8, "태그"),
+    ArtistTableColumn(9, "최근 열람", None, 120),
+    ArtistTableColumn(10, "메모"),
+    ArtistTableColumn(11, "바로가기", None, 200),
 ]
 
 COLUMN_HEADERS = [
@@ -32,10 +36,14 @@ COLUMN_SORT_FIELDS = {
 }
 
 COLUMN_NO = 0
-COLUMN_ARTIST_NAME = 1
-COLUMN_PIXIV_ID = 2
-COLUMN_ARTWORK_COUNT = 3
-COLUMN_STATUS = 4
-COLUMN_RATING = 5
-COLUMN_MEMO = 6
-COLUMN_PIXIV_BUTTON = 7
+COLUMN_FAVORITE = 1
+COLUMN_ARTIST_NAME = 2
+COLUMN_PIXIV_ID = 3
+COLUMN_ARTWORK_COUNT = 4
+COLUMN_FILE_COUNT = 5
+COLUMN_STATUS = 6
+COLUMN_RATING = 7
+COLUMN_TAGS = 8
+COLUMN_LAST_VIEWED_AT = 9
+COLUMN_MEMO = 10
+COLUMN_SHORTCUTS = 11

@@ -91,6 +91,9 @@ class ArtistsPage(QWidget):
         self.artist_table.sort_requested.connect(
             self.actions.handle_sort_requested
         )
+        self.artist_table.favorite_toggled.connect(
+            self.actions.handle_favorite_toggled
+        )
 
     def load_artists(self):
         self.actions.load_artists()

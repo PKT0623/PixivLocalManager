@@ -73,3 +73,17 @@ class ArtistsActions:
         self.page.artist_table.set_rating_display_mode(
             self.page.rating_display_mode
         )
+
+    def handle_favorite_toggled(
+        self,
+        artist_id: int,
+    ):
+        try:
+            self.page.artist_service.toggle_favorite(
+                artist_id
+            )
+        except Exception as error:
+            print(error)
+            return
+
+        self.load_artists()

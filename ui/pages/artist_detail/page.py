@@ -76,7 +76,8 @@ class ArtistDetailPage(QWidget):
 
             QPushButton#backButton,
             QPushButton#saveButton,
-            QPushButton#folderSelectButton {
+            QPushButton#folderSelectButton,
+            QPushButton#tagButton {
                 padding: 8px 16px;
                 border: 1px solid #cccccc;
                 border-radius: 6px;
@@ -96,12 +97,14 @@ class ArtistDetailPage(QWidget):
                 min-width: 120px;
             }
 
-            QPushButton#folderSelectButton {
-                min-width: 100px;
+            QPushButton#folderSelectButton,
+            QPushButton#tagButton {
+                min-width: 90px;
             }
 
             QPushButton#backButton:hover,
-            QPushButton#folderSelectButton:hover {
+            QPushButton#folderSelectButton:hover,
+            QPushButton#tagButton:hover {
                 background-color: #eeeeee;
             }
 
@@ -121,6 +124,19 @@ class ArtistDetailPage(QWidget):
                 background-color: #f9f9f9;
             }
 
+            QCheckBox {
+                font-size: 14px;
+                spacing: 6px;
+            }
+
+            QTableWidget {
+                border: 1px solid #dddddd;
+                border-radius: 8px;
+                background-color: #ffffff;
+                font-size: 14px;
+                gridline-color: #eeeeee;
+            }
+
             QTextEdit {
                 border: 1px solid #dddddd;
                 border-radius: 8px;
@@ -136,6 +152,12 @@ class ArtistDetailPage(QWidget):
         self.save_button.clicked.connect(self.actions.save_artist)
         self.info_section.folder_select_button.clicked.connect(
             self.actions.select_folder
+        )
+        self.info_section.add_tag_button.clicked.connect(
+            self.actions.add_tag_row
+        )
+        self.info_section.remove_tag_button.clicked.connect(
+            self.actions.remove_selected_tag_row
         )
 
     def set_artist(self, artist_id: int):

@@ -22,15 +22,19 @@ class ArtistRepository:
                     folder_artwork_count,
                     rating,
                     status,
+                    is_favorite,
+                    is_hidden,
+                    artist_tags,
                     memo,
                     local_latest_artwork_ids,
                     pixiv_latest_artwork_ids,
                     update_status,
                     last_checked_at,
+                    last_viewed_at,
                     created_at,
                     updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     artist["artist_name"],
@@ -41,11 +45,15 @@ class ArtistRepository:
                     artist["folder_artwork_count"],
                     artist["rating"],
                     artist["status"],
+                    int(bool(artist.get("is_favorite", 0))),
+                    int(bool(artist.get("is_hidden", 0))),
+                    artist.get("artist_tags", ""),
                     artist["memo"],
                     artist["local_latest_artwork_ids"],
                     artist["pixiv_latest_artwork_ids"],
                     artist["update_status"],
                     artist["last_checked_at"],
+                    artist.get("last_viewed_at"),
                     now,
                     now,
                 ),
@@ -119,11 +127,15 @@ class ArtistRepository:
                     folder_artwork_count = ?,
                     rating = ?,
                     status = ?,
+                    is_favorite = ?,
+                    is_hidden = ?,
+                    artist_tags = ?,
                     memo = ?,
                     local_latest_artwork_ids = ?,
                     pixiv_latest_artwork_ids = ?,
                     update_status = ?,
                     last_checked_at = ?,
+                    last_viewed_at = ?,
                     updated_at = ?
                 WHERE id = ?
                 """,
@@ -136,11 +148,89 @@ class ArtistRepository:
                     artist["folder_artwork_count"],
                     artist["rating"],
                     artist["status"],
+                    int(bool(artist.get("is_favorite", 0))),
+                    int(bool(artist.get("is_hidden", 0))),
+                    artist.get("artist_tags", ""),
                     artist["memo"],
                     artist["local_latest_artwork_ids"],
                     artist["pixiv_latest_artwork_ids"],
                     artist["update_status"],
                     artist["last_checked_at"],
+                    artist.get("last_viewed_at"),
+                    datetime.now().isoformat(),
+                    artist_id,
+                ),
+            )
+
+            conn.commit()
+
+    def update_favorite(
+        self,
+        artist_id: int,
+        is_favorite: bool,
+    ) -> None:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                UPDATE artists
+                SET
+                    is_favorite = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    int(bool(is_favorite)),
+                    datetime.now().isoformat(),
+                    artist_id,
+                ),
+            )
+
+            conn.commit()
+
+    def update_hidden(
+        self,
+        artist_id: int,
+        is_hidden: bool,
+    ) -> None:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                UPDATE artists
+                SET
+                    is_hidden = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    int(bool(is_hidden)),
+                    datetime.now().isoformat(),
+                    artist_id,
+                ),
+            )
+
+            conn.commit()
+
+    def update_last_viewed(
+        self,
+        artist_id: int,
+    ) -> None:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                UPDATE artists
+                SET
+                    last_viewed_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    datetime.now().isoformat(),
                     datetime.now().isoformat(),
                     artist_id,
                 ),

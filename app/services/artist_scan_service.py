@@ -89,6 +89,9 @@ class ArtistScanService:
             "folder_path": scan_result.folder_path,
             "rating": rating,
             "status": "active",
+            "is_favorite": 0,
+            "is_hidden": 0,
+            "artist_tags": "",
             "memo": memo or "",
             "folder_size_bytes": scan_result.folder_size_bytes,
             "folder_file_count": scan_result.folder_file_count,
@@ -97,6 +100,7 @@ class ArtistScanService:
             "pixiv_latest_artwork_ids": "",
             "update_status": status_result.status,
             "last_checked_at": None,
+            "last_viewed_at": None,
         }
 
         artist_id = self.repo.create_artist(artist_data)
@@ -130,6 +134,11 @@ class ArtistScanService:
             scan_result.local_latest_artwork_ids
         )
         update_data["update_status"] = status_result.status
+
+        update_data.setdefault("is_favorite", 0)
+        update_data.setdefault("is_hidden", 0)
+        update_data.setdefault("artist_tags", "")
+        update_data.setdefault("last_viewed_at", None)
 
         if rating:
             update_data["rating"] = rating
