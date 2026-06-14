@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QHBoxLayout, QMainWindow, QStackedWidget, QWidget
 from ui.pages.artist_detail import ArtistDetailPage
 from ui.pages.artists import ArtistsPage
 from ui.pages.dashboard import DashboardPage
-from ui.pages.scan_page import ScanPage
+from ui.pages.scan import ScanPage
 from ui.pages.settings import SettingsPage
 from ui.widgets.sidebar import Sidebar
 
