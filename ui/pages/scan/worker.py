@@ -5,6 +5,8 @@ from PySide6.QtCore import QObject, Signal
 
 from app.services.artist_service import ArtistService
 
+from .folder_scanner import FolderScanner
+
 
 class ScanWorker(QObject):
     log_message_requested = Signal(str)
@@ -15,13 +17,12 @@ class ScanWorker(QObject):
     finished = Signal()
     failed = Signal(str)
 
-    IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-
     def __init__(self, root_folder_path: str):
         super().__init__()
 
         self.root_folder_path = root_folder_path
         self.artist_service = ArtistService()
+        self.folder_scanner = FolderScanner()
 
     def run(self):
         try:
@@ -30,8 +31,10 @@ class ScanWorker(QObject):
             if not root_folder.exists() or not root_folder.is_dir():
                 raise ValueError("선택한 폴더가 존재하지 않습니다.")
 
-            self.log_message_requested.emit("작가 폴더 탐색을 시작합니다.")
-            artist_folders = self._find_artist_folders(root_folder)
+            artist_folders = self.folder_scanner.find_artist_folders(
+                root_folder,
+                max_depth=3,
+            )
 
             self.target_count_changed.emit(len(artist_folders))
             self.progress_updated.emit(0, len(artist_folders))
@@ -109,70 +112,6 @@ class ScanWorker(QObject):
             return
 
         self.finished.emit()
-
-    def _find_artist_folders(self, root_folder: Path) -> list[Path]:
-        artist_folders = []
-
-        for folder_path in self._iter_folders(
-            root_folder,
-            max_depth=3,
-        ):
-            if self._has_image_files(folder_path):
-                artist_folders.append(folder_path)
-
-        artist_folders = sorted(
-            set(artist_folders),
-            key=lambda path: str(path).lower(),
-        )
-
-        return artist_folders
-
-    def _iter_folders(
-        self,
-        root_folder: Path,
-        max_depth: int,
-    ) -> list[Path]:
-        folders = []
-
-        def walk(
-            current_folder: Path,
-            depth: int,
-        ):
-            if depth > max_depth:
-                return
-
-            try:
-                child_folders = [
-                    path
-                    for path in current_folder.iterdir()
-                    if path.is_dir()
-                ]
-            except OSError:
-                return
-
-            for child_folder in child_folders:
-                folders.append(child_folder)
-                walk(child_folder, depth + 1)
-
-        walk(root_folder, 1)
-
-        if self._has_image_files(root_folder):
-            folders.insert(0, root_folder)
-
-        return folders
-
-    def _has_image_files(self, folder_path: Path) -> bool:
-        try:
-            for file_path in folder_path.iterdir():
-                if not file_path.is_file():
-                    continue
-
-                if file_path.suffix.lower() in self.IMAGE_EXTENSIONS:
-                    return True
-        except OSError:
-            return False
-
-        return False
 
     def _scan_artist_folder(self, folder_path: Path) -> dict:
         return self.artist_service.save_scanned_artist(

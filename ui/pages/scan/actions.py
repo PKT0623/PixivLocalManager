@@ -19,9 +19,6 @@ class ScanActions:
             return
 
         self.page.folder_section.folder_path_input.setText(folder_path)
-        self.page.log_table.add_info_log(
-            f"기본 Pixiv 폴더 불러옴: {folder_path}"
-        )
 
     def select_folder(self):
         folder_path = QFileDialog.getExistingDirectory(
@@ -34,7 +31,6 @@ class ScanActions:
             return
 
         self.page.folder_section.folder_path_input.setText(folder_path)
-        self.page.log_table.add_info_log(f"폴더 선택: {folder_path}")
 
     def start_scan(self):
         folder_path = self.page.folder_section.folder_path_input.text().strip()
@@ -50,9 +46,7 @@ class ScanActions:
         self.set_scanning_state(True)
         self.page.progress_section.reset()
 
-        self.page.log_table.add_info_log("스캔 작업을 시작합니다.")
-        self.page.log_table.add_info_log(f"대상 폴더: {folder_path}")
-        self.page.log_table.add_info_log("탐색 깊이: 최대 3단계")
+        self.page.log_table.add_info_log(f"스캔 시작: {folder_path}")
 
         self.page.scan_thread = QThread()
         self.page.scan_worker = ScanWorker(folder_path)
@@ -96,7 +90,6 @@ class ScanActions:
         self.page.scan_thread.start()
 
     def handle_scan_finished(self):
-        self.page.log_table.add_info_log("스캔 작업이 완료되었습니다.")
         self.set_scanning_state(False)
 
     def handle_scan_failed(self, error_message: str):

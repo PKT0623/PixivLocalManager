@@ -1,7 +1,6 @@
 import random
 
-from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QDesktopServices, QPixmap
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -12,7 +11,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .utils import clear_layout, find_latest_p0_image, to_int
+from .recommendation_card import RecommendationCard
+from .utils import clear_layout, to_int
 
 
 class RecommendationSection(QFrame):
@@ -97,16 +97,7 @@ class RecommendationSection(QFrame):
         self.current_artists = artists
         clear_layout(self.recommendation_layout)
 
-        high_rated_artists = [
-            artist
-            for artist in artists
-            if to_int(artist.get("rating", 0), maximum=10) >= 8
-        ]
-
-        recommendations = random.sample(
-            high_rated_artists,
-            min(self.recommendation_limit, len(high_rated_artists)),
-        )
+        recommendations = self._pick_recommendations(artists)
 
         if not recommendations:
             empty_label = QLabel("평점 8점 이상 추천 대상 작가가 없습니다.")
@@ -116,83 +107,19 @@ class RecommendationSection(QFrame):
 
         for artist in recommendations:
             self.recommendation_layout.addWidget(
-                self._create_artist_recommend_card(artist)
+                RecommendationCard(artist)
             )
 
         self.recommendation_layout.addStretch()
 
-    def _create_artist_recommend_card(self, artist: dict) -> QFrame:
-        card = QFrame()
-        card.setObjectName("artistCard")
-        card.setFixedWidth(190)
+    def _pick_recommendations(self, artists: list[dict]) -> list[dict]:
+        high_rated_artists = [
+            artist
+            for artist in artists
+            if to_int(artist.get("rating", 0), maximum=10) >= 8
+        ]
 
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
-
-        thumbnail = QLabel("이미지 없음")
-        thumbnail.setObjectName("thumbnailLabel")
-        thumbnail.setAlignment(Qt.AlignCenter)
-        thumbnail.setFixedSize(160, 110)
-
-        image_path = find_latest_p0_image(artist.get("folder_path"))
-        if image_path:
-            pixmap = QPixmap(str(image_path))
-            thumbnail.setPixmap(
-                pixmap.scaled(
-                    thumbnail.size(),
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation,
-                )
-            )
-
-        name_label = QLabel(str(artist.get("artist_name", "") or "-"))
-        name_label.setObjectName("artistName")
-        name_label.setWordWrap(True)
-
-        info_label = QLabel(
-            f"평점 {to_int(artist.get('rating', 0), maximum=10)}"
-            f" / 작품 {to_int(artist.get('folder_artwork_count', 0))}"
+        return random.sample(
+            high_rated_artists,
+            min(self.recommendation_limit, len(high_rated_artists)),
         )
-        info_label.setObjectName("artistInfo")
-
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(6)
-
-        folder_button = QPushButton("폴더")
-        pixiv_button = QPushButton("Pixiv")
-
-        folder_button.clicked.connect(
-            lambda checked=False, target=artist: self._open_artist_folder(target)
-        )
-        pixiv_button.clicked.connect(
-            lambda checked=False, target=artist: self._open_artist_pixiv(target)
-        )
-
-        pixiv_button.setEnabled(bool(str(artist.get("pixiv_id", "") or "").strip()))
-
-        button_layout.addWidget(folder_button)
-        button_layout.addWidget(pixiv_button)
-
-        layout.addWidget(thumbnail, alignment=Qt.AlignCenter)
-        layout.addWidget(name_label)
-        layout.addWidget(info_label)
-        layout.addLayout(button_layout)
-
-        return card
-
-    def _open_artist_folder(self, artist: dict):
-        folder_path = str(artist.get("folder_path", "") or "").strip()
-
-        if not folder_path:
-            return
-
-        QDesktopServices.openUrl(QUrl.fromLocalFile(folder_path))
-
-    def _open_artist_pixiv(self, artist: dict):
-        pixiv_id = str(artist.get("pixiv_id", "") or "").strip()
-
-        if not pixiv_id:
-            return
-
-        QDesktopServices.openUrl(QUrl(f"https://www.pixiv.net/users/{pixiv_id}"))
