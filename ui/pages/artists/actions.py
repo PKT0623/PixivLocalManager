@@ -1,4 +1,4 @@
-from ui.dialogs.update_check_dialog import UpdateCheckDialog
+from ui.dialogs.update_check import UpdateCheckDialog
 
 from .filters import (
     DEFAULT_SORT_REVERSE,
