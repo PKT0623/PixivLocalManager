@@ -4,7 +4,7 @@
 
 Pixiv Local Manager는 계층형 아키텍처(Layered Architecture)를 사용한다.
 
-각 계층은 자신의 책임만 수행하며 상위 계층은 하위 계층을 통해 기능을 수행한다.
+각 계층은 자신의 책임만 수행하며, 상위 계층은 하위 계층을 통해 기능을 수행한다.
 
 ---
 
@@ -20,11 +20,11 @@ MAIN --> UI
 subgraph UI Layer
 UI[MainWindow]
 
-DASHBOARD[Dashboard]
-SCAN[Scan]
-ARTISTS[Artists]
-DETAIL[Artist Detail]
-SETTINGS[Settings]
+DASHBOARD[Dashboard Page]
+SCAN[Scan Page]
+ARTISTS[Artists Page]
+DETAIL[Artist Detail Page]
+SETTINGS[Settings Page]
 UPDATE_DIALOG[Update Check Dialog]
 
 UI --> DASHBOARD
@@ -41,10 +41,11 @@ subgraph Service Layer
 SERVICE[Services]
 
 ARTIST_SERVICE[ArtistService]
-SCAN_SERVICE[FolderScanService]
+FOLDER_SCAN[FolderScanService]
 ARTIST_SCAN[ArtistScanService]
 ARTIST_UPDATE[ArtistUpdateService]
 PIXIV_UPDATE[PixivUpdateService]
+ARTWORK_STATUS[ArtworkStatusService]
 BACKUP[BackupService]
 EXPORT[ExportService]
 SETTINGS_SERVICE[SettingsService]
@@ -84,11 +85,11 @@ ui/
 
 ### 역할
 
-- 사용자 입력 처리
-- 화면 표시
-- 페이지 이동
-- 진행률 표시
-- 결과 출력
+* 사용자 입력 처리
+* 화면 표시
+* 페이지 이동
+* 진행률 표시
+* 결과 출력
 
 ### 책임 범위
 
@@ -97,11 +98,13 @@ ui/
 - 버튼 클릭
 - 입력값 수집
 - 데이터 표시
+- 사용자 이벤트 연결
 
 불가능
 - SQL 실행
 - Pixiv 요청
-- 데이터 가공
+- 데이터 영속화
+- 핵심 비즈니스 로직 처리
 ```
 
 ---
@@ -114,16 +117,29 @@ ui/
 
 ```text
 app/services/
+├─ artist_service.py
+├─ folder_scan_service.py
+├─ artist_scan_service.py
+├─ artist_update_service.py
+├─ pixiv_update_service.py
+├─ artwork_status_service.py
+├─ backup_service.py
+├─ export_service.py
+└─ settings_service.py
 ```
 
 ### 역할
 
-- 폴더 스캔
-- 작가 등록
-- 작가 수정
-- Pixiv 조회
-- 백업
-- CSV 생성
+* 폴더 스캔
+* 작가 등록
+* 작가 수정
+* 작가 폴더 변경
+* Pixiv 업데이트 확인
+* 작품 ID 비교
+* 삭제 전 백업
+* 삭제 작가 복구
+* CSV 생성
+* 설정 관리
 
 ### 책임 범위
 
@@ -132,9 +148,10 @@ app/services/
 - 데이터 처리
 - 비즈니스 규칙 적용
 - Repository 호출
+- 서비스 간 협력
 
 불가능
-- UI 출력
+- UI 직접 조작
 - SQL 직접 작성
 ```
 
@@ -148,15 +165,20 @@ SQLite 접근을 담당한다.
 
 ```text
 app/database/
+├─ connection.py
+├─ schema.py
 ├─ artist_repository.py
 └─ app_setting_repository.py
 ```
 
 ### 역할
 
-- CRUD 처리
-- SQL 관리
-- 데이터 변환
+* CRUD 처리
+* 일괄 수정
+* 삭제
+* 복구용 삽입
+* SQL 관리
+* 데이터 변환
 
 ### 책임 범위
 
@@ -166,10 +188,12 @@ app/database/
 - UPDATE
 - DELETE
 - SELECT
+- 트랜잭션 처리
 
 불가능
 - 화면 처리
 - Pixiv 요청
+- UI 이벤트 처리
 ```
 
 ---
@@ -186,9 +210,11 @@ SQLite
 
 ### 역할
 
-- 작가 정보 저장
-- 설정 저장
-- 업데이트 상태 저장
+* 작가 정보 저장
+* 설정 저장
+* 업데이트 상태 저장
+* 즐겨찾기 / 숨김 / 태그 / 메모 저장
+* 백업 및 복구 대상 데이터 보관
 
 ---
 
@@ -197,10 +223,16 @@ SQLite
 ```mermaid
 flowchart TD
 
+UI[UI Layer]
+
+SERVICE[Service Layer]
+
+REPOSITORY[Repository Layer]
+
+DATABASE[Database Layer]
+
 UI --> SERVICE
-
 SERVICE --> REPOSITORY
-
 REPOSITORY --> DATABASE
 ```
 
@@ -215,9 +247,11 @@ flowchart LR
 
 ScanPage
 
+--> ArtistScanService
+
 --> FolderScanService
 
---> ArtistScanService
+--> ArtworkStatusService
 
 --> ArtistRepository
 
@@ -242,6 +276,62 @@ ArtistDetailPage
 
 ---
 
+## 작가 폴더 변경
+
+```mermaid
+flowchart LR
+
+ArtistDetailPage
+
+--> ArtistService
+
+--> FolderScanService
+
+--> ArtworkStatusService
+
+--> ArtistRepository
+
+--> SQLite
+```
+
+---
+
+## 작가 삭제
+
+```mermaid
+flowchart LR
+
+ArtistsPage
+
+--> ArtistService
+
+--> BackupService
+
+--> ArtistRepository
+
+--> SQLite
+```
+
+---
+
+## 삭제 작가 복구
+
+```mermaid
+flowchart LR
+
+ArtistsPage
+
+--> ArtistService
+
+--> BackupService
+
+--> ArtistRepository
+
+--> SQLite
+```
+
+---
+
 ## 업데이트 확인
 
 ```mermaid
@@ -256,6 +346,8 @@ UpdateCheckDialog
 --> ArtistUpdateService
 
 --> PixivUpdateService
+
+--> ArtworkStatusService
 
 --> ArtistRepository
 
@@ -289,13 +381,19 @@ MainWindow
 
 --> DashboardPage
 
---> ScanPage
+MainWindow --> ScanPage
 
---> ArtistsPage
+MainWindow --> ArtistsPage
 
---> ArtistDetailPage
+MainWindow --> ArtistDetailPage
 
---> SettingsPage
+MainWindow --> SettingsPage
+
+ArtistsPage --> UpdateCheckDialog
+
+ArtistsPage --> ArtistTable
+
+ArtistDetailPage --> ArtistInfoSection
 ```
 
 ---
@@ -307,31 +405,27 @@ flowchart TD
 
 ArtistService
 
---> ArtistRepository
+ArtistService --> ArtistRepository
+ArtistService --> ArtistScanService
+ArtistService --> ArtistUpdateService
+ArtistService --> BackupService
+ArtistService --> FolderScanService
+ArtistService --> ArtworkStatusService
 
-FolderScanService
+ArtistScanService --> FolderScanService
+ArtistScanService --> ArtworkStatusService
+ArtistScanService --> ArtistRepository
 
---> ArtistScanService
+ArtistUpdateService --> PixivUpdateService
+ArtistUpdateService --> ArtworkStatusService
+ArtistUpdateService --> ArtistRepository
 
---> ArtistRepository
+BackupService --> ArtistRepository
+BackupService --> AppSettingRepository
 
-ArtistUpdateService
+ExportService --> ArtistRepository
 
---> PixivUpdateService
-
---> ArtistRepository
-
-BackupService
-
---> SQLite
-
-ExportService
-
---> ArtistRepository
-
-SettingsService
-
---> AppSettingRepository
+SettingsService --> AppSettingRepository
 ```
 
 ---
@@ -343,12 +437,104 @@ flowchart TD
 
 ArtistRepository
 
---> artists
+ArtistRepository --> artists
 
 AppSettingRepository
 
---> app_settings
+AppSettingRepository --> app_settings
 ```
+
+---
+
+# 주요 모듈 분리
+
+## Artists Page
+
+```text
+ui/pages/artists/
+├─ page.py
+├─ actions.py
+├─ filters.py
+├─ toolbar.py
+└─ __init__.py
+```
+
+역할
+
+* 작가 목록 조회
+* 검색 / 필터 / 정렬
+* 다중 선택 작업
+* 삭제 / 복구
+* 업데이트 확인 다이얼로그 실행
+
+---
+
+## Artist Detail Page
+
+```text
+ui/pages/artist_detail/
+├─ page.py
+├─ actions.py
+├─ info_section.py
+├─ utils.py
+└─ __init__.py
+```
+
+역할
+
+* 작가 상세 정보 표시
+* 평점 / 태그 / 메모 관리
+* 즐겨찾기 / 숨김 설정
+* 폴더 변경 및 재스캔
+
+---
+
+## Artist Table
+
+```text
+ui/widgets/artist_table/
+├─ table.py
+├─ actions.py
+├─ row_renderer.py
+├─ formatters.py
+├─ columns.py
+├─ cell_widgets.py
+└─ __init__.py
+```
+
+역할
+
+* 작가 목록 테이블 표시
+* 행 렌더링
+* 컬럼 정의
+* 셀 위젯 생성
+* 정렬 이벤트 처리
+* 바로가기 버튼 처리
+
+---
+
+## Update Check Dialog
+
+```text
+ui/dialogs/update_check/
+├─ dialog.py
+├─ actions.py
+├─ worker.py
+├─ artist_table.py
+├─ log_table.py
+├─ selection_actions.py
+├─ utils.py
+└─ __init__.py
+```
+
+역할
+
+* 업데이트 대상 선택
+* 업데이트 확인 실행
+* 백그라운드 작업 처리
+* 진행률 표시
+* 결과 로그 출력
+* 취소 처리
 
 ---
 
@@ -362,12 +548,12 @@ AppSettingRepository
 
 <tr>
     <td>단일 책임 원칙</td>
-    <td>하나의 클래스는 하나의 책임만 가진다.</td>
+    <td>하나의 클래스와 파일은 하나의 주요 책임만 가진다.</td>
 </tr>
 
 <tr>
     <td>계층 분리</td>
-    <td>UI, Service, Repository 역할을 분리한다.</td>
+    <td>UI, Service, Repository, Database 역할을 분리한다.</td>
 </tr>
 
 <tr>
@@ -382,52 +568,50 @@ AppSettingRepository
 
 <tr>
     <td>확장성</td>
-    <td>기능 추가 시 기존 코드 수정 최소화</td>
+    <td>기능 추가 시 기존 코드 수정 범위를 줄인다.</td>
 </tr>
 
 <tr>
     <td>유지보수성</td>
-    <td>대형 파일을 기능별로 분리한다.</td>
+    <td>대형 파일을 기능별 파일로 분리한다.</td>
+</tr>
+
+<tr>
+    <td>UI 독립성</td>
+    <td>비즈니스 로직은 UI 코드에 의존하지 않는다.</td>
+</tr>
+
+<tr>
+    <td>데이터 접근 제한</td>
+    <td>SQL 실행은 Repository 계층에서만 수행한다.</td>
 </tr>
 
 </table>
 
 ---
 
-# 리팩토링 결과
-
-## 리팩토링 전
-
-```text
-ui/
-├─ artist_detail_page.py
-├─ update_check_dialog.py
-└─ artist_table.py
-```
-
-대형 파일 중심 구조
-
----
-
-## 리팩토링 후
-
-```text
-artist_detail/
-update_check/
-artist_table/
-```
-
-기능 단위 모듈 구조
-
----
-
 # 향후 확장 방향
+
+## V2
 
 ```text
 V2
-├─ Artwork Layer
-├─ Tag System
-├─ Thumbnail Cache
-├─ Recommendation System
-└─ Plugin Support
+├─ Artist Detail Enhancement
+├─ Scan System Enhancement
+├─ Update Check Enhancement
+├─ Dashboard Enhancement
+├─ Settings / Management Enhancement
+└─ Statistics / Analysis
 ```
+
+## V3
+
+```text
+V3
+├─ View Mode Extension
+├─ Artwork Management
+├─ Internal Viewer
+└─ Long-term Features
+```
+
+---

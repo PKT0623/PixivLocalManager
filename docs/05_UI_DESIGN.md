@@ -1,4 +1,4 @@
-# UI 설계 (UI Design)
+# UI 설계
 
 ## UI 기본 방향
 
@@ -20,7 +20,7 @@
 
 <tr>
     <td>조작 방식</td>
-    <td>검색, 선택, 버튼 실행 중심</td>
+    <td>검색, 필터, 선택, 버튼 실행 중심</td>
 </tr>
 
 <tr>
@@ -51,6 +51,9 @@ SIDEBAR --> DASHBOARD[Dashboard]
 SIDEBAR --> SCAN[Scan]
 SIDEBAR --> ARTISTS[Artists]
 SIDEBAR --> SETTINGS[Settings]
+
+ARTISTS --> DETAIL[Artist Detail]
+ARTISTS --> UPDATE[Update Check Dialog]
 ```
 
 ---
@@ -75,7 +78,7 @@ SIDEBAR --> SETTINGS[Settings]
 
 <tr>
     <td>Artists</td>
-    <td>작가 목록 조회 및 관리</td>
+    <td>작가 목록 조회, 필터, 정렬, 일괄 관리</td>
 </tr>
 
 <tr>
@@ -94,28 +97,6 @@ SIDEBAR --> SETTINGS[Settings]
 </tr>
 
 </table>
-
----
-
-# 화면 이동 구조
-
-```mermaid
-flowchart TD
-
-MAIN[Main Window]
-
-MAIN --> DASHBOARD[Dashboard]
-
-MAIN --> SCAN[Scan]
-
-MAIN --> ARTISTS[Artists]
-
-MAIN --> SETTINGS[Settings]
-
-ARTISTS --> DETAIL[Artist Detail]
-
-ARTISTS --> UPDATE[Update Check Dialog]
-```
 
 ---
 
@@ -245,8 +226,8 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>새로고침</td>
-    <td>목록 갱신</td>
+    <td>평점 표시 전환</td>
+    <td>별점 ↔ 숫자 전환</td>
 </tr>
 
 <tr>
@@ -255,13 +236,23 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>평점 표시 전환</td>
-    <td>별점 ↔ 숫자</td>
+    <td>새로고침</td>
+    <td>작가 목록 갱신</td>
+</tr>
+
+<tr>
+    <td>필터 영역</td>
+    <td>평점, 즐겨찾기, 업데이트 필요, 미확인, 평점 미설정, 숨김 제외 필터</td>
+</tr>
+
+<tr>
+    <td>일괄 작업 영역</td>
+    <td>평점 변경, 즐겨찾기, 숨김, 삭제, 복구 실행</td>
 </tr>
 
 <tr>
     <td>작가 테이블</td>
-    <td>등록 작가 목록</td>
+    <td>등록 작가 목록 표시</td>
 </tr>
 
 </table>
@@ -284,6 +275,11 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
+    <td>즐겨찾기</td>
+    <td>즐겨찾기 토글</td>
+</tr>
+
+<tr>
     <td>작가명</td>
     <td>작가 이름</td>
 </tr>
@@ -299,13 +295,33 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
+    <td>파일 수</td>
+    <td>실제 이미지 파일 수</td>
+</tr>
+
+<tr>
     <td>상태</td>
     <td>업데이트 상태 배지</td>
 </tr>
 
 <tr>
     <td>평점</td>
-    <td>별 또는 숫자</td>
+    <td>별 또는 숫자 표시</td>
+</tr>
+
+<tr>
+    <td>태그</td>
+    <td>작가 태그 정보</td>
+</tr>
+
+<tr>
+    <td>최근 열람</td>
+    <td>최근 상세 페이지 진입 시각</td>
+</tr>
+
+<tr>
+    <td>등록일</td>
+    <td>작가 등록 시각</td>
 </tr>
 
 <tr>
@@ -314,8 +330,102 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>Pixiv</td>
-    <td>Pixiv 페이지 열기</td>
+    <td>바로가기</td>
+    <td>폴더 열기 / Pixiv 페이지 열기</td>
+</tr>
+
+</table>
+
+---
+
+# Artists 필터
+
+<table>
+<tr>
+    <th>필터</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>검색</td>
+    <td>작가명 또는 Pixiv ID 기준 검색</td>
+</tr>
+
+<tr>
+    <td>평점 필터</td>
+    <td>평점 이상 또는 일치 조건 필터</td>
+</tr>
+
+<tr>
+    <td>즐겨찾기</td>
+    <td>즐겨찾기 작가만 표시</td>
+</tr>
+
+<tr>
+    <td>업데이트 필요</td>
+    <td>업데이트 필요 상태 작가만 표시</td>
+</tr>
+
+<tr>
+    <td>미확인</td>
+    <td>업데이트 미확인 작가만 표시</td>
+</tr>
+
+<tr>
+    <td>평점 미설정</td>
+    <td>평점이 0인 작가만 표시</td>
+</tr>
+
+<tr>
+    <td>숨김 제외</td>
+    <td>숨김 처리된 작가를 목록에서 제외</td>
+</tr>
+
+</table>
+
+---
+
+# Artists 일괄 작업
+
+<table>
+<tr>
+    <th>작업</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>선택 평점 변경</td>
+    <td>선택한 작가의 평점을 한 번에 변경</td>
+</tr>
+
+<tr>
+    <td>선택 즐겨찾기</td>
+    <td>선택한 작가를 즐겨찾기로 설정</td>
+</tr>
+
+<tr>
+    <td>선택 즐겨찾기 해제</td>
+    <td>선택한 작가의 즐겨찾기 해제</td>
+</tr>
+
+<tr>
+    <td>선택 숨김</td>
+    <td>선택한 작가를 숨김 처리</td>
+</tr>
+
+<tr>
+    <td>선택 숨김 해제</td>
+    <td>선택한 작가의 숨김 해제</td>
+</tr>
+
+<tr>
+    <td>선택 삭제</td>
+    <td>선택한 작가 삭제 및 삭제 전 자동 백업</td>
+</tr>
+
+<tr>
+    <td>삭제 작가 복구</td>
+    <td>삭제 백업 JSON을 선택하여 작가 복구</td>
 </tr>
 
 </table>
@@ -333,33 +443,68 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>기본 정보</td>
-    <td>작가명, Pixiv ID</td>
+    <td>작가명</td>
+    <td>작가 이름 수정</td>
 </tr>
 
 <tr>
-    <td>폴더 정보</td>
-    <td>폴더 경로, 작품 수</td>
+    <td>Pixiv ID</td>
+    <td>Pixiv 사용자 ID 표시</td>
+</tr>
+
+<tr>
+    <td>작품 수</td>
+    <td>로컬 작품 수 표시 및 수정</td>
+</tr>
+
+<tr>
+    <td>파일 수</td>
+    <td>실제 이미지 파일 수 표시 및 수정</td>
 </tr>
 
 <tr>
     <td>평점</td>
-    <td>0~10 점수</td>
+    <td>0~10 평점 수정</td>
+</tr>
+
+<tr>
+    <td>상태</td>
+    <td>작가 상태 표시</td>
+</tr>
+
+<tr>
+    <td>업데이트 상태</td>
+    <td>업데이트 상태 표시</td>
+</tr>
+
+<tr>
+    <td>즐겨찾기</td>
+    <td>즐겨찾기 설정</td>
+</tr>
+
+<tr>
+    <td>숨김</td>
+    <td>숨김 설정</td>
+</tr>
+
+<tr>
+    <td>최근 열람</td>
+    <td>최근 상세 페이지 진입 시각 표시</td>
+</tr>
+
+<tr>
+    <td>폴더 경로</td>
+    <td>작가 폴더 경로 표시 및 변경</td>
+</tr>
+
+<tr>
+    <td>태그 통계</td>
+    <td>태그 원문, 한글 번역, 작품 수 관리</td>
 </tr>
 
 <tr>
     <td>메모</td>
-    <td>사용자 메모</td>
-</tr>
-
-<tr>
-    <td>업데이트 정보</td>
-    <td>상태 및 누락 작품 수</td>
-</tr>
-
-<tr>
-    <td>실행 버튼</td>
-    <td>Pixiv 열기, 폴더 열기, 저장</td>
+    <td>작가 메모 관리</td>
 </tr>
 
 </table>
@@ -403,7 +548,7 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>최근 확인 제외</td>
-    <td>최근 6시간 작가 제외</td>
+    <td>최근 6시간 확인한 작가 제외</td>
 </tr>
 
 <tr>
@@ -414,6 +559,11 @@ ARTISTS --> UPDATE[Update Check Dialog]
 <tr>
     <td>결과 로그</td>
     <td>작업 결과 출력</td>
+</tr>
+
+<tr>
+    <td>취소</td>
+    <td>업데이트 확인 중 취소 요청</td>
 </tr>
 
 </table>
@@ -453,6 +603,11 @@ ARTISTS --> UPDATE[Update Check Dialog]
 <tr>
     <td>CSV 내보내기</td>
     <td>작가 목록 저장</td>
+</tr>
+
+<tr>
+    <td>DB 폴더 열기</td>
+    <td>데이터 저장 위치 열기</td>
 </tr>
 
 </table>
@@ -516,12 +671,24 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>3</td>
-    <td>업데이트 상태 확인 편의성</td>
+    <td>다중 선택 및 일괄 관리 편의성</td>
 </tr>
 
 <tr>
     <td>4</td>
+    <td>삭제 및 복구 안정성</td>
+</tr>
+
+<tr>
+    <td>5</td>
+    <td>업데이트 상태 확인 편의성</td>
+</tr>
+
+<tr>
+    <td>6</td>
     <td>유지보수 가능한 UI 구조</td>
 </tr>
 
 </table>
+
+---

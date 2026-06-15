@@ -354,3 +354,320 @@ REQ --> DATA[데이터 관리]
 <tr><td>브라우저 확장 프로그램</td></tr>
 
 </table>
+
+---
+
+## FR-04 업데이트 확인
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>U-01</td>
+    <td>다중 선택</td>
+    <td>여러 작가 동시 선택.</td>
+</tr>
+
+<tr>
+    <td>U-02</td>
+    <td>업데이트 확인</td>
+    <td>Pixiv 최신 작품 정보 조회.</td>
+</tr>
+
+<tr>
+    <td>U-03</td>
+    <td>작품 수 비교</td>
+    <td>로컬 작품 수와 Pixiv 작품 수 비교.</td>
+</tr>
+
+<tr>
+    <td>U-04</td>
+    <td>작품 ID 비교</td>
+    <td>작품 ID 기준 누락 작품 확인.</td>
+</tr>
+
+<tr>
+    <td>U-05</td>
+    <td>누락 작품 수 계산</td>
+    <td>누락 작품 개수 계산.</td>
+</tr>
+
+<tr>
+    <td>U-06</td>
+    <td>업데이트 상태 저장</td>
+    <td>업데이트 상태 자동 저장.</td>
+</tr>
+
+<tr>
+    <td>U-07</td>
+    <td>최근 확인 제외</td>
+    <td>최근 확인 작가 제외.</td>
+</tr>
+
+<tr>
+    <td>U-08</td>
+    <td>작업 취소</td>
+    <td>실행 중 취소 지원.</td>
+</tr>
+
+<tr>
+    <td>U-09</td>
+    <td>진행률 표시</td>
+    <td>실시간 진행률 표시.</td>
+</tr>
+
+<tr>
+    <td>U-10</td>
+    <td>결과 로그 출력</td>
+    <td>실시간 결과 로그 표시.</td>
+</tr>
+
+<tr>
+    <td>U-11</td>
+    <td>오류 기록</td>
+    <td>업데이트 오류 정보 기록.</td>
+</tr>
+
+<tr>
+    <td>U-12</td>
+    <td>요청 간격 제어</td>
+    <td>Pixiv 요청 간격 자동 제어.</td>
+</tr>
+
+</table>
+
+---
+
+## FR-05 설정 / 관리
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>S-01</td>
+    <td>기본 폴더 설정</td>
+    <td>기본 Pixiv 폴더 저장.</td>
+</tr>
+
+<tr>
+    <td>S-02</td>
+    <td>PHPSESSID 저장</td>
+    <td>Pixiv 로그인 쿠키 저장.</td>
+</tr>
+
+<tr>
+    <td>S-03</td>
+    <td>DB 백업</td>
+    <td>SQLite DB 백업.</td>
+</tr>
+
+<tr>
+    <td>S-04</td>
+    <td>DB 복원</td>
+    <td>SQLite DB 복원.</td>
+</tr>
+
+<tr>
+    <td>S-05</td>
+    <td>CSV 내보내기</td>
+    <td>작가 목록 CSV 저장.</td>
+</tr>
+
+<tr>
+    <td>S-06</td>
+    <td>삭제 작가 백업</td>
+    <td>삭제 전 자동 백업 생성.</td>
+</tr>
+
+<tr>
+    <td>S-07</td>
+    <td>삭제 작가 복구</td>
+    <td>삭제 백업 파일 기반 복구.</td>
+</tr>
+
+<tr>
+    <td>S-08</td>
+    <td>설정 저장</td>
+    <td>프로그램 설정 자동 저장.</td>
+</tr>
+
+<tr>
+    <td>S-09</td>
+    <td>최근 사용 경로 저장</td>
+    <td>최근 사용 폴더 저장.</td>
+</tr>
+
+<tr>
+    <td>S-10</td>
+    <td>로그 관리</td>
+    <td>로그 조회 및 관리.</td>
+</tr>
+
+</table>
+
+---
+
+## FR-06 통계 / 분석
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>T-01</td>
+    <td>작가 통계</td>
+    <td>전체 작가 수 분석.</td>
+</tr>
+
+<tr>
+    <td>T-02</td>
+    <td>작품 통계</td>
+    <td>전체 작품 수 분석.</td>
+</tr>
+
+<tr>
+    <td>T-03</td>
+    <td>평점 통계</td>
+    <td>평균 평점 및 평점 분포 분석.</td>
+</tr>
+
+<tr>
+    <td>T-04</td>
+    <td>업데이트 통계</td>
+    <td>업데이트 상태 비율 분석.</td>
+</tr>
+
+<tr>
+    <td>T-05</td>
+    <td>태그 통계</td>
+    <td>태그 사용 빈도 분석.</td>
+</tr>
+
+<tr>
+    <td>T-06</td>
+    <td>즐겨찾기 통계</td>
+    <td>즐겨찾기 관련 통계 제공.</td>
+</tr>
+
+<tr>
+    <td>T-07</td>
+    <td>등록 추이</td>
+    <td>기간별 등록 수 분석.</td>
+</tr>
+
+<tr>
+    <td>T-08</td>
+    <td>업데이트 추이</td>
+    <td>기간별 업데이트 결과 분석.</td>
+</tr>
+
+</table>
+
+---
+
+# 비기능 요구사항 (NFR)
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>항목</th>
+    <th>목표</th>
+</tr>
+
+<tr>
+    <td>NFR-01</td>
+    <td>실행 속도</td>
+    <td>프로그램 시작 3초 이내.</td>
+</tr>
+
+<tr>
+    <td>NFR-02</td>
+    <td>검색 성능</td>
+    <td>즉시 응답.</td>
+</tr>
+
+<tr>
+    <td>NFR-03</td>
+    <td>대용량 폴더 대응</td>
+    <td>수천 개 파일 처리 가능.</td>
+</tr>
+
+<tr>
+    <td>NFR-04</td>
+    <td>Pixiv 요청 최소화</td>
+    <td>불필요한 네트워크 요청 방지.</td>
+</tr>
+
+<tr>
+    <td>NFR-05</td>
+    <td>데이터 안정성</td>
+    <td>백업 및 복구 지원.</td>
+</tr>
+
+<tr>
+    <td>NFR-06</td>
+    <td>확장성</td>
+    <td>서비스 단위 기능 추가 가능.</td>
+</tr>
+
+<tr>
+    <td>NFR-07</td>
+    <td>유지보수성</td>
+    <td>모듈 단위 구조 유지.</td>
+</tr>
+
+</table>
+
+---
+
+# 버전 범위
+
+<table>
+<tr>
+    <th>버전</th>
+    <th>범위</th>
+</tr>
+
+<tr>
+    <td>V1</td>
+    <td>프로젝트 기반 구축, 스캔 시스템, 작가 등록, 업데이트 확인 기본 기능</td>
+</tr>
+
+<tr>
+    <td>V2</td>
+    <td>작가 관리, 작가 상세 페이지, 스캔 시스템 고도화, 업데이트 확인 고도화, 대시보드, 설정/관리, 통계</td>
+</tr>
+
+<tr>
+    <td>V3</td>
+    <td>보기 형식 확장, 작품 관리, 자체 뷰어, 장기 기능</td>
+</tr>
+
+</table>
+
+---
+
+# V3 제외 기능
+
+<table>
+<tr>
+    <th>기능</th>
+</tr>
+
+<tr><td>웹 버전</td></tr>
+<tr><td>플러그인 시스템</td></tr>
+<tr><td>클라우드 백업</td></tr>
+<tr><td>다중 라이브러리 관리</td></tr>
+
+</table>
