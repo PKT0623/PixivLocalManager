@@ -22,6 +22,8 @@ class Artist:
     artist_tags: str = ""
 
     memo: str = ""
+    reference_links: str = ""
+    download_note: str = ""
 
     local_latest_artwork_ids: str = ""
     pixiv_latest_artwork_ids: str = ""

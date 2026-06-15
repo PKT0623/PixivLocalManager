@@ -1,8 +1,9 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -38,6 +39,15 @@ class ArtistDetailPage(QWidget):
         self.title_label = QLabel("작가 상세")
         self.title_label.setObjectName("pageTitle")
 
+        self.rescan_button = QPushButton("현재 작가 재스캔")
+        self.rescan_button.setObjectName("normalButton")
+
+        self.check_update_button = QPushButton("업데이트 확인")
+        self.check_update_button.setObjectName("normalButton")
+
+        self.refresh_button = QPushButton("새로고침")
+        self.refresh_button.setObjectName("refreshButton")
+
         self.save_button = QPushButton("저장")
         self.save_button.setObjectName("saveButton")
 
@@ -46,14 +56,22 @@ class ArtistDetailPage(QWidget):
 
         header_layout.addWidget(self.title_label)
         header_layout.addStretch()
+        header_layout.addWidget(self.rescan_button)
+        header_layout.addWidget(self.check_update_button)
+        header_layout.addWidget(self.refresh_button)
         header_layout.addWidget(self.save_button)
         header_layout.addWidget(self.back_button)
 
         self.info_section = ArtistInfoSection()
 
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QScrollArea.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setWidget(self.info_section)
+
         layout.addLayout(header_layout)
-        layout.addWidget(self.info_section)
-        layout.addStretch()
+        layout.addWidget(self.scroll_area, 1)
 
         self.setStyleSheet(
             """
@@ -75,8 +93,13 @@ class ArtistDetailPage(QWidget):
             }
 
             QPushButton#backButton,
+            QPushButton#refreshButton,
             QPushButton#saveButton,
+            QPushButton#normalButton,
             QPushButton#folderSelectButton,
+            QPushButton#copyButton,
+            QPushButton#artworkButton,
+            QPushButton#smallActionButton,
             QPushButton#tagButton {
                 padding: 8px 16px;
                 border: 1px solid #cccccc;
@@ -97,19 +120,53 @@ class ArtistDetailPage(QWidget):
                 min-width: 120px;
             }
 
+            QPushButton#normalButton {
+                min-width: 120px;
+            }
+
+            QPushButton#refreshButton,
             QPushButton#folderSelectButton,
             QPushButton#tagButton {
                 min-width: 90px;
             }
 
+            QPushButton#copyButton {
+                min-width: 60px;
+                padding: 6px 12px;
+            }
+
+            QPushButton#artworkButton {
+                min-width: 110px;
+                padding: 6px 12px;
+            }
+
+            QPushButton#smallActionButton {
+                min-width: 60px;
+                padding: 4px 10px;
+            }
+
             QPushButton#backButton:hover,
+            QPushButton#refreshButton:hover,
+            QPushButton#normalButton:hover,
             QPushButton#folderSelectButton:hover,
+            QPushButton#copyButton:hover,
+            QPushButton#artworkButton:hover,
+            QPushButton#smallActionButton:hover,
             QPushButton#tagButton:hover {
                 background-color: #eeeeee;
             }
 
             QPushButton#saveButton:hover {
                 background-color: #157347;
+            }
+
+            QScrollArea {
+                border: none;
+                background-color: transparent;
+            }
+
+            QScrollArea > QWidget > QWidget {
+                background-color: transparent;
             }
 
             QLineEdit {
@@ -149,7 +206,21 @@ class ArtistDetailPage(QWidget):
 
     def _connect_signals(self):
         self.back_button.clicked.connect(self.back_requested.emit)
+        self.rescan_button.clicked.connect(self.actions.rescan_artist)
+        self.check_update_button.clicked.connect(
+            self.actions.check_artist_update
+        )
+        self.refresh_button.clicked.connect(self.actions.refresh_artist)
         self.save_button.clicked.connect(self.actions.save_artist)
+        self.info_section.copy_folder_path_button.clicked.connect(
+            self.actions.copy_folder_path
+        )
+        self.info_section.copy_pixiv_id_button.clicked.connect(
+            self.actions.copy_pixiv_id
+        )
+        self.info_section.open_all_missing_artwork_button.clicked.connect(
+            self.actions.open_all_missing_artworks
+        )
         self.info_section.folder_select_button.clicked.connect(
             self.actions.select_folder
         )

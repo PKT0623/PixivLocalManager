@@ -18,6 +18,8 @@ class ArtistRepository:
         "is_hidden",
         "artist_tags",
         "memo",
+        "reference_links",
+        "download_note",
         "local_latest_artwork_ids",
         "pixiv_latest_artwork_ids",
         "update_status",
@@ -48,6 +50,8 @@ class ArtistRepository:
                     is_hidden,
                     artist_tags,
                     memo,
+                    reference_links,
+                    download_note,
                     local_latest_artwork_ids,
                     pixiv_latest_artwork_ids,
                     update_status,
@@ -56,7 +60,7 @@ class ArtistRepository:
                     created_at,
                     updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     artist["artist_name"],
@@ -70,7 +74,9 @@ class ArtistRepository:
                     int(bool(artist.get("is_favorite", 0))),
                     int(bool(artist.get("is_hidden", 0))),
                     artist.get("artist_tags", ""),
-                    artist["memo"],
+                    artist.get("memo", ""),
+                    artist.get("reference_links", ""),
+                    artist.get("download_note", ""),
                     artist["local_latest_artwork_ids"],
                     artist["pixiv_latest_artwork_ids"],
                     artist["update_status"],
@@ -179,6 +185,8 @@ class ArtistRepository:
                     is_hidden = ?,
                     artist_tags = ?,
                     memo = ?,
+                    reference_links = ?,
+                    download_note = ?,
                     local_latest_artwork_ids = ?,
                     pixiv_latest_artwork_ids = ?,
                     update_status = ?,
@@ -199,7 +207,9 @@ class ArtistRepository:
                     int(bool(artist.get("is_favorite", 0))),
                     int(bool(artist.get("is_hidden", 0))),
                     artist.get("artist_tags", ""),
-                    artist["memo"],
+                    artist.get("memo", ""),
+                    artist.get("reference_links", ""),
+                    artist.get("download_note", ""),
                     artist["local_latest_artwork_ids"],
                     artist["pixiv_latest_artwork_ids"],
                     artist["update_status"],
@@ -240,6 +250,8 @@ class ArtistRepository:
                         is_hidden,
                         artist_tags,
                         memo,
+                        reference_links,
+                        download_note,
                         local_latest_artwork_ids,
                         pixiv_latest_artwork_ids,
                         update_status,
@@ -248,7 +260,7 @@ class ArtistRepository:
                         created_at,
                         updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         int(artist_id),
@@ -263,7 +275,9 @@ class ArtistRepository:
                         int(bool(restored_artist.get("is_favorite", 0))),
                         int(bool(restored_artist.get("is_hidden", 0))),
                         restored_artist.get("artist_tags", ""),
-                        restored_artist["memo"],
+                        restored_artist.get("memo", ""),
+                        restored_artist.get("reference_links", ""),
+                        restored_artist.get("download_note", ""),
                         restored_artist["local_latest_artwork_ids"],
                         restored_artist["pixiv_latest_artwork_ids"],
                         restored_artist["update_status"],
@@ -289,6 +303,8 @@ class ArtistRepository:
                         is_hidden,
                         artist_tags,
                         memo,
+                        reference_links,
+                        download_note,
                         local_latest_artwork_ids,
                         pixiv_latest_artwork_ids,
                         update_status,
@@ -297,7 +313,7 @@ class ArtistRepository:
                         created_at,
                         updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         restored_artist["artist_name"],
@@ -311,7 +327,9 @@ class ArtistRepository:
                         int(bool(restored_artist.get("is_favorite", 0))),
                         int(bool(restored_artist.get("is_hidden", 0))),
                         restored_artist.get("artist_tags", ""),
-                        restored_artist["memo"],
+                        restored_artist.get("memo", ""),
+                        restored_artist.get("reference_links", ""),
+                        restored_artist.get("download_note", ""),
                         restored_artist["local_latest_artwork_ids"],
                         restored_artist["pixiv_latest_artwork_ids"],
                         restored_artist["update_status"],
@@ -587,6 +605,8 @@ class ArtistRepository:
             "is_hidden": int(bool(artist.get("is_hidden", 0))),
             "artist_tags": str(artist.get("artist_tags", "") or ""),
             "memo": str(artist.get("memo", "") or ""),
+            "reference_links": str(artist.get("reference_links", "") or ""),
+            "download_note": str(artist.get("download_note", "") or ""),
             "local_latest_artwork_ids": str(
                 artist.get("local_latest_artwork_ids", "") or ""
             ),

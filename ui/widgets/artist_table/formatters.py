@@ -3,14 +3,15 @@ from datetime import datetime
 
 
 STATUS_LABELS = {
+    "normal": "일반",
     "active": "활성",
     "inactive": "비활성",
-    "unknown": "미확인",
-    "latest": "최신",
-    "up_to_date": "최신",
+    "unknown": "업데이트 미확인",
+    "latest": "최신 상태",
+    "up_to_date": "최신 상태",
     "need_update": "업데이트 필요",
     "updated": "업데이트 완료",
-    "error": "오류",
+    "error": "확인 실패",
 }
 
 

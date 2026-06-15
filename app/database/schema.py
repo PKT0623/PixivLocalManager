@@ -26,6 +26,8 @@ def initialize_database() -> None:
                 artist_tags TEXT NOT NULL DEFAULT '',
 
                 memo TEXT NOT NULL DEFAULT '',
+                reference_links TEXT NOT NULL DEFAULT '',
+                download_note TEXT NOT NULL DEFAULT '',
 
                 local_latest_artwork_ids TEXT NOT NULL DEFAULT '',
                 pixiv_latest_artwork_ids TEXT NOT NULL DEFAULT '',
@@ -70,6 +72,14 @@ def _ensure_artist_columns(cursor) -> None:
         "artist_tags": (
             "ALTER TABLE artists "
             "ADD COLUMN artist_tags TEXT NOT NULL DEFAULT ''"
+        ),
+        "reference_links": (
+            "ALTER TABLE artists "
+            "ADD COLUMN reference_links TEXT NOT NULL DEFAULT ''"
+        ),
+        "download_note": (
+            "ALTER TABLE artists "
+            "ADD COLUMN download_note TEXT NOT NULL DEFAULT ''"
         ),
         "last_viewed_at": (
             "ALTER TABLE artists "
