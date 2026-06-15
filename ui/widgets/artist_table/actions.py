@@ -1,5 +1,6 @@
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QApplication
 
 from .columns import COLUMN_FAVORITE, COLUMN_SHORTCUTS, COLUMN_SORT_FIELDS
 
@@ -32,7 +33,13 @@ class ArtistTableActions:
         if sort_field is None:
             return
 
-        self.table.sort_requested.emit(sort_field)
+        modifiers = QApplication.keyboardModifiers()
+        is_multi_sort = bool(modifiers & Qt.ShiftModifier)
+
+        self.table.sort_requested.emit(
+            sort_field,
+            is_multi_sort,
+        )
 
     def handle_cell_clicked(self, row: int, column: int):
         if column != COLUMN_FAVORITE:

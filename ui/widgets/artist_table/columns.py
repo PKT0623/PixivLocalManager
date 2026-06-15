@@ -13,15 +13,16 @@ COLUMNS = [
     ArtistTableColumn(0, "No", None, 50),
     ArtistTableColumn(1, "즐겨찾기", None, 70),
     ArtistTableColumn(2, "작가명", "artist_name"),
-    ArtistTableColumn(3, "Pixiv ID", None, 85),
+    ArtistTableColumn(3, "Pixiv ID", "pixiv_id", 85),
     ArtistTableColumn(4, "작품 수", "folder_artwork_count", 65),
-    ArtistTableColumn(5, "파일 수", None, 65),
+    ArtistTableColumn(5, "파일 수", "folder_file_count", 65),
     ArtistTableColumn(6, "상태", None, 120),
     ArtistTableColumn(7, "평점", "rating", 100),
     ArtistTableColumn(8, "태그"),
-    ArtistTableColumn(9, "최근 열람", None, 120),
-    ArtistTableColumn(10, "메모"),
-    ArtistTableColumn(11, "바로가기", None, 200),
+    ArtistTableColumn(9, "최근 열람", "last_viewed_at", 120),
+    ArtistTableColumn(10, "등록일", "created_at", 120),
+    ArtistTableColumn(11, "메모"),
+    ArtistTableColumn(12, "바로가기", None, 200),
 ]
 
 COLUMN_HEADERS = [
@@ -45,5 +46,6 @@ COLUMN_STATUS = 6
 COLUMN_RATING = 7
 COLUMN_TAGS = 8
 COLUMN_LAST_VIEWED_AT = 9
-COLUMN_MEMO = 10
-COLUMN_SHORTCUTS = 11
+COLUMN_CREATED_AT = 10
+COLUMN_MEMO = 11
+COLUMN_SHORTCUTS = 12

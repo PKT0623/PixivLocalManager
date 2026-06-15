@@ -7,6 +7,9 @@ from .filters import (
 )
 
 
+MAX_SORT_RULES = 3
+
+
 class ArtistsActions:
     def __init__(self, page):
         self.page = page
@@ -34,14 +37,20 @@ class ArtistsActions:
 
         artists = sort_artists(
             artists,
-            self.page.sort_field,
-            self.page.sort_reverse,
+            self.page.sort_rules,
         )
 
         self.page.artist_table.set_artists(artists)
+        self.page.artist_table.set_sort_indicators(
+            self.page.sort_rules,
+        )
 
     def reset_filters(self):
         self.page.toolbar.reset_filter_values()
+        self.apply_filter_and_sort()
+
+    def reset_sort(self):
+        self.page.sort_rules = self.page.default_sort_rules.copy()
         self.apply_filter_and_sort()
 
     def toggle_rating_filter_mode(self):
@@ -58,17 +67,74 @@ class ArtistsActions:
 
         self.load_artists()
 
-    def handle_sort_requested(self, sort_field: str):
-        if self.page.sort_field == sort_field:
-            self.page.sort_reverse = not self.page.sort_reverse
+    def handle_sort_requested(
+        self,
+        sort_field: str,
+        is_multi_sort: bool,
+    ):
+        if is_multi_sort:
+            self._handle_multi_sort_requested(sort_field)
         else:
-            self.page.sort_field = sort_field
-            self.page.sort_reverse = DEFAULT_SORT_REVERSE.get(
+            self._handle_single_sort_requested(sort_field)
+
+        self.apply_filter_and_sort()
+
+    def _handle_single_sort_requested(self, sort_field: str):
+        current_rule = self._find_sort_rule(sort_field)
+
+        if current_rule is None or len(self.page.sort_rules) > 1:
+            sort_reverse = DEFAULT_SORT_REVERSE.get(
                 sort_field,
                 False,
             )
+        else:
+            sort_reverse = not current_rule[1]
 
-        self.apply_filter_and_sort()
+        self.page.sort_rules = [
+            (
+                sort_field,
+                sort_reverse,
+            )
+        ]
+
+    def _handle_multi_sort_requested(self, sort_field: str):
+        sort_rules = self.page.sort_rules.copy()
+
+        for index, rule in enumerate(sort_rules):
+            if rule[0] != sort_field:
+                continue
+
+            sort_rules[index] = (
+                sort_field,
+                not rule[1],
+            )
+            self.page.sort_rules = sort_rules
+            return
+
+        sort_rules.append(
+            (
+                sort_field,
+                DEFAULT_SORT_REVERSE.get(
+                    sort_field,
+                    False,
+                ),
+            )
+        )
+
+        if len(sort_rules) > MAX_SORT_RULES:
+            sort_rules = sort_rules[-MAX_SORT_RULES:]
+
+        self.page.sort_rules = sort_rules
+
+    def _find_sort_rule(
+        self,
+        sort_field: str,
+    ) -> tuple[str, bool] | None:
+        for rule in self.page.sort_rules:
+            if rule[0] == sort_field:
+                return rule
+
+        return None
 
     def toggle_rating_display(self):
         if self.page.rating_display_mode == "stars":

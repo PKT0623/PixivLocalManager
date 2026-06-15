@@ -20,6 +20,7 @@ def format_cell_value(
     rating_display_mode: str,
 ) -> str:
     from .columns import (
+        COLUMN_CREATED_AT,
         COLUMN_FAVORITE,
         COLUMN_LAST_VIEWED_AT,
         COLUMN_RATING,
@@ -36,7 +37,10 @@ def format_cell_value(
     if column == COLUMN_TAGS:
         return format_artist_tags(value)
 
-    if column == COLUMN_LAST_VIEWED_AT:
+    if column in (
+        COLUMN_LAST_VIEWED_AT,
+        COLUMN_CREATED_AT,
+    ):
         return format_datetime(value)
 
     if column == COLUMN_FAVORITE:

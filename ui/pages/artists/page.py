@@ -18,8 +18,10 @@ class ArtistsPage(QWidget):
         self.all_artists = []
         self.rating_display_mode = "stars"
 
-        self.sort_field = "artist_name"
-        self.sort_reverse = False
+        self.default_sort_rules = [
+            ("artist_name", False),
+        ]
+        self.sort_rules = self.default_sort_rules.copy()
 
         self.actions = ArtistsActions(self)
 
@@ -103,6 +105,9 @@ class ArtistsPage(QWidget):
         )
         self.toolbar.reset_filter_button.clicked.connect(
             self.actions.reset_filters
+        )
+        self.toolbar.reset_sort_button.clicked.connect(
+            self.actions.reset_sort
         )
 
         self.toolbar.rating_toggle_button.clicked.connect(

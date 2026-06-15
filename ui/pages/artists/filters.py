@@ -1,7 +1,14 @@
+from datetime import datetime
+
+
 DEFAULT_SORT_REVERSE = {
     "artist_name": False,
+    "pixiv_id": False,
     "folder_artwork_count": True,
+    "folder_file_count": True,
     "rating": True,
+    "last_viewed_at": True,
+    "created_at": True,
 }
 
 
@@ -73,6 +80,22 @@ def matches_rating_filter(
 
 def sort_artists(
     artists: list[dict],
+    sort_rules: list[tuple[str, bool]],
+) -> list[dict]:
+    sorted_artists = artists
+
+    for sort_field, sort_reverse in reversed(sort_rules):
+        sorted_artists = sort_artists_by_field(
+            sorted_artists,
+            sort_field,
+            sort_reverse,
+        )
+
+    return sorted_artists
+
+
+def sort_artists_by_field(
+    artists: list[dict],
     sort_field: str,
     sort_reverse: bool,
 ) -> list[dict]:
@@ -88,11 +111,29 @@ def sort_artists(
             reverse=sort_reverse,
         )
 
+    if sort_field == "pixiv_id":
+        return sorted(
+            artists,
+            key=lambda artist: parse_int(
+                artist.get("pixiv_id", 0)
+            ),
+            reverse=sort_reverse,
+        )
+
     if sort_field == "folder_artwork_count":
         return sorted(
             artists,
             key=lambda artist: int(
                 artist.get("folder_artwork_count", 0) or 0
+            ),
+            reverse=sort_reverse,
+        )
+
+    if sort_field == "folder_file_count":
+        return sorted(
+            artists,
+            key=lambda artist: int(
+                artist.get("folder_file_count", 0) or 0
             ),
             reverse=sort_reverse,
         )
@@ -106,4 +147,42 @@ def sort_artists(
             reverse=sort_reverse,
         )
 
+    if sort_field == "last_viewed_at":
+        return sorted(
+            artists,
+            key=lambda artist: parse_datetime(
+                artist.get("last_viewed_at")
+            ),
+            reverse=sort_reverse,
+        )
+
+    if sort_field == "created_at":
+        return sorted(
+            artists,
+            key=lambda artist: parse_datetime(
+                artist.get("created_at")
+            ),
+            reverse=sort_reverse,
+        )
+
     return artists
+
+
+def parse_int(value) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def parse_datetime(value) -> datetime:
+    if not value:
+        return datetime.min
+
+    if isinstance(value, datetime):
+        return value
+
+    try:
+        return datetime.fromisoformat(str(value))
+    except ValueError:
+        return datetime.min

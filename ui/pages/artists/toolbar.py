@@ -68,6 +68,7 @@ class ArtistsToolbar(QWidget):
         self.exclude_hidden_checkbox.setChecked(False)
 
         self.reset_filter_button = QPushButton("필터 초기화")
+        self.reset_sort_button = QPushButton("정렬 초기화")
 
         filter_layout.addWidget(self.rating_filter_input)
         filter_layout.addWidget(self.rating_filter_mode_button)
@@ -77,6 +78,7 @@ class ArtistsToolbar(QWidget):
         filter_layout.addWidget(self.unrated_only_checkbox)
         filter_layout.addWidget(self.exclude_hidden_checkbox)
         filter_layout.addWidget(self.reset_filter_button)
+        filter_layout.addWidget(self.reset_sort_button)
         filter_layout.addStretch()
 
         main_layout.addLayout(top_layout)

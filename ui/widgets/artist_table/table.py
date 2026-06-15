@@ -7,17 +7,19 @@ from PySide6.QtWidgets import (
 
 from .actions import ArtistTableActions
 from .columns import (
-    COLUMN_NO,
     COLUMN_ARTIST_NAME,
     COLUMN_ARTWORK_COUNT,
+    COLUMN_CREATED_AT,
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
     COLUMN_HEADERS,
     COLUMN_LAST_VIEWED_AT,
     COLUMN_MEMO,
-    COLUMN_SHORTCUTS,
+    COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
+    COLUMN_SHORTCUTS,
+    COLUMN_SORT_FIELDS,
     COLUMN_STATUS,
     COLUMN_TAGS,
     COLUMNS,
@@ -27,7 +29,7 @@ from .row_renderer import ArtistTableRowRenderer
 
 class ArtistTable(QTableWidget):
     artist_selected = Signal(int)
-    sort_requested = Signal(str)
+    sort_requested = Signal(str, bool)
     favorite_toggled = Signal(int)
 
     def __init__(self):
@@ -81,6 +83,7 @@ class ArtistTable(QTableWidget):
             COLUMN_STATUS,
             COLUMN_RATING,
             COLUMN_LAST_VIEWED_AT,
+            COLUMN_CREATED_AT,
             COLUMN_SHORTCUTS,
         )
 
@@ -136,6 +139,44 @@ class ArtistTable(QTableWidget):
                 index,
                 artist,
             )
+
+    def set_sort_indicators(
+        self,
+        sort_rules: list[tuple[str, bool]],
+    ):
+        headers = []
+
+        for column in COLUMNS:
+            header = column.header
+            sort_field = COLUMN_SORT_FIELDS.get(column.index)
+
+            if sort_field is not None:
+                sort_rule_index = self._find_sort_rule_index(
+                    sort_rules,
+                    sort_field,
+                )
+
+                if sort_rule_index is not None:
+                    _, sort_reverse = sort_rules[sort_rule_index]
+                    header += " ▼" if sort_reverse else " ▲"
+
+                    if len(sort_rules) > 1:
+                        header += f"({sort_rule_index + 1})"
+
+            headers.append(header)
+
+        self.setHorizontalHeaderLabels(headers)
+
+    def _find_sort_rule_index(
+        self,
+        sort_rules: list[tuple[str, bool]],
+        sort_field: str,
+    ) -> int | None:
+        for index, rule in enumerate(sort_rules):
+            if rule[0] == sort_field:
+                return index
+
+        return None
 
     def set_rating_display_mode(self, mode: str):
         if mode not in ("stars", "number"):

@@ -10,6 +10,7 @@ from .cell_widgets import (
 from .columns import (
     COLUMN_ARTIST_NAME,
     COLUMN_ARTWORK_COUNT,
+    COLUMN_CREATED_AT,
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
     COLUMN_LAST_VIEWED_AT,
@@ -101,6 +102,12 @@ class ArtistTableRowRenderer:
         )
         self.set_item(
             row,
+            COLUMN_CREATED_AT,
+            artist.get("created_at"),
+            is_hidden,
+        )
+        self.set_item(
+            row,
             COLUMN_MEMO,
             artist.get("memo"),
             is_hidden,
@@ -135,6 +142,7 @@ class ArtistTableRowRenderer:
             COLUMN_FILE_COUNT,
             COLUMN_RATING,
             COLUMN_LAST_VIEWED_AT,
+            COLUMN_CREATED_AT,
         ):
             item.setTextAlignment(Qt.AlignCenter)
 
