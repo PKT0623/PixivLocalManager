@@ -20,7 +20,6 @@ class ArtistsPage(QWidget):
 
         self.sort_field = "artist_name"
         self.sort_reverse = False
-        self.status_sort_index = 0
 
         self.actions = ArtistsActions(self)
 
@@ -58,6 +57,11 @@ class ArtistsPage(QWidget):
                 font-size: 14px;
             }
 
+            QCheckBox {
+                font-size: 14px;
+                spacing: 6px;
+            }
+
             QPushButton {
                 padding: 8px 14px;
                 border: 1px solid #cccccc;
@@ -76,6 +80,31 @@ class ArtistsPage(QWidget):
         self.toolbar.search_input.textChanged.connect(
             self.actions.apply_filter_and_sort
         )
+        self.toolbar.rating_filter_input.textChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.rating_filter_mode_button.clicked.connect(
+            self.actions.toggle_rating_filter_mode
+        )
+        self.toolbar.favorite_only_checkbox.stateChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.update_required_only_checkbox.stateChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.unknown_only_checkbox.stateChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.unrated_only_checkbox.stateChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.exclude_hidden_checkbox.stateChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
+        self.toolbar.reset_filter_button.clicked.connect(
+            self.actions.reset_filters
+        )
+
         self.toolbar.rating_toggle_button.clicked.connect(
             self.actions.toggle_rating_display
         )

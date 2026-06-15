@@ -1,9 +1,3 @@
-STATUS_SORT_ORDERS = [
-    ["unknown", "up_to_date", "latest", "need_update", "updated", "error"],
-    ["up_to_date", "latest", "need_update", "updated", "unknown", "error"],
-    ["need_update", "updated", "unknown", "up_to_date", "latest", "error"],
-]
-
 DEFAULT_SORT_REVERSE = {
     "artist_name": False,
     "folder_artwork_count": True,
@@ -11,29 +5,76 @@ DEFAULT_SORT_REVERSE = {
 }
 
 
-def filter_artists(artists: list[dict], keyword: str) -> list[dict]:
+def filter_artists(
+    artists: list[dict],
+    keyword: str,
+    rating_value: int = 0,
+    rating_filter_mode: str = "min",
+    favorite_only: bool = False,
+    update_required_only: bool = False,
+    unknown_only: bool = False,
+    unrated_only: bool = False,
+    exclude_hidden: bool = False,
+) -> list[dict]:
     keyword = keyword.strip().lower()
-
-    if not keyword:
-        return list(artists)
 
     filtered = []
 
     for artist in artists:
-        artist_name = str(artist.get("artist_name", "")).lower()
-        pixiv_id = str(artist.get("pixiv_id", "")).lower()
+        if exclude_hidden and bool(artist.get("is_hidden", 0)):
+            continue
 
-        if keyword in artist_name or keyword in pixiv_id:
-            filtered.append(artist)
+        if keyword and not matches_keyword(artist, keyword):
+            continue
+
+        if rating_value > 0 and not matches_rating_filter(
+            artist,
+            rating_value,
+            rating_filter_mode,
+        ):
+            continue
+
+        if favorite_only and not bool(artist.get("is_favorite", 0)):
+            continue
+
+        if update_required_only and artist.get("update_status") != "need_update":
+            continue
+
+        if unknown_only and artist.get("update_status") != "unknown":
+            continue
+
+        if unrated_only and int(artist.get("rating", 0) or 0) != 0:
+            continue
+
+        filtered.append(artist)
 
     return filtered
+
+
+def matches_keyword(artist: dict, keyword: str) -> bool:
+    artist_name = str(artist.get("artist_name", "")).lower()
+    pixiv_id = str(artist.get("pixiv_id", "")).lower()
+
+    return keyword in artist_name or keyword in pixiv_id
+
+
+def matches_rating_filter(
+    artist: dict,
+    rating_value: int,
+    rating_filter_mode: str,
+) -> bool:
+    rating = int(artist.get("rating", 0) or 0)
+
+    if rating_filter_mode == "exact":
+        return rating == rating_value
+
+    return rating >= rating_value
 
 
 def sort_artists(
     artists: list[dict],
     sort_field: str,
     sort_reverse: bool,
-    status_sort_index: int,
 ) -> list[dict]:
     if sort_field is None:
         return artists
@@ -65,30 +106,4 @@ def sort_artists(
             reverse=sort_reverse,
         )
 
-    if sort_field == "update_status":
-        return sort_by_status(
-            artists,
-            status_sort_index,
-        )
-
     return artists
-
-
-def sort_by_status(
-    artists: list[dict],
-    status_sort_index: int,
-) -> list[dict]:
-    status_order = STATUS_SORT_ORDERS[status_sort_index]
-
-    status_rank = {
-        status: index
-        for index, status in enumerate(status_order)
-    }
-
-    return sorted(
-        artists,
-        key=lambda artist: status_rank.get(
-            str(artist.get("update_status", "")),
-            len(status_rank),
-        ),
-    )
