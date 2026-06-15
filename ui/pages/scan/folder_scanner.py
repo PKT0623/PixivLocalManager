@@ -2,7 +2,14 @@ from pathlib import Path
 
 
 class FolderScanner:
-    IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+    IMAGE_EXTENSIONS = {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".bmp",
+    }
 
     def find_artist_folders(
         self,
@@ -53,7 +60,7 @@ class FolderScanner:
 
     def has_image_files(self, folder_path: Path) -> bool:
         try:
-            for file_path in folder_path.iterdir():
+            for file_path in folder_path.rglob("*"):
                 if not file_path.is_file():
                     continue
 

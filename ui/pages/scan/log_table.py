@@ -12,6 +12,9 @@ RESULT_COLORS = {
     "등록": "#198754",
     "업데이트": "#0d6efd",
     "변경 없음": "#6c757d",
+    "경고": "#fd7e14",
+    "오류": "#dc3545",
+    "제외": "#6c757d",
     "실패": "#dc3545",
     "정보": "#6c757d",
 }
@@ -52,7 +55,7 @@ class ScanLogTable(QTableWidget):
                 "작품 수",
                 "파일 수",
                 "상태",
-                "실패 원인",
+                "상세 내용",
             ]
         )
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -127,7 +130,7 @@ class ScanLogTable(QTableWidget):
     def _should_show_row(self, row_data: dict) -> bool:
         result = str(row_data.get("result", ""))
 
-        if self.error_only and result != "실패":
+        if self.error_only and result not in ("실패", "오류"):
             return False
 
         if self.result_filter != "전체" and result != self.result_filter:
@@ -206,7 +209,7 @@ class ScanLogTable(QTableWidget):
         if not isinstance(row_data, dict):
             return
 
-        if row_data.get("result") == "실패":
+        if row_data.get("result") in ("실패", "오류", "경고", "제외"):
             folder_path = str(row_data.get("folder_path", "") or "").strip()
 
             if folder_path:

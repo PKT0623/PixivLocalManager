@@ -19,6 +19,11 @@ class ScanActions:
         )
 
         if not folder_path:
+            folder_path = self.page.settings_service.get_setting(
+                "last_scan_folder"
+            )
+
+        if not folder_path:
             return
 
         self.page.folder_section.folder_path_input.setText(folder_path)
@@ -41,6 +46,11 @@ class ScanActions:
         if not folder_path:
             self.page.log_table.add_info_log("오류: 먼저 폴더를 선택하세요.")
             return
+
+        self.page.settings_service.set_setting(
+            "last_scan_folder",
+            folder_path,
+        )
 
         self._start_worker(
             folder_path=folder_path,
@@ -76,6 +86,11 @@ class ScanActions:
 
         if not root_folder:
             root_folder = str(Path(folder_paths[0]).parent)
+
+        self.page.settings_service.set_setting(
+            "last_scan_folder",
+            root_folder,
+        )
 
         self.page.log_table.clear_failed_rows()
         self.page.log_table.add_info_log(
