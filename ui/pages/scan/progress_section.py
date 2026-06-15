@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QGridLayout,
     QLabel,
     QProgressBar,
     QVBoxLayout,
@@ -9,6 +10,8 @@ from PySide6.QtWidgets import (
 class ScanProgressSection(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.summary_labels = {}
 
         self._setup_ui()
 
@@ -36,6 +39,16 @@ class ScanProgressSection(QWidget):
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("0 / 0")
 
+        summary_layout = QGridLayout()
+        summary_layout.setContentsMargins(0, 4, 0, 0)
+        summary_layout.setHorizontalSpacing(12)
+        summary_layout.setVerticalSpacing(6)
+
+        self._add_summary_label(summary_layout, "created", "신규 등록", 0, 0)
+        self._add_summary_label(summary_layout, "updated", "업데이트", 0, 1)
+        self._add_summary_label(summary_layout, "unchanged", "변경 없음", 0, 2)
+        self._add_summary_label(summary_layout, "failed", "실패", 0, 3)
+
         layout.addWidget(
             self.target_count_label
         )
@@ -45,6 +58,25 @@ class ScanProgressSection(QWidget):
         layout.addWidget(
             self.progress_bar
         )
+        layout.addLayout(summary_layout)
+
+    def _add_summary_label(
+        self,
+        layout: QGridLayout,
+        key: str,
+        title: str,
+        row: int,
+        column: int,
+    ):
+        label = QLabel(f"{title}: 0")
+        label.setObjectName("subText")
+
+        self.summary_labels[key] = {
+            "label": label,
+            "title": title,
+        }
+
+        layout.addWidget(label, row, column)
 
     def reset(self):
         self.target_count_label.setText(
@@ -60,6 +92,15 @@ class ScanProgressSection(QWidget):
         )
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("0 / 0")
+
+        self.update_summary(
+            {
+                "created": 0,
+                "updated": 0,
+                "unchanged": 0,
+                "failed": 0,
+            }
+        )
 
     def update_target_count(
         self,
@@ -96,3 +137,14 @@ class ScanProgressSection(QWidget):
         self.progress_bar.setFormat(
             f"{current} / {total}"
         )
+
+    def update_summary(
+        self,
+        summary: dict,
+    ):
+        for key, item in self.summary_labels.items():
+            label = item["label"]
+            title = item["title"]
+            count = int(summary.get(key, 0) or 0)
+
+            label.setText(f"{title}: {count}")

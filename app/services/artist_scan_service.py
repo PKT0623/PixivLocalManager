@@ -146,6 +146,12 @@ class ArtistScanService:
         if memo is not None:
             update_data["memo"] = memo
 
+        if not self._has_scan_changes(existing_artist, update_data):
+            return {
+                "action": "unchanged",
+                "artist": existing_artist,
+            }
+
         self.repo.update_artist(
             existing_artist["id"],
             update_data,
@@ -157,3 +163,30 @@ class ArtistScanService:
             "action": "updated",
             "artist": artist,
         }
+
+    def _has_scan_changes(
+        self,
+        existing_artist: dict,
+        update_data: dict,
+    ) -> bool:
+        compare_fields = [
+            "artist_name",
+            "pixiv_id",
+            "folder_path",
+            "folder_size_bytes",
+            "folder_file_count",
+            "folder_artwork_count",
+            "local_latest_artwork_ids",
+            "update_status",
+            "rating",
+            "memo",
+        ]
+
+        for field_name in compare_fields:
+            old_value = existing_artist.get(field_name)
+            new_value = update_data.get(field_name)
+
+            if str(old_value or "") != str(new_value or ""):
+                return True
+
+        return False

@@ -1,4 +1,7 @@
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -15,6 +18,8 @@ from .progress_section import ScanProgressSection
 
 
 class ScanPage(QWidget):
+    artist_detail_requested = Signal(int)
+
     def __init__(self):
         super().__init__()
 
@@ -49,11 +54,38 @@ class ScanPage(QWidget):
         log_label = QLabel("결과 로그")
         log_label.setObjectName("sectionTitle")
 
+        self.result_filter_combo = QComboBox()
+        self.result_filter_combo.addItems(
+            [
+                "전체",
+                "등록",
+                "업데이트",
+                "변경 없음",
+                "실패",
+            ]
+        )
+
+        self.error_only_checkbox = QCheckBox("오류 로그만 보기")
+
+        self.retry_failed_button = QPushButton("실패 재시도")
+        self.retry_failed_button.setObjectName("clearLogButton")
+
+        self.clear_failed_button = QPushButton("실패 초기화")
+        self.clear_failed_button.setObjectName("clearLogButton")
+
+        self.export_failed_csv_button = QPushButton("실패 CSV")
+        self.export_failed_csv_button.setObjectName("clearLogButton")
+
         self.clear_log_button = QPushButton("로그 지우기")
         self.clear_log_button.setObjectName("clearLogButton")
 
         log_header_layout.addWidget(log_label)
         log_header_layout.addStretch()
+        log_header_layout.addWidget(self.result_filter_combo)
+        log_header_layout.addWidget(self.error_only_checkbox)
+        log_header_layout.addWidget(self.retry_failed_button)
+        log_header_layout.addWidget(self.clear_failed_button)
+        log_header_layout.addWidget(self.export_failed_csv_button)
         log_header_layout.addWidget(self.clear_log_button)
 
         self.log_table = ScanLogTable()
@@ -100,6 +132,20 @@ class ScanPage(QWidget):
                 font-size: 14px;
             }
 
+            QComboBox {
+                border: 1px solid #cccccc;
+                border-radius: 6px;
+                padding: 6px 10px;
+                background-color: #ffffff;
+                font-size: 13px;
+                min-width: 100px;
+            }
+
+            QCheckBox {
+                font-size: 13px;
+                spacing: 6px;
+            }
+
             QPushButton {
                 padding: 8px 14px;
                 border: 1px solid #cccccc;
@@ -126,7 +172,7 @@ class ScanPage(QWidget):
 
             QPushButton#folderSelectButton,
             QPushButton#clearLogButton {
-                min-width: 100px;
+                min-width: 90px;
             }
 
             QProgressBar {
@@ -174,5 +220,26 @@ class ScanPage(QWidget):
             self.actions.start_scan
         )
         self.clear_log_button.clicked.connect(
-            self.log_table.clear_log
+            self.actions.clear_scan_results
+        )
+        self.result_filter_combo.currentTextChanged.connect(
+            self.actions.apply_result_filter
+        )
+        self.error_only_checkbox.toggled.connect(
+            self.actions.apply_error_only_filter
+        )
+        self.retry_failed_button.clicked.connect(
+            self.actions.retry_failed_items
+        )
+        self.clear_failed_button.clicked.connect(
+            self.actions.clear_failed_items
+        )
+        self.export_failed_csv_button.clicked.connect(
+            self.actions.export_failed_items_csv
+        )
+        self.log_table.artist_open_requested.connect(
+            self.actions.open_artist_detail
+        )
+        self.log_table.folder_open_requested.connect(
+            self.actions.open_folder
         )

@@ -55,9 +55,12 @@ class MainWindow(QMainWindow):
         self.sidebar.page_changed.connect(self.show_page)
 
         artists_page = self.pages["artists"]
+        scan_page = self.pages["scan"]
         detail_page = self.pages["artist_detail"]
 
         artists_page.artist_selected.connect(self.show_artist_detail)
+        scan_page.artist_detail_requested.connect(self.show_artist_detail)
+
         detail_page.back_requested.connect(lambda: self.show_page("artists"))
         detail_page.artist_updated.connect(self._handle_artist_updated)
 
