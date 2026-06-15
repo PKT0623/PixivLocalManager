@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QFrame,
     QGridLayout,
     QLabel,
     QProgressBar,
@@ -18,7 +19,7 @@ class ScanProgressSection(QWidget):
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setSpacing(10)
 
         self.target_count_label = QLabel(
             "발견된 작가 폴더: -"
@@ -49,6 +50,10 @@ class ScanProgressSection(QWidget):
         self._add_summary_label(summary_layout, "unchanged", "변경 없음", 0, 2)
         self._add_summary_label(summary_layout, "failed", "실패", 0, 3)
 
+        info_frame = self._create_info_frame()
+        statistics_frame = self._create_statistics_frame()
+        history_frame = self._create_history_frame()
+
         layout.addWidget(
             self.target_count_label
         )
@@ -59,6 +64,96 @@ class ScanProgressSection(QWidget):
             self.progress_bar
         )
         layout.addLayout(summary_layout)
+        layout.addWidget(info_frame)
+        layout.addWidget(statistics_frame)
+        layout.addWidget(history_frame)
+
+    def _create_info_frame(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("scanSubFrame")
+
+        layout = QGridLayout(frame)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setHorizontalSpacing(16)
+        layout.setVerticalSpacing(6)
+
+        self.scan_start_time_label = self._create_sub_text(
+            "시작 시각: -"
+        )
+        self.elapsed_time_label = self._create_sub_text(
+            "경과 시간: -"
+        )
+        self.scan_speed_label = self._create_sub_text(
+            "진행 속도: -"
+        )
+        self.estimated_time_label = self._create_sub_text(
+            "예상 남은 시간: -"
+        )
+        self.last_scan_time_label = self._create_sub_text(
+            "마지막 스캔: -"
+        )
+
+        layout.addWidget(self.scan_start_time_label, 0, 0)
+        layout.addWidget(self.elapsed_time_label, 0, 1)
+        layout.addWidget(self.scan_speed_label, 0, 2)
+        layout.addWidget(self.estimated_time_label, 1, 0)
+        layout.addWidget(self.last_scan_time_label, 1, 1, 1, 2)
+
+        return frame
+
+    def _create_statistics_frame(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("scanSubFrame")
+
+        layout = QGridLayout(frame)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setHorizontalSpacing(16)
+        layout.setVerticalSpacing(6)
+
+        self.total_file_count_label = self._create_sub_text(
+            "총 파일 수: 0"
+        )
+        self.total_artwork_count_label = self._create_sub_text(
+            "총 작품 수: 0"
+        )
+        self.extension_counts_label = self._create_sub_text(
+            "확장자별 파일 수: -"
+        )
+
+        layout.addWidget(self.total_file_count_label, 0, 0)
+        layout.addWidget(self.total_artwork_count_label, 0, 1)
+        layout.addWidget(self.extension_counts_label, 1, 0, 1, 2)
+
+        return frame
+
+    def _create_history_frame(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("scanSubFrame")
+
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(6)
+
+        history_title = QLabel("최근 스캔 목록")
+        history_title.setObjectName("subSectionTitle")
+
+        self.recent_scan_history_label = self._create_sub_text(
+            "최근 스캔 기록이 없습니다."
+        )
+        self.recent_scan_history_label.setWordWrap(True)
+
+        layout.addWidget(history_title)
+        layout.addWidget(self.recent_scan_history_label)
+
+        return frame
+
+    def _create_sub_text(
+        self,
+        text: str,
+    ) -> QLabel:
+        label = QLabel(text)
+        label.setObjectName("subText")
+        return label
 
     def _add_summary_label(
         self,
@@ -93,12 +188,24 @@ class ScanProgressSection(QWidget):
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("0 / 0")
 
+        self.scan_start_time_label.setText("시작 시각: -")
+        self.elapsed_time_label.setText("경과 시간: -")
+        self.scan_speed_label.setText("진행 속도: -")
+        self.estimated_time_label.setText("예상 남은 시간: -")
+
         self.update_summary(
             {
                 "created": 0,
                 "updated": 0,
                 "unchanged": 0,
                 "failed": 0,
+            }
+        )
+        self.update_statistics(
+            {
+                "total_file_count": 0,
+                "total_artwork_count": 0,
+                "extension_counts": {},
             }
         )
 
@@ -148,3 +255,112 @@ class ScanProgressSection(QWidget):
             count = int(summary.get(key, 0) or 0)
 
             label.setText(f"{title}: {count}")
+
+    def update_runtime_info(
+        self,
+        info: dict,
+    ):
+        start_time = str(info.get("start_time_text", "-") or "-")
+        elapsed_time = str(info.get("elapsed_time_text", "-") or "-")
+        speed = str(info.get("speed_text", "-") or "-")
+        estimated_time = str(info.get("estimated_time_text", "-") or "-")
+
+        self.scan_start_time_label.setText(
+            f"시작 시각: {start_time}"
+        )
+        self.elapsed_time_label.setText(
+            f"경과 시간: {elapsed_time}"
+        )
+        self.scan_speed_label.setText(
+            f"진행 속도: {speed}"
+        )
+        self.estimated_time_label.setText(
+            f"예상 남은 시간: {estimated_time}"
+        )
+
+    def update_last_scan_info(
+        self,
+        info: dict | None,
+    ):
+        if not info:
+            self.last_scan_time_label.setText("마지막 스캔: -")
+            return
+
+        finished_at = str(info.get("finished_at_text", "") or "")
+        total = int(info.get("total", 0) or 0)
+        created = int(info.get("created", 0) or 0)
+        updated = int(info.get("updated", 0) or 0)
+        failed = int(info.get("failed", 0) or 0)
+
+        if not finished_at:
+            self.last_scan_time_label.setText("마지막 스캔: -")
+            return
+
+        self.last_scan_time_label.setText(
+            "마지막 스캔: "
+            f"{finished_at} / 대상 {total}개 / "
+            f"등록 {created}, 업데이트 {updated}, 실패 {failed}"
+        )
+
+    def update_recent_scan_history(
+        self,
+        history: list[dict],
+    ):
+        if not history:
+            self.recent_scan_history_label.setText(
+                "최근 스캔 기록이 없습니다."
+            )
+            return
+
+        lines = []
+
+        for index, item in enumerate(history[:10], start=1):
+            finished_at = str(item.get("finished_at_text", "-") or "-")
+            total = int(item.get("total", 0) or 0)
+            created = int(item.get("created", 0) or 0)
+            updated = int(item.get("updated", 0) or 0)
+            failed = int(item.get("failed", 0) or 0)
+
+            lines.append(
+                f"{index}. {finished_at} / 대상 {total}개 / "
+                f"등록 {created}, 업데이트 {updated}, 실패 {failed}"
+            )
+
+        self.recent_scan_history_label.setText("\n".join(lines))
+
+    def update_statistics(
+        self,
+        statistics: dict,
+    ):
+        total_file_count = int(
+            statistics.get("total_file_count", 0) or 0
+        )
+        total_artwork_count = int(
+            statistics.get("total_artwork_count", 0) or 0
+        )
+        extension_counts = statistics.get("extension_counts", {}) or {}
+
+        self.total_file_count_label.setText(
+            f"총 파일 수: {total_file_count}"
+        )
+        self.total_artwork_count_label.setText(
+            f"총 작품 수: {total_artwork_count}"
+        )
+        self.extension_counts_label.setText(
+            "확장자별 파일 수: "
+            f"{self._format_extension_counts(extension_counts)}"
+        )
+
+    def _format_extension_counts(
+        self,
+        extension_counts: dict,
+    ) -> str:
+        if not extension_counts:
+            return "-"
+
+        parts = []
+
+        for extension, count in sorted(extension_counts.items()):
+            parts.append(f"{extension}: {count}")
+
+        return ", ".join(parts)

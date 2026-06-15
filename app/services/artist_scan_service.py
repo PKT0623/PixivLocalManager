@@ -109,6 +109,7 @@ class ArtistScanService:
         return {
             "action": "created",
             "artist": artist,
+            "scan_result": scan_result,
         }
 
     def _update_scanned_artist(
@@ -150,6 +151,7 @@ class ArtistScanService:
             return {
                 "action": "unchanged",
                 "artist": existing_artist,
+                "scan_result": scan_result,
             }
 
         self.repo.update_artist(
@@ -162,6 +164,7 @@ class ArtistScanService:
         return {
             "action": "updated",
             "artist": artist,
+            "scan_result": scan_result,
         }
 
     def _has_scan_changes(

@@ -1,4 +1,5 @@
 import csv
+import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -10,6 +11,11 @@ from .worker import ScanWorker
 
 
 class ScanActions:
+    SCAN_RESULT_DIR = Path("data") / "scan_results"
+    LATEST_SCAN_JSON_PATH = SCAN_RESULT_DIR / "latest_scan.json"
+    LATEST_SCAN_CSV_PATH = SCAN_RESULT_DIR / "latest_scan.csv"
+    RECENT_HISTORY_LIMIT = 10
+
     def __init__(self, page):
         self.page = page
 
@@ -23,10 +29,22 @@ class ScanActions:
                 "last_scan_folder"
             )
 
-        if not folder_path:
-            return
+        if folder_path:
+            self.page.folder_section.folder_path_input.setText(folder_path)
 
-        self.page.folder_section.folder_path_input.setText(folder_path)
+        self.load_scan_history()
+
+    def load_scan_history(self):
+        last_scan_result = self._load_json_setting("last_scan_result")
+        recent_scan_history = self._load_json_setting("recent_scan_history")
+
+        if not isinstance(recent_scan_history, list):
+            recent_scan_history = []
+
+        self.page.progress_section.update_last_scan_info(last_scan_result)
+        self.page.progress_section.update_recent_scan_history(
+            recent_scan_history
+        )
 
     def select_folder(self):
         folder_path = QFileDialog.getExistingDirectory(
@@ -39,6 +57,25 @@ class ScanActions:
             return
 
         self.page.folder_section.folder_path_input.setText(folder_path)
+
+    def start_preview(self):
+        folder_path = self.page.folder_section.folder_path_input.text().strip()
+
+        if not folder_path:
+            self.page.log_table.add_info_log("오류: 먼저 폴더를 선택하세요.")
+            return
+
+        self.page.settings_service.set_setting(
+            "last_scan_folder",
+            folder_path,
+        )
+
+        self._start_worker(
+            folder_path=folder_path,
+            target_folder_paths=None,
+            clear_log=True,
+            preview_mode=True,
+        )
 
     def start_scan(self):
         folder_path = self.page.folder_section.folder_path_input.text().strip()
@@ -56,6 +93,30 @@ class ScanActions:
             folder_path=folder_path,
             target_folder_paths=None,
             clear_log=True,
+            preview_mode=False,
+        )
+
+    def start_selected_preview_items_scan(self):
+        folder_paths = self.page.preview_table.get_selected_folder_paths()
+
+        if not folder_paths:
+            self.page.log_table.add_info_log("선택된 등록 대상이 없습니다.")
+            return
+
+        root_folder = self.page.folder_section.folder_path_input.text().strip()
+
+        if not root_folder:
+            root_folder = str(Path(folder_paths[0]).parent)
+
+        self.page.log_table.add_info_log(
+            f"선택 항목 등록 시작: {len(folder_paths)}개"
+        )
+
+        self._start_worker(
+            folder_path=root_folder,
+            target_folder_paths=folder_paths,
+            clear_log=True,
+            preview_mode=False,
         )
 
     def retry_failed_items(self):
@@ -101,6 +162,7 @@ class ScanActions:
             folder_path=root_folder,
             target_folder_paths=folder_paths,
             clear_log=False,
+            preview_mode=False,
         )
 
     def clear_failed_items(self):
@@ -125,7 +187,7 @@ class ScanActions:
             return
 
         try:
-            self._write_failed_items_csv(file_path, failed_rows)
+            self._write_rows_csv(file_path, failed_rows)
         except Exception as error:
             self.page.log_table.add_info_log(
                 f"실패 항목 CSV 저장 실패: {error}"
@@ -136,16 +198,49 @@ class ScanActions:
             f"실패 항목 CSV 저장 완료: {file_path}"
         )
 
-    def _write_failed_items_csv(
+    def export_all_scan_results_csv(self):
+        rows = list(self.page.log_table.all_rows)
+
+        if not rows:
+            self.page.log_table.add_info_log("CSV로 저장할 결과가 없습니다.")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self.page,
+            "스캔 결과 CSV 저장",
+            "scan_results.csv",
+            "CSV Files (*.csv)",
+        )
+
+        if not file_path:
+            return
+
+        try:
+            self._write_rows_csv(file_path, rows)
+        except Exception as error:
+            self.page.log_table.add_info_log(
+                f"스캔 결과 CSV 저장 실패: {error}"
+            )
+            return
+
+        self.page.log_table.add_info_log(
+            f"스캔 결과 CSV 저장 완료: {file_path}"
+        )
+
+    def _write_rows_csv(
         self,
-        file_path: str,
-        failed_rows: list[dict],
+        file_path: str | Path,
+        rows: list[dict],
     ):
         fieldnames = [
             "time",
             "progress",
+            "result",
             "artist_name",
             "pixiv_id",
+            "artwork_count",
+            "file_count",
+            "update_status",
             "folder_path",
             "error_message",
         ]
@@ -162,13 +257,17 @@ class ScanActions:
             )
             writer.writeheader()
 
-            for row in failed_rows:
+            for row in rows:
                 writer.writerow(
                     {
                         "time": row.get("time", "-"),
                         "progress": row.get("progress", "-"),
+                        "result": row.get("result", "-"),
                         "artist_name": row.get("artist_name", "-"),
                         "pixiv_id": row.get("pixiv_id", "-"),
+                        "artwork_count": row.get("artwork_count", "-"),
+                        "file_count": row.get("file_count", "-"),
+                        "update_status": row.get("update_status", "-"),
                         "folder_path": row.get("folder_path", "-"),
                         "error_message": row.get("error_message", "-"),
                     }
@@ -179,6 +278,7 @@ class ScanActions:
         folder_path: str,
         target_folder_paths: list[str] | None,
         clear_log: bool,
+        preview_mode: bool,
     ):
         if self.page.scan_thread is not None:
             self.page.log_table.add_info_log("이미 스캔이 진행 중입니다.")
@@ -186,16 +286,22 @@ class ScanActions:
 
         self.set_scanning_state(True)
         self.page.progress_section.reset()
+        self.load_scan_history()
 
         if clear_log:
             self.page.log_table.clear_log()
 
-        self.page.log_table.add_info_log(f"스캔 시작: {folder_path}")
+        if preview_mode:
+            self.page.preview_table.clear_preview()
+            self.page.log_table.add_info_log(f"스캔 미리보기 시작: {folder_path}")
+        else:
+            self.page.log_table.add_info_log(f"스캔 시작: {folder_path}")
 
         self.page.scan_thread = QThread()
         self.page.scan_worker = ScanWorker(
             folder_path,
             target_folder_paths=target_folder_paths,
+            preview_mode=preview_mode,
         )
         self.page.scan_worker.moveToThread(self.page.scan_thread)
 
@@ -208,6 +314,12 @@ class ScanActions:
         self.page.scan_worker.scan_result_requested.connect(
             self.page.log_table.add_log_row
         )
+        self.page.scan_worker.preview_result_requested.connect(
+            self.page.preview_table.set_preview_rows
+        )
+        self.page.scan_worker.preview_summary_updated.connect(
+            self.page.progress_section.update_summary
+        )
         self.page.scan_worker.progress_updated.connect(
             self.page.progress_section.update_progress
         )
@@ -219,6 +331,12 @@ class ScanActions:
         )
         self.page.scan_worker.summary_updated.connect(
             self.page.progress_section.update_summary
+        )
+        self.page.scan_worker.statistics_updated.connect(
+            self.page.progress_section.update_statistics
+        )
+        self.page.scan_worker.runtime_info_updated.connect(
+            self.page.progress_section.update_runtime_info
         )
         self.page.scan_worker.failed.connect(
             self.handle_scan_failed
@@ -239,8 +357,98 @@ class ScanActions:
 
         self.page.scan_thread.start()
 
-    def handle_scan_finished(self):
+    def handle_scan_finished(
+        self,
+        result: dict,
+    ):
+        if self.page.scan_worker is not None and self.page.scan_worker.preview_mode:
+            self.set_scanning_state(False)
+            return
+
+        self._save_scan_result(result)
+        self.load_scan_history()
         self.set_scanning_state(False)
+
+    def _save_scan_result(
+        self,
+        result: dict,
+    ):
+        rows = list(self.page.log_table.all_rows)
+        payload = {
+            "summary": result,
+            "rows": rows,
+        }
+
+        self._save_json_setting("last_scan_result", result)
+        self._save_recent_scan_history(result)
+        self._save_latest_scan_files(payload)
+
+    def _save_recent_scan_history(
+        self,
+        result: dict,
+    ):
+        history = self._load_json_setting("recent_scan_history")
+
+        if not isinstance(history, list):
+            history = []
+
+        history.insert(0, result)
+        history = history[:self.RECENT_HISTORY_LIMIT]
+
+        self._save_json_setting("recent_scan_history", history)
+
+    def _save_latest_scan_files(
+        self,
+        payload: dict,
+    ):
+        self.SCAN_RESULT_DIR.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        with open(
+            self.LATEST_SCAN_JSON_PATH,
+            "w",
+            encoding="utf-8",
+        ) as json_file:
+            json.dump(
+                payload,
+                json_file,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        self._write_rows_csv(
+            self.LATEST_SCAN_CSV_PATH,
+            payload.get("rows", []),
+        )
+
+    def _load_json_setting(
+        self,
+        key: str,
+    ):
+        value = self.page.settings_service.get_setting(key)
+
+        if not value:
+            return None
+
+        try:
+            return json.loads(str(value))
+        except json.JSONDecodeError:
+            return None
+
+    def _save_json_setting(
+        self,
+        key: str,
+        value,
+    ):
+        self.page.settings_service.set_setting(
+            key,
+            json.dumps(
+                value,
+                ensure_ascii=False,
+            ),
+        )
 
     def handle_scan_failed(self, error_message: str):
         self.page.log_table.add_log_row(
@@ -273,6 +481,7 @@ class ScanActions:
 
     def set_scanning_state(self, is_scanning: bool):
         self.page.folder_section.scan_button.setEnabled(not is_scanning)
+        self.page.folder_section.preview_button.setEnabled(not is_scanning)
         self.page.folder_section.folder_select_button.setEnabled(
             not is_scanning
         )
@@ -281,6 +490,11 @@ class ScanActions:
         self.page.retry_failed_button.setEnabled(not is_scanning)
         self.page.clear_failed_button.setEnabled(not is_scanning)
         self.page.export_failed_csv_button.setEnabled(not is_scanning)
+        self.page.export_all_csv_button.setEnabled(not is_scanning)
+        self.page.preview_scan_selected_button.setEnabled(not is_scanning)
+        self.page.preview_select_all_button.setEnabled(not is_scanning)
+        self.page.preview_clear_selection_button.setEnabled(not is_scanning)
+        self.page.preview_exclude_error_button.setEnabled(not is_scanning)
 
         if is_scanning:
             self.page.folder_section.scan_button.setText("스캔 중...")
@@ -298,7 +512,9 @@ class ScanActions:
 
     def clear_scan_results(self):
         self.page.log_table.clear_log()
+        self.page.preview_table.clear_preview()
         self.page.progress_section.reset()
+        self.load_scan_history()
 
     def open_artist_detail(self, artist_id: int):
         self.page.artist_detail_requested.emit(artist_id)

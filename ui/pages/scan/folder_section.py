@@ -38,6 +38,9 @@ class ScanFolderSection(QFrame):
             "folderSelectButton"
         )
 
+        self.preview_button = QPushButton("미리보기")
+        self.preview_button.setObjectName("folderSelectButton")
+
         self.scan_button = QPushButton("스캔 및 등록")
         self.scan_button.setObjectName("scanButton")
 
@@ -47,6 +50,9 @@ class ScanFolderSection(QFrame):
         )
         folder_layout.addWidget(
             self.folder_select_button
+        )
+        folder_layout.addWidget(
+            self.preview_button
         )
         folder_layout.addWidget(
             self.scan_button

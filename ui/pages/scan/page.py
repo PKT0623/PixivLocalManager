@@ -14,6 +14,7 @@ from app.services.settings_service import SettingsService
 from .actions import ScanActions
 from .folder_section import ScanFolderSection
 from .log_table import ScanLogTable
+from .preview_table import ScanPreviewTable
 from .progress_section import ScanProgressSection
 
 
@@ -49,6 +50,38 @@ class ScanPage(QWidget):
         self.progress_section = ScanProgressSection()
         self.folder_section.layout().addWidget(self.progress_section)
 
+        preview_header_layout = QHBoxLayout()
+
+        preview_label = QLabel("스캔 미리보기")
+        preview_label.setObjectName("sectionTitle")
+
+        self.preview_summary_label = QLabel(
+            "신규 0 / 업데이트 0 / 변경 없음 0 / 오류 0 / 선택 0"
+        )
+        self.preview_summary_label.setObjectName("subText")
+
+        self.preview_select_all_button = QPushButton("전체 선택")
+        self.preview_select_all_button.setObjectName("clearLogButton")
+
+        self.preview_clear_selection_button = QPushButton("전체 해제")
+        self.preview_clear_selection_button.setObjectName("clearLogButton")
+
+        self.preview_exclude_error_button = QPushButton("오류 제외")
+        self.preview_exclude_error_button.setObjectName("clearLogButton")
+
+        self.preview_scan_selected_button = QPushButton("선택 항목 등록")
+        self.preview_scan_selected_button.setObjectName("scanButton")
+
+        preview_header_layout.addWidget(preview_label)
+        preview_header_layout.addWidget(self.preview_summary_label)
+        preview_header_layout.addStretch()
+        preview_header_layout.addWidget(self.preview_select_all_button)
+        preview_header_layout.addWidget(self.preview_clear_selection_button)
+        preview_header_layout.addWidget(self.preview_exclude_error_button)
+        preview_header_layout.addWidget(self.preview_scan_selected_button)
+
+        self.preview_table = ScanPreviewTable()
+
         log_header_layout = QHBoxLayout()
 
         log_label = QLabel("결과 로그")
@@ -79,6 +112,9 @@ class ScanPage(QWidget):
         self.export_failed_csv_button = QPushButton("실패 CSV")
         self.export_failed_csv_button.setObjectName("clearLogButton")
 
+        self.export_all_csv_button = QPushButton("결과 CSV")
+        self.export_all_csv_button.setObjectName("clearLogButton")
+
         self.clear_log_button = QPushButton("로그 지우기")
         self.clear_log_button.setObjectName("clearLogButton")
 
@@ -89,6 +125,7 @@ class ScanPage(QWidget):
         log_header_layout.addWidget(self.retry_failed_button)
         log_header_layout.addWidget(self.clear_failed_button)
         log_header_layout.addWidget(self.export_failed_csv_button)
+        log_header_layout.addWidget(self.export_all_csv_button)
         log_header_layout.addWidget(self.clear_log_button)
 
         self.log_table = ScanLogTable()
@@ -96,6 +133,8 @@ class ScanPage(QWidget):
         layout.addWidget(title_label)
         layout.addWidget(description_label)
         layout.addWidget(self.folder_section)
+        layout.addLayout(preview_header_layout)
+        layout.addWidget(self.preview_table, 1)
         layout.addLayout(log_header_layout)
         layout.addWidget(self.log_table, 1)
 
@@ -116,6 +155,12 @@ class ScanPage(QWidget):
                 font-weight: 700;
             }
 
+            QLabel#subSectionTitle {
+                font-size: 14px;
+                font-weight: 700;
+                color: #333333;
+            }
+
             QLabel#subText {
                 font-size: 14px;
                 color: #555555;
@@ -125,6 +170,12 @@ class ScanPage(QWidget):
                 border: 1px solid #dddddd;
                 border-radius: 10px;
                 background-color: #ffffff;
+            }
+
+            QFrame#scanSubFrame {
+                border: 1px solid #eeeeee;
+                border-radius: 8px;
+                background-color: #fafafa;
             }
 
             QLineEdit {
@@ -219,8 +270,26 @@ class ScanPage(QWidget):
         self.folder_section.folder_select_button.clicked.connect(
             self.actions.select_folder
         )
+        self.folder_section.preview_button.clicked.connect(
+            self.actions.start_preview
+        )
         self.folder_section.scan_button.clicked.connect(
             self.actions.start_scan
+        )
+        self.preview_select_all_button.clicked.connect(
+            self.preview_table.select_all_available
+        )
+        self.preview_clear_selection_button.clicked.connect(
+            self.preview_table.clear_all_selection
+        )
+        self.preview_exclude_error_button.clicked.connect(
+            self.preview_table.exclude_error_rows
+        )
+        self.preview_scan_selected_button.clicked.connect(
+            self.actions.start_selected_preview_items_scan
+        )
+        self.preview_table.selection_changed.connect(
+            self._update_preview_summary
         )
         self.clear_log_button.clicked.connect(
             self.actions.clear_scan_results
@@ -240,9 +309,29 @@ class ScanPage(QWidget):
         self.export_failed_csv_button.clicked.connect(
             self.actions.export_failed_items_csv
         )
+        self.export_all_csv_button.clicked.connect(
+            self.actions.export_all_scan_results_csv
+        )
         self.log_table.artist_open_requested.connect(
             self.actions.open_artist_detail
         )
         self.log_table.folder_open_requested.connect(
             self.actions.open_folder
+        )
+
+    def _update_preview_summary(
+        self,
+        summary: dict,
+    ):
+        self.preview_summary_label.setText(
+            "신규 "
+            f"{summary.get('created', 0)} / "
+            "업데이트 "
+            f"{summary.get('updated', 0)} / "
+            "변경 없음 "
+            f"{summary.get('unchanged', 0)} / "
+            "오류 "
+            f"{summary.get('failed', 0)} / "
+            "선택 "
+            f"{summary.get('selected', 0)}"
         )

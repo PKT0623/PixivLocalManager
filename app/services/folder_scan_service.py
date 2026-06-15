@@ -12,6 +12,7 @@ class FolderScanResult:
     folder_file_count: int
     folder_artwork_count: int
     local_latest_artwork_ids: str
+    extension_counts: dict[str, int] = field(default_factory=dict)
     invalid_artwork_file_names: list[str] = field(default_factory=list)
 
 
@@ -48,6 +49,7 @@ class FolderScanService:
         image_files = self._get_image_files(path)
         folder_size_bytes = self._calculate_folder_size(path)
         artwork_result = self._extract_artwork_ids(image_files)
+        extension_counts = self._count_extensions(image_files)
 
         return FolderScanResult(
             artist_name=artist_name,
@@ -57,6 +59,7 @@ class FolderScanService:
             folder_file_count=len(image_files),
             folder_artwork_count=len(artwork_result["artwork_ids"]),
             local_latest_artwork_ids=",".join(artwork_result["artwork_ids"]),
+            extension_counts=extension_counts,
             invalid_artwork_file_names=artwork_result["invalid_file_names"],
         )
 
@@ -172,6 +175,30 @@ class FolderScanService:
                 total_size += file_path.stat().st_size
 
         return total_size
+
+    def _count_extensions(
+        self,
+        image_files: list[Path],
+    ) -> dict[str, int]:
+        extension_counts: dict[str, int] = {}
+
+        for file_path in image_files:
+            extension = file_path.suffix.lower().lstrip(".")
+
+            if not extension:
+                extension = "unknown"
+
+            extension_counts[extension] = extension_counts.get(
+                extension,
+                0,
+            ) + 1
+
+        return dict(
+            sorted(
+                extension_counts.items(),
+                key=lambda item: item[0],
+            )
+        )
 
     def _extract_artwork_ids(self, image_files: list[Path]) -> dict:
         artwork_ids: set[str] = set()
