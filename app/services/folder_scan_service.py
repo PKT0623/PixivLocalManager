@@ -45,21 +45,18 @@ class FolderScanService:
             raise NotADirectoryError(f"폴더 경로가 아닙니다: {folder_path}")
 
         artist_name, pixiv_id = self.parse_artist_folder_name(path.name)
-
-        image_files = self._get_image_files(path)
-        folder_size_bytes = self._calculate_folder_size(path)
-        artwork_result = self._extract_artwork_ids(image_files)
-        extension_counts = self._count_extensions(image_files)
+        scan_data = self._scan_folder_files(path)
+        artwork_result = self._extract_artwork_ids(scan_data["image_files"])
 
         return FolderScanResult(
             artist_name=artist_name,
             pixiv_id=pixiv_id,
             folder_path=str(path),
-            folder_size_bytes=folder_size_bytes,
-            folder_file_count=len(image_files),
+            folder_size_bytes=scan_data["folder_size_bytes"],
+            folder_file_count=len(scan_data["image_files"]),
             folder_artwork_count=len(artwork_result["artwork_ids"]),
             local_latest_artwork_ids=",".join(artwork_result["artwork_ids"]),
-            extension_counts=extension_counts,
+            extension_counts=scan_data["extension_counts"],
             invalid_artwork_file_names=artwork_result["invalid_file_names"],
         )
 
@@ -155,26 +152,50 @@ class FolderScanService:
 
         return None
 
-    def _get_image_files(self, folder_path: Path) -> list[Path]:
+    def _scan_folder_files(self, folder_path: Path) -> dict:
         image_files: list[Path] = []
+        folder_size_bytes = 0
+        extension_counts: dict[str, int] = {}
 
         for file_path in folder_path.rglob("*"):
-            if (
-                file_path.is_file()
-                and file_path.suffix.lower() in self.IMAGE_EXTENSIONS
-            ):
-                image_files.append(file_path)
+            if not file_path.is_file():
+                continue
 
-        return image_files
+            try:
+                folder_size_bytes += file_path.stat().st_size
+            except OSError:
+                continue
+
+            if file_path.suffix.lower() not in self.IMAGE_EXTENSIONS:
+                continue
+
+            image_files.append(file_path)
+            extension = file_path.suffix.lower().lstrip(".")
+
+            if not extension:
+                extension = "unknown"
+
+            extension_counts[extension] = extension_counts.get(
+                extension,
+                0,
+            ) + 1
+
+        return {
+            "image_files": image_files,
+            "folder_size_bytes": folder_size_bytes,
+            "extension_counts": dict(
+                sorted(
+                    extension_counts.items(),
+                    key=lambda item: item[0],
+                )
+            ),
+        }
+
+    def _get_image_files(self, folder_path: Path) -> list[Path]:
+        return self._scan_folder_files(folder_path)["image_files"]
 
     def _calculate_folder_size(self, folder_path: Path) -> int:
-        total_size = 0
-
-        for file_path in folder_path.rglob("*"):
-            if file_path.is_file():
-                total_size += file_path.stat().st_size
-
-        return total_size
+        return self._scan_folder_files(folder_path)["folder_size_bytes"]
 
     def _count_extensions(
         self,

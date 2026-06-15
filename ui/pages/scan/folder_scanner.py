@@ -16,22 +16,6 @@ class FolderScanner:
         root_folder: Path,
         max_depth: int = 3,
     ) -> list[Path]:
-        artist_folders = []
-
-        for folder_path in self.iter_folders(root_folder, max_depth):
-            if self.has_image_files(folder_path):
-                artist_folders.append(folder_path)
-
-        return sorted(
-            set(artist_folders),
-            key=lambda path: str(path).lower(),
-        )
-
-    def iter_folders(
-        self,
-        root_folder: Path,
-        max_depth: int,
-    ) -> list[Path]:
         folders = []
 
         def walk(current_folder: Path, depth: int):
@@ -53,12 +37,12 @@ class FolderScanner:
 
         walk(root_folder, 1)
 
-        if self.has_image_files(root_folder):
-            folders.insert(0, root_folder)
-
         return folders
 
-    def has_image_files(self, folder_path: Path) -> bool:
+    def has_image_files(
+        self,
+        folder_path: Path,
+    ) -> bool:
         try:
             for file_path in folder_path.rglob("*"):
                 if not file_path.is_file():

@@ -21,6 +21,13 @@ class ScanProgressSection(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
 
+        self.scan_state_label = QLabel(
+            "스캔 상태: 대기"
+        )
+        self.scan_state_label.setObjectName(
+            "subText"
+        )
+
         self.target_count_label = QLabel(
             "발견된 작가 폴더: -"
         )
@@ -54,6 +61,9 @@ class ScanProgressSection(QWidget):
         statistics_frame = self._create_statistics_frame()
         history_frame = self._create_history_frame()
 
+        layout.addWidget(
+            self.scan_state_label
+        )
         layout.addWidget(
             self.target_count_label
         )
@@ -142,8 +152,18 @@ class ScanProgressSection(QWidget):
         )
         self.recent_scan_history_label.setWordWrap(True)
 
+        compare_title = QLabel("직전 스캔 대비")
+        compare_title.setObjectName("subSectionTitle")
+
+        self.scan_compare_label = self._create_sub_text(
+            "비교할 이전 스캔 기록이 없습니다."
+        )
+        self.scan_compare_label.setWordWrap(True)
+
         layout.addWidget(history_title)
         layout.addWidget(self.recent_scan_history_label)
+        layout.addWidget(compare_title)
+        layout.addWidget(self.scan_compare_label)
 
         return frame
 
@@ -174,6 +194,8 @@ class ScanProgressSection(QWidget):
         layout.addWidget(label, row, column)
 
     def reset(self):
+        self.update_scan_state("대기")
+
         self.target_count_label.setText(
             "발견된 작가 폴더: -"
         )
@@ -209,6 +231,29 @@ class ScanProgressSection(QWidget):
             }
         )
 
+    def reset_progress_only(self):
+        self.update_scan_state("대기")
+        self.target_count_label.setText(
+            "발견된 작가 폴더: -"
+        )
+        self.current_folder_label.setText(
+            "현재 작업: -"
+        )
+        self.progress_bar.setRange(
+            0,
+            100,
+        )
+        self.progress_bar.setValue(0)
+        self.progress_bar.setFormat("0 / 0")
+
+    def update_scan_state(
+        self,
+        state_text: str,
+    ):
+        self.scan_state_label.setText(
+            f"스캔 상태: {state_text}"
+        )
+
     def update_target_count(
         self,
         total: int,
@@ -231,7 +276,7 @@ class ScanProgressSection(QWidget):
         total: int,
     ):
         if total <= 0:
-            self.reset()
+            self.reset_progress_only()
             return
 
         self.progress_bar.setRange(
@@ -328,6 +373,45 @@ class ScanProgressSection(QWidget):
 
         self.recent_scan_history_label.setText("\n".join(lines))
 
+    def update_scan_compare_info(
+        self,
+        compare_result: dict | None,
+    ):
+        if not compare_result:
+            self.scan_compare_label.setText(
+                "비교할 이전 스캔 기록이 없습니다."
+            )
+            return
+
+        items = compare_result.get("items", [])
+
+        if not items:
+            self.scan_compare_label.setText(
+                "비교할 이전 스캔 기록이 없습니다."
+            )
+            return
+
+        parts = []
+
+        for item in items:
+            label = str(item.get("label", "-") or "-")
+            diff = int(item.get("diff", 0) or 0)
+            parts.append(
+                f"{label} {self._format_diff(diff)}"
+            )
+
+        latest_finished_at = str(
+            compare_result.get("latest_finished_at", "-") or "-"
+        )
+        previous_finished_at = str(
+            compare_result.get("previous_finished_at", "-") or "-"
+        )
+
+        self.scan_compare_label.setText(
+            f"{previous_finished_at} → {latest_finished_at}\n"
+            + " / ".join(parts)
+        )
+
     def update_statistics(
         self,
         statistics: dict,
@@ -364,3 +448,14 @@ class ScanProgressSection(QWidget):
             parts.append(f"{extension}: {count}")
 
         return ", ".join(parts)
+
+    def _format_diff(
+        self,
+        value: int,
+    ) -> str:
+        value = int(value or 0)
+
+        if value > 0:
+            return f"+{value}"
+
+        return str(value)

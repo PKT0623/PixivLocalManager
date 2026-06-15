@@ -18,6 +18,8 @@ class ScanActions:
 
     def __init__(self, page):
         self.page = page
+        self.resume_payload = None
+        self.current_run_preview_mode = False
 
     def load_default_folder(self):
         folder_path = self.page.settings_service.get_setting(
@@ -41,10 +43,15 @@ class ScanActions:
         if not isinstance(recent_scan_history, list):
             recent_scan_history = []
 
+        compare_result = self._build_latest_compare_result(
+            recent_scan_history
+        )
+
         self.page.progress_section.update_last_scan_info(last_scan_result)
         self.page.progress_section.update_recent_scan_history(
             recent_scan_history
         )
+        self.page.progress_section.update_scan_compare_info(compare_result)
 
     def select_folder(self):
         folder_path = QFileDialog.getExistingDirectory(
@@ -57,6 +64,7 @@ class ScanActions:
             return
 
         self.page.folder_section.folder_path_input.setText(folder_path)
+        self.clear_resume_state()
 
     def start_preview(self):
         folder_path = self.page.folder_section.folder_path_input.text().strip()
@@ -64,6 +72,8 @@ class ScanActions:
         if not folder_path:
             self.page.log_table.add_info_log("오류: 먼저 폴더를 선택하세요.")
             return
+
+        self.clear_resume_state()
 
         self.page.settings_service.set_setting(
             "last_scan_folder",
@@ -75,6 +85,7 @@ class ScanActions:
             target_folder_paths=None,
             clear_log=True,
             preview_mode=True,
+            resume_payload=None,
         )
 
     def start_scan(self):
@@ -83,6 +94,8 @@ class ScanActions:
         if not folder_path:
             self.page.log_table.add_info_log("오류: 먼저 폴더를 선택하세요.")
             return
+
+        self.clear_resume_state()
 
         self.page.settings_service.set_setting(
             "last_scan_folder",
@@ -94,6 +107,7 @@ class ScanActions:
             target_folder_paths=None,
             clear_log=True,
             preview_mode=False,
+            resume_payload=None,
         )
 
     def start_selected_preview_items_scan(self):
@@ -102,6 +116,8 @@ class ScanActions:
         if not folder_paths:
             self.page.log_table.add_info_log("선택된 등록 대상이 없습니다.")
             return
+
+        self.clear_resume_state()
 
         root_folder = self.page.folder_section.folder_path_input.text().strip()
 
@@ -117,7 +133,74 @@ class ScanActions:
             target_folder_paths=folder_paths,
             clear_log=True,
             preview_mode=False,
+            resume_payload=None,
         )
+
+    def pause_scan(self):
+        if self.page.scan_worker is None:
+            self.page.log_table.add_info_log("일시정지할 스캔이 없습니다.")
+            return
+
+        self.page.scan_worker.request_pause()
+        self.page.progress_section.update_scan_state(
+            "현재 작업 완료 후 일시정지 예정"
+        )
+        self.page.folder_section.pause_button.setEnabled(False)
+        self.page.log_table.add_info_log(
+            "일시정지 요청: 현재 작업 완료 후 정지합니다."
+        )
+
+    def resume_scan(self):
+        if not self.resume_payload:
+            self.page.log_table.add_info_log("이어갈 스캔이 없습니다.")
+            return
+
+        if self.page.scan_thread is not None:
+            self.page.log_table.add_info_log("스캔 정리 중입니다. 잠시 후 다시 시도하세요.")
+            return
+
+        folder_paths = self.resume_payload.get("remaining_folder_paths", [])
+        folder_path = self.resume_payload.get("root_folder_path", "")
+        preview_mode = bool(self.resume_payload.get("preview_mode", False))
+
+        if not folder_paths:
+            self.page.log_table.add_info_log("이어갈 남은 항목이 없습니다.")
+            self.clear_resume_state()
+            return
+
+        self.page.log_table.add_info_log(
+            f"이어서 스캔 시작: 남은 항목 {len(folder_paths)}개"
+        )
+
+        payload = dict(self.resume_payload)
+
+        self._start_worker(
+            folder_path=folder_path,
+            target_folder_paths=folder_paths,
+            clear_log=False,
+            preview_mode=preview_mode,
+            resume_payload=payload,
+        )
+
+    def stop_scan(self):
+        if self.page.scan_worker is None:
+            self.page.log_table.add_info_log("중지할 스캔이 없습니다.")
+            return
+
+        self.page.scan_worker.request_stop()
+        self.clear_resume_state()
+        self.page.progress_section.update_scan_state(
+            "중지 요청됨"
+        )
+        self.page.folder_section.stop_button.setEnabled(False)
+        self.page.folder_section.pause_button.setEnabled(False)
+        self.page.log_table.add_info_log(
+            "스캔 중지 요청: 현재 작업 완료 후 중단합니다."
+        )
+
+    def clear_resume_state(self):
+        self.resume_payload = None
+        self.page.folder_section.resume_button.setEnabled(False)
 
     def retry_failed_items(self):
         failed_rows = self.page.log_table.get_failed_rows()
@@ -125,6 +208,8 @@ class ScanActions:
         if not failed_rows:
             self.page.log_table.add_info_log("재시도할 실패 항목이 없습니다.")
             return
+
+        self.clear_resume_state()
 
         folder_paths = []
 
@@ -163,6 +248,7 @@ class ScanActions:
             target_folder_paths=folder_paths,
             clear_log=False,
             preview_mode=False,
+            resume_payload=None,
         )
 
     def clear_failed_items(self):
@@ -227,6 +313,37 @@ class ScanActions:
             f"스캔 결과 CSV 저장 완료: {file_path}"
         )
 
+    def export_preview_results_csv(self):
+        rows = self.page.preview_table.get_all_preview_rows()
+
+        if not rows:
+            self.page.log_table.add_info_log(
+                "CSV로 저장할 미리보기 결과가 없습니다."
+            )
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self.page,
+            "미리보기 결과 CSV 저장",
+            "scan_preview_results.csv",
+            "CSV Files (*.csv)",
+        )
+
+        if not file_path:
+            return
+
+        try:
+            self._write_preview_rows_csv(file_path, rows)
+        except Exception as error:
+            self.page.log_table.add_info_log(
+                f"미리보기 결과 CSV 저장 실패: {error}"
+            )
+            return
+
+        self.page.log_table.add_info_log(
+            f"미리보기 결과 CSV 저장 완료: {file_path}"
+        )
+
     def _write_rows_csv(
         self,
         file_path: str | Path,
@@ -273,35 +390,91 @@ class ScanActions:
                     }
                 )
 
+    def _write_preview_rows_csv(
+        self,
+        file_path: str | Path,
+        rows: list[dict],
+    ):
+        fieldnames = [
+            "selected",
+            "excluded",
+            "preview_result",
+            "artist_name",
+            "pixiv_id",
+            "artwork_count",
+            "file_count",
+            "folder_path",
+            "message",
+        ]
+
+        with open(
+            file_path,
+            "w",
+            newline="",
+            encoding="utf-8-sig",
+        ) as csv_file:
+            writer = csv.DictWriter(
+                csv_file,
+                fieldnames=fieldnames,
+            )
+            writer.writeheader()
+
+            for row in rows:
+                writer.writerow(
+                    {
+                        "selected": row.get("selected", "0"),
+                        "excluded": row.get("is_excluded", "0"),
+                        "preview_result": row.get("preview_result", "-"),
+                        "artist_name": row.get("artist_name", "-"),
+                        "pixiv_id": row.get("pixiv_id", "-"),
+                        "artwork_count": row.get("artwork_count", "-"),
+                        "file_count": row.get("file_count", "-"),
+                        "folder_path": row.get("folder_path", "-"),
+                        "message": row.get("message", "-"),
+                    }
+                )
+
     def _start_worker(
         self,
         folder_path: str,
         target_folder_paths: list[str] | None,
         clear_log: bool,
         preview_mode: bool,
+        resume_payload: dict | None,
     ):
         if self.page.scan_thread is not None:
             self.page.log_table.add_info_log("이미 스캔이 진행 중입니다.")
             return
 
+        self.current_run_preview_mode = preview_mode
         self.set_scanning_state(True)
         self.page.progress_section.reset()
         self.load_scan_history()
+
+        if resume_payload:
+            self._restore_resume_progress_state(resume_payload)
 
         if clear_log:
             self.page.log_table.clear_log()
 
         if preview_mode:
-            self.page.preview_table.clear_preview()
-            self.page.log_table.add_info_log(f"스캔 미리보기 시작: {folder_path}")
+            if clear_log:
+                self.page.preview_table.clear_preview()
+
+            if resume_payload is None:
+                self.page.log_table.add_info_log(
+                    f"스캔 미리보기 시작: {folder_path}"
+                )
         else:
-            self.page.log_table.add_info_log(f"스캔 시작: {folder_path}")
+            if resume_payload is None:
+                self.page.log_table.add_info_log(f"스캔 시작: {folder_path}")
 
         self.page.scan_thread = QThread()
         self.page.scan_worker = ScanWorker(
             folder_path,
             target_folder_paths=target_folder_paths,
             preview_mode=preview_mode,
+            resume_payload=resume_payload,
         )
         self.page.scan_worker.moveToThread(self.page.scan_thread)
 
@@ -315,7 +488,9 @@ class ScanActions:
             self.page.log_table.add_log_row
         )
         self.page.scan_worker.preview_result_requested.connect(
-            self.page.preview_table.set_preview_rows
+            self.page.preview_table.append_preview_rows
+            if resume_payload
+            else self.page.preview_table.set_preview_rows
         )
         self.page.scan_worker.preview_summary_updated.connect(
             self.page.progress_section.update_summary
@@ -338,6 +513,12 @@ class ScanActions:
         self.page.scan_worker.runtime_info_updated.connect(
             self.page.progress_section.update_runtime_info
         )
+        self.page.scan_worker.paused.connect(
+            self.handle_scan_paused
+        )
+        self.page.scan_worker.stopped.connect(
+            self.handle_scan_stopped
+        )
         self.page.scan_worker.failed.connect(
             self.handle_scan_failed
         )
@@ -351,22 +532,81 @@ class ScanActions:
         self.page.scan_worker.failed.connect(
             self.page.scan_thread.quit
         )
+        self.page.scan_worker.paused.connect(
+            self.page.scan_thread.quit
+        )
+        self.page.scan_worker.stopped.connect(
+            self.page.scan_thread.quit
+        )
         self.page.scan_thread.finished.connect(
             self.cleanup_scan_thread
         )
 
         self.page.scan_thread.start()
 
+    def _restore_resume_progress_state(
+        self,
+        resume_payload: dict,
+    ):
+        self.page.progress_section.update_scan_state("재개 중")
+
+        summary = resume_payload.get("summary", {})
+        statistics = resume_payload.get("statistics", {})
+        current = int(resume_payload.get("completed_count", 0) or 0)
+        total = int(resume_payload.get("total_count", 0) or 0)
+
+        self.page.progress_section.update_summary(summary)
+        self.page.progress_section.update_statistics(statistics)
+        self.page.progress_section.update_progress(current, total)
+
     def handle_scan_finished(
         self,
         result: dict,
     ):
-        if self.page.scan_worker is not None and self.page.scan_worker.preview_mode:
+        self.clear_resume_state()
+
+        if self.current_run_preview_mode:
+            self.apply_preview_filters()
+            self.page.progress_section.update_scan_state("미리보기 완료")
             self.set_scanning_state(False)
             return
 
         self._save_scan_result(result)
         self.load_scan_history()
+        self.page.progress_section.update_scan_state("완료")
+        self.set_scanning_state(False)
+
+    def handle_scan_paused(
+        self,
+        payload: dict,
+    ):
+        self.resume_payload = payload
+
+        remaining_count = len(payload.get("remaining_folder_paths", []) or [])
+
+        self.page.progress_section.update_scan_state(
+            f"일시정지됨 / 재개 가능 {remaining_count}개"
+        )
+        self.page.log_table.add_info_log(
+            f"스캔 일시정지: 남은 항목 {remaining_count}개"
+        )
+        self.set_paused_state()
+        self.page.folder_section.resume_button.setEnabled(False)
+
+    def handle_scan_stopped(
+        self,
+        payload: dict,
+    ):
+        self.clear_resume_state()
+
+        stopped_count = int(payload.get("completed_count", 0) or 0)
+        total_count = int(payload.get("total_count", 0) or 0)
+
+        self.page.progress_section.reset_progress_only()
+        self.page.progress_section.update_scan_state("중단됨")
+        self.page.log_table.add_info_log(
+            f"스캔 중단: 처리 {stopped_count}/{total_count}"
+        )
         self.set_scanning_state(False)
 
     def _save_scan_result(
@@ -450,7 +690,71 @@ class ScanActions:
             ),
         )
 
+    def _build_latest_compare_result(
+        self,
+        history: list[dict],
+    ) -> dict | None:
+        if len(history) < 2:
+            return None
+
+        latest = history[0]
+        previous = history[1]
+
+        return self._build_compare_result(
+            latest=latest,
+            previous=previous,
+        )
+
+    def _build_compare_result(
+        self,
+        latest: dict,
+        previous: dict,
+    ) -> dict:
+        fields = [
+            ("total", "대상"),
+            ("created", "등록"),
+            ("updated", "업데이트"),
+            ("unchanged", "변경 없음"),
+            ("failed", "실패"),
+            ("total_file_count", "파일"),
+            ("total_artwork_count", "작품"),
+        ]
+
+        items = []
+
+        for key, label in fields:
+            latest_value = self._safe_int(latest.get(key))
+            previous_value = self._safe_int(previous.get(key))
+            diff = latest_value - previous_value
+
+            items.append(
+                {
+                    "key": key,
+                    "label": label,
+                    "latest": latest_value,
+                    "previous": previous_value,
+                    "diff": diff,
+                }
+            )
+
+        return {
+            "latest_finished_at": latest.get("finished_at_text", "-"),
+            "previous_finished_at": previous.get("finished_at_text", "-"),
+            "items": items,
+        }
+
+    def _safe_int(
+        self,
+        value,
+    ) -> int:
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+
     def handle_scan_failed(self, error_message: str):
+        self.clear_resume_state()
+
         self.page.log_table.add_log_row(
             {
                 "time": datetime.now().strftime("%H:%M:%S"),
@@ -468,16 +772,15 @@ class ScanActions:
                 "error_message": error_message,
             }
         )
+        self.page.progress_section.update_scan_state("실패")
         self.set_scanning_state(False)
 
     def cleanup_scan_thread(self):
-        if self.page.scan_worker is not None:
-            self.page.scan_worker.deleteLater()
-            self.page.scan_worker = None
+        self.page.scan_worker = None
+        self.page.scan_thread = None
 
-        if self.page.scan_thread is not None:
-            self.page.scan_thread.deleteLater()
-            self.page.scan_thread = None
+        if self.resume_payload:
+            self.page.folder_section.resume_button.setEnabled(True)
 
     def set_scanning_state(self, is_scanning: bool):
         self.page.folder_section.scan_button.setEnabled(not is_scanning)
@@ -486,20 +789,68 @@ class ScanActions:
             not is_scanning
         )
 
+        self.page.folder_section.pause_button.setEnabled(is_scanning)
+        self.page.folder_section.stop_button.setEnabled(is_scanning)
+        self.page.folder_section.resume_button.setEnabled(
+            (not is_scanning)
+            and bool(self.resume_payload)
+            and self.page.scan_thread is None
+        )
+
         self.page.clear_log_button.setEnabled(not is_scanning)
         self.page.retry_failed_button.setEnabled(not is_scanning)
         self.page.clear_failed_button.setEnabled(not is_scanning)
         self.page.export_failed_csv_button.setEnabled(not is_scanning)
         self.page.export_all_csv_button.setEnabled(not is_scanning)
+
         self.page.preview_scan_selected_button.setEnabled(not is_scanning)
         self.page.preview_select_all_button.setEnabled(not is_scanning)
         self.page.preview_clear_selection_button.setEnabled(not is_scanning)
+        self.page.preview_exclude_selected_button.setEnabled(not is_scanning)
+        self.page.preview_keep_selected_button.setEnabled(not is_scanning)
         self.page.preview_exclude_error_button.setEnabled(not is_scanning)
+        self.page.preview_export_csv_button.setEnabled(not is_scanning)
+
+        self.page.preview_show_created_checkbox.setEnabled(not is_scanning)
+        self.page.preview_show_updated_checkbox.setEnabled(not is_scanning)
+        self.page.preview_show_error_checkbox.setEnabled(not is_scanning)
+        self.page.preview_hide_unchanged_checkbox.setEnabled(not is_scanning)
 
         if is_scanning:
+            self.page.progress_section.update_scan_state("진행 중")
             self.page.folder_section.scan_button.setText("스캔 중...")
         else:
             self.page.folder_section.scan_button.setText("스캔 및 등록")
+
+    def set_paused_state(self):
+        self.page.folder_section.scan_button.setEnabled(True)
+        self.page.folder_section.preview_button.setEnabled(True)
+        self.page.folder_section.folder_select_button.setEnabled(True)
+
+        self.page.folder_section.pause_button.setEnabled(False)
+        self.page.folder_section.stop_button.setEnabled(False)
+        self.page.folder_section.resume_button.setEnabled(False)
+
+        self.page.clear_log_button.setEnabled(True)
+        self.page.retry_failed_button.setEnabled(True)
+        self.page.clear_failed_button.setEnabled(True)
+        self.page.export_failed_csv_button.setEnabled(True)
+        self.page.export_all_csv_button.setEnabled(True)
+
+        self.page.preview_scan_selected_button.setEnabled(True)
+        self.page.preview_select_all_button.setEnabled(True)
+        self.page.preview_clear_selection_button.setEnabled(True)
+        self.page.preview_exclude_selected_button.setEnabled(True)
+        self.page.preview_keep_selected_button.setEnabled(True)
+        self.page.preview_exclude_error_button.setEnabled(True)
+        self.page.preview_export_csv_button.setEnabled(True)
+
+        self.page.preview_show_created_checkbox.setEnabled(True)
+        self.page.preview_show_updated_checkbox.setEnabled(True)
+        self.page.preview_show_error_checkbox.setEnabled(True)
+        self.page.preview_hide_unchanged_checkbox.setEnabled(True)
+
+        self.page.folder_section.scan_button.setText("스캔 및 등록")
 
     def apply_result_filter(self):
         result_filter = self.page.result_filter_combo.currentText()
@@ -510,7 +861,24 @@ class ScanActions:
             self.page.error_only_checkbox.isChecked()
         )
 
+    def apply_preview_filters(self):
+        self.page.preview_table.set_filters(
+            show_created_only=(
+                self.page.preview_show_created_checkbox.isChecked()
+            ),
+            show_updated_only=(
+                self.page.preview_show_updated_checkbox.isChecked()
+            ),
+            show_error_only=(
+                self.page.preview_show_error_checkbox.isChecked()
+            ),
+            hide_unchanged=(
+                self.page.preview_hide_unchanged_checkbox.isChecked()
+            ),
+        )
+
     def clear_scan_results(self):
+        self.clear_resume_state()
         self.page.log_table.clear_log()
         self.page.preview_table.clear_preview()
         self.page.progress_section.reset()

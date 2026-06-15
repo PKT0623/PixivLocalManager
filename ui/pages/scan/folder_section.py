@@ -37,12 +37,15 @@ class ScanFolderSection(QFrame):
         self.folder_select_button.setObjectName(
             "folderSelectButton"
         )
+        self.folder_select_button.setFixedWidth(110)
 
         self.preview_button = QPushButton("미리보기")
         self.preview_button.setObjectName("folderSelectButton")
+        self.preview_button.setFixedWidth(110)
 
         self.scan_button = QPushButton("스캔 및 등록")
         self.scan_button.setObjectName("scanButton")
+        self.scan_button.setFixedWidth(110)
 
         folder_layout.addWidget(
             self.folder_path_input,
@@ -58,5 +61,26 @@ class ScanFolderSection(QFrame):
             self.scan_button
         )
 
+        control_layout = QHBoxLayout()
+        control_layout.setSpacing(8)
+
+        self.pause_button = QPushButton("일시정지")
+        self.pause_button.setObjectName("clearLogButton")
+        self.pause_button.setEnabled(False)
+
+        self.resume_button = QPushButton("이어서 스캔")
+        self.resume_button.setObjectName("clearLogButton")
+        self.resume_button.setEnabled(False)
+
+        self.stop_button = QPushButton("중지")
+        self.stop_button.setObjectName("clearLogButton")
+        self.stop_button.setEnabled(False)
+
+        control_layout.addStretch()
+        control_layout.addWidget(self.pause_button)
+        control_layout.addWidget(self.resume_button)
+        control_layout.addWidget(self.stop_button)
+
         layout.addWidget(folder_label)
         layout.addLayout(folder_layout)
+        layout.addLayout(control_layout)

@@ -60,14 +60,30 @@ class ScanPage(QWidget):
         )
         self.preview_summary_label.setObjectName("subText")
 
+        self.preview_show_created_checkbox = QCheckBox("신규만 보기")
+        self.preview_show_updated_checkbox = QCheckBox("업데이트만 보기")
+        self.preview_show_error_checkbox = QCheckBox("오류만 보기")
+
+        self.preview_hide_unchanged_checkbox = QCheckBox("변경 없음 숨김")
+        self.preview_hide_unchanged_checkbox.setChecked(True)
+
         self.preview_select_all_button = QPushButton("전체 선택")
         self.preview_select_all_button.setObjectName("clearLogButton")
 
         self.preview_clear_selection_button = QPushButton("전체 해제")
         self.preview_clear_selection_button.setObjectName("clearLogButton")
 
+        self.preview_exclude_selected_button = QPushButton("선택 제외")
+        self.preview_exclude_selected_button.setObjectName("clearLogButton")
+
+        self.preview_keep_selected_button = QPushButton("선택만 남김")
+        self.preview_keep_selected_button.setObjectName("clearLogButton")
+
         self.preview_exclude_error_button = QPushButton("오류 제외")
         self.preview_exclude_error_button.setObjectName("clearLogButton")
+
+        self.preview_export_csv_button = QPushButton("미리보기 CSV")
+        self.preview_export_csv_button.setObjectName("clearLogButton")
 
         self.preview_scan_selected_button = QPushButton("선택 항목 등록")
         self.preview_scan_selected_button.setObjectName("scanButton")
@@ -75,9 +91,16 @@ class ScanPage(QWidget):
         preview_header_layout.addWidget(preview_label)
         preview_header_layout.addWidget(self.preview_summary_label)
         preview_header_layout.addStretch()
+        preview_header_layout.addWidget(self.preview_show_created_checkbox)
+        preview_header_layout.addWidget(self.preview_show_updated_checkbox)
+        preview_header_layout.addWidget(self.preview_show_error_checkbox)
+        preview_header_layout.addWidget(self.preview_hide_unchanged_checkbox)
         preview_header_layout.addWidget(self.preview_select_all_button)
         preview_header_layout.addWidget(self.preview_clear_selection_button)
+        preview_header_layout.addWidget(self.preview_exclude_selected_button)
+        preview_header_layout.addWidget(self.preview_keep_selected_button)
         preview_header_layout.addWidget(self.preview_exclude_error_button)
+        preview_header_layout.addWidget(self.preview_export_csv_button)
         preview_header_layout.addWidget(self.preview_scan_selected_button)
 
         self.preview_table = ScanPreviewTable()
@@ -217,7 +240,8 @@ class ScanPage(QWidget):
                 background-color: #198754;
                 color: #ffffff;
                 border-color: #198754;
-                min-width: 110px;
+                min-width: 100px;
+                max-width: 100px;
             }
 
             QPushButton#scanButton:hover {
@@ -226,7 +250,8 @@ class ScanPage(QWidget):
 
             QPushButton#folderSelectButton,
             QPushButton#clearLogButton {
-                min-width: 90px;
+                min-width: 100px;
+                max-width: 100px;
             }
 
             QProgressBar {
@@ -276,17 +301,47 @@ class ScanPage(QWidget):
         self.folder_section.scan_button.clicked.connect(
             self.actions.start_scan
         )
+        self.folder_section.pause_button.clicked.connect(
+            self.actions.pause_scan
+        )
+        self.folder_section.resume_button.clicked.connect(
+            self.actions.resume_scan
+        )
+        self.folder_section.stop_button.clicked.connect(
+            self.actions.stop_scan
+        )
         self.preview_select_all_button.clicked.connect(
             self.preview_table.select_all_available
         )
         self.preview_clear_selection_button.clicked.connect(
             self.preview_table.clear_all_selection
         )
+        self.preview_exclude_selected_button.clicked.connect(
+            self.preview_table.exclude_selected_rows
+        )
+        self.preview_keep_selected_button.clicked.connect(
+            self.preview_table.keep_selected_rows_only
+        )
         self.preview_exclude_error_button.clicked.connect(
             self.preview_table.exclude_error_rows
         )
+        self.preview_export_csv_button.clicked.connect(
+            self.actions.export_preview_results_csv
+        )
         self.preview_scan_selected_button.clicked.connect(
             self.actions.start_selected_preview_items_scan
+        )
+        self.preview_show_created_checkbox.toggled.connect(
+            self.actions.apply_preview_filters
+        )
+        self.preview_show_updated_checkbox.toggled.connect(
+            self.actions.apply_preview_filters
+        )
+        self.preview_show_error_checkbox.toggled.connect(
+            self.actions.apply_preview_filters
+        )
+        self.preview_hide_unchanged_checkbox.toggled.connect(
+            self.actions.apply_preview_filters
         )
         self.preview_table.selection_changed.connect(
             self._update_preview_summary

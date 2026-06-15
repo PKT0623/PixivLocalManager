@@ -22,6 +22,8 @@ class ScanWorker(QObject):
     summary_updated = Signal(dict)
     statistics_updated = Signal(dict)
     runtime_info_updated = Signal(dict)
+    paused = Signal(dict)
+    stopped = Signal(dict)
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -30,16 +32,29 @@ class ScanWorker(QObject):
         root_folder_path: str,
         target_folder_paths: list[str] | None = None,
         preview_mode: bool = False,
+        resume_payload: dict | None = None,
     ):
         super().__init__()
 
         self.root_folder_path = root_folder_path
         self.target_folder_paths = target_folder_paths
         self.preview_mode = preview_mode
+        self.resume_payload = resume_payload or {}
+
         self.artist_service = ArtistService()
         self.folder_scanner = FolderScanner()
         self.folder_scan_service = FolderScanService()
         self.status_service = ArtworkStatusService()
+
+        self.stop_requested = False
+        self.pause_requested = False
+
+    def request_stop(self):
+        self.stop_requested = True
+        self.pause_requested = False
+
+    def request_pause(self):
+        self.pause_requested = True
 
     def run(self):
         if self.preview_mode:
@@ -74,9 +89,19 @@ class ScanWorker(QObject):
                     )
 
             artist_folders = validation_result["scannable_folders"]
+            run_state = self._create_run_state(
+                started_at=started_at,
+                start_timestamp=start_timestamp,
+                artist_folders=artist_folders,
+            )
 
-            self.target_count_changed.emit(len(artist_folders))
-            self.progress_updated.emit(0, len(artist_folders))
+            self._restore_run_state_if_needed(run_state)
+
+            self.target_count_changed.emit(run_state["total_count"])
+            self.progress_updated.emit(
+                run_state["completed_count"],
+                run_state["total_count"],
+            )
 
             if not artist_folders and not preview_rows:
                 self.log_message_requested.emit(
@@ -95,18 +120,17 @@ class ScanWorker(QObject):
                 )
                 return
 
-            self.log_message_requested.emit(
-                f"스캔 미리보기 시작: {len(artist_folders)}개"
-            )
+            if not self.resume_payload:
+                self.log_message_requested.emit(
+                    f"스캔 미리보기 시작: {len(artist_folders)}개"
+                )
 
-            summary = self._create_summary()
-            statistics = self._create_statistics()
             existing_artists = self.artist_service.get_all_artists()
             existing_by_pixiv_id = self._build_existing_pixiv_id_map(
                 existing_artists
             )
 
-            for index, folder_path in enumerate(
+            for local_index, folder_path in enumerate(
                 artist_folders,
                 start=1,
             ):
@@ -118,9 +142,9 @@ class ScanWorker(QObject):
                         existing_by_pixiv_id=existing_by_pixiv_id,
                     )
                     preview_rows.append(row)
-                    self._increase_preview_summary(summary, row)
+                    self._increase_preview_summary(run_state["summary"], row)
                     self._increase_statistics(
-                        statistics,
+                        run_state["statistics"],
                         row.get("scan_result"),
                     )
                 except Exception as error:
@@ -129,31 +153,54 @@ class ScanWorker(QObject):
                         error,
                     )
                     preview_rows.append(error_row)
-                    self._increase_preview_summary(summary, error_row)
+                    self._increase_preview_summary(
+                        run_state["summary"],
+                        error_row,
+                    )
 
-                self.preview_summary_updated.emit(summary)
-                self.statistics_updated.emit(statistics)
-                self.progress_updated.emit(index, len(artist_folders))
+                self._increase_completed_count(run_state)
+                self.preview_summary_updated.emit(run_state["summary"])
+                self.statistics_updated.emit(run_state["statistics"])
+                self.progress_updated.emit(
+                    run_state["completed_count"],
+                    run_state["total_count"],
+                )
                 self.runtime_info_updated.emit(
                     self._build_runtime_info(
                         started_at=started_at,
                         start_timestamp=start_timestamp,
-                        current=index,
-                        total=len(artist_folders),
+                        current=run_state["completed_count"],
+                        total=run_state["total_count"],
                     )
                 )
+
+                if self._should_stop_after_preview_item(
+                    run_state,
+                    artist_folders,
+                    local_index,
+                    preview_rows,
+                ):
+                    return
+
+                if self._should_pause_after_preview_item(
+                    run_state,
+                    artist_folders,
+                    local_index,
+                    preview_rows,
+                ):
+                    return
 
             self.current_folder_changed.emit("-")
             self.preview_result_requested.emit(
                 self._strip_preview_runtime_objects(preview_rows)
             )
-            self.preview_summary_updated.emit(summary)
+            self.preview_summary_updated.emit(run_state["summary"])
             self.log_message_requested.emit(
                 "스캔 미리보기 완료: "
-                f"신규 {summary['created']}개, "
-                f"업데이트 {summary['updated']}개, "
-                f"변경 없음 {summary['unchanged']}개, "
-                f"오류 예상 {summary['failed']}개"
+                f"신규 {run_state['summary']['created']}개, "
+                f"업데이트 {run_state['summary']['updated']}개, "
+                f"변경 없음 {run_state['summary']['unchanged']}개, "
+                f"오류 예상 {run_state['summary']['failed']}개"
             )
         except Exception as error:
             self.failed.emit(str(error))
@@ -163,9 +210,9 @@ class ScanWorker(QObject):
             self._build_finished_result(
                 started_at=started_at,
                 start_timestamp=start_timestamp,
-                total=len(artist_folders),
-                summary=summary,
-                statistics=statistics,
+                total=run_state["total_count"],
+                summary=run_state["summary"],
+                statistics=run_state["statistics"],
             )
         )
 
@@ -190,9 +237,19 @@ class ScanWorker(QObject):
                 self.scan_result_requested.emit(row_data)
 
             artist_folders = validation_result["scannable_folders"]
+            run_state = self._create_run_state(
+                started_at=started_at,
+                start_timestamp=start_timestamp,
+                artist_folders=artist_folders,
+            )
 
-            self.target_count_changed.emit(len(artist_folders))
-            self.progress_updated.emit(0, len(artist_folders))
+            self._restore_run_state_if_needed(run_state)
+
+            self.target_count_changed.emit(run_state["total_count"])
+            self.progress_updated.emit(
+                run_state["completed_count"],
+                run_state["total_count"],
+            )
 
             if not artist_folders:
                 self.log_message_requested.emit(
@@ -212,13 +269,10 @@ class ScanWorker(QObject):
                 f"스캔 대상 작가 폴더: {len(artist_folders)}개"
             )
 
-            summary = self._create_summary()
-            statistics = self._create_statistics()
+            self.summary_updated.emit(run_state["summary"])
+            self.statistics_updated.emit(run_state["statistics"])
 
-            self.summary_updated.emit(summary)
-            self.statistics_updated.emit(statistics)
-
-            for index, folder_path in enumerate(
+            for local_index, folder_path in enumerate(
                 artist_folders,
                 start=1,
             ):
@@ -231,54 +285,72 @@ class ScanWorker(QObject):
                     scan_result = result.get("scan_result")
 
                     result_label = self._result_label(action)
-                    self._increase_summary(summary, action)
-                    self._increase_statistics(statistics, scan_result)
+                    self._increase_summary(run_state["summary"], action)
+                    self._increase_statistics(
+                        run_state["statistics"],
+                        scan_result,
+                    )
 
                     self.scan_result_requested.emit(
                         self._build_scan_result_row(
-                            index=index,
-                            total=len(artist_folders),
+                            index=run_state["completed_count"] + 1,
+                            total=run_state["total_count"],
                             result=result_label,
                             artist=artist,
                             folder_path=folder_path,
                         )
                     )
                 except Exception as error:
-                    summary["failed"] += 1
+                    run_state["summary"]["failed"] += 1
 
                     self.scan_result_requested.emit(
                         self._build_failed_result_row(
-                            index=index,
-                            total=len(artist_folders),
+                            index=run_state["completed_count"] + 1,
+                            total=run_state["total_count"],
                             folder_path=folder_path,
                             error=error,
                         )
                     )
 
-                self.summary_updated.emit(summary)
-                self.statistics_updated.emit(statistics)
+                self._increase_completed_count(run_state)
+                self.summary_updated.emit(run_state["summary"])
+                self.statistics_updated.emit(run_state["statistics"])
                 self.progress_updated.emit(
-                    index,
-                    len(artist_folders),
+                    run_state["completed_count"],
+                    run_state["total_count"],
                 )
                 self.runtime_info_updated.emit(
                     self._build_runtime_info(
                         started_at=started_at,
                         start_timestamp=start_timestamp,
-                        current=index,
-                        total=len(artist_folders),
+                        current=run_state["completed_count"],
+                        total=run_state["total_count"],
                     )
                 )
+
+                if self._should_stop_after_item(
+                    run_state,
+                    artist_folders,
+                    local_index,
+                ):
+                    return
+
+                if self._should_pause_after_item(
+                    run_state,
+                    artist_folders,
+                    local_index,
+                ):
+                    return
 
             self.current_folder_changed.emit("-")
             self.log_message_requested.emit(
                 "전체 스캔 완료: "
-                f"등록 {summary['created']}개, "
-                f"업데이트 {summary['updated']}개, "
-                f"변경 없음 {summary['unchanged']}개, "
-                f"실패 {summary['failed']}개, "
-                f"총 파일 {statistics['total_file_count']}개, "
-                f"총 작품 {statistics['total_artwork_count']}개"
+                f"등록 {run_state['summary']['created']}개, "
+                f"업데이트 {run_state['summary']['updated']}개, "
+                f"변경 없음 {run_state['summary']['unchanged']}개, "
+                f"실패 {run_state['summary']['failed']}개, "
+                f"총 파일 {run_state['statistics']['total_file_count']}개, "
+                f"총 작품 {run_state['statistics']['total_artwork_count']}개"
             )
         except Exception as error:
             self.failed.emit(str(error))
@@ -287,11 +359,163 @@ class ScanWorker(QObject):
         finished_result = self._build_finished_result(
             started_at=started_at,
             start_timestamp=start_timestamp,
-            total=len(artist_folders),
-            summary=summary,
-            statistics=statistics,
+            total=run_state["total_count"],
+            summary=run_state["summary"],
+            statistics=run_state["statistics"],
         )
         self.finished.emit(finished_result)
+
+    def _create_run_state(
+        self,
+        started_at: datetime,
+        start_timestamp: float,
+        artist_folders: list[Path],
+    ) -> dict:
+        return {
+            "started_at": started_at,
+            "start_timestamp": start_timestamp,
+            "root_folder_path": self.root_folder_path,
+            "preview_mode": self.preview_mode,
+            "total_count": len(artist_folders),
+            "completed_count": 0,
+            "summary": self._create_summary(),
+            "statistics": self._create_statistics(),
+        }
+
+    def _restore_run_state_if_needed(
+        self,
+        run_state: dict,
+    ):
+        if not self.resume_payload:
+            return
+
+        run_state["total_count"] = int(
+            self.resume_payload.get("total_count", 0)
+            or run_state["total_count"]
+        )
+        run_state["completed_count"] = int(
+            self.resume_payload.get("completed_count", 0) or 0
+        )
+        run_state["summary"] = dict(
+            self.resume_payload.get("summary", {}) or self._create_summary()
+        )
+        run_state["statistics"] = dict(
+            self.resume_payload.get("statistics", {})
+            or self._create_statistics()
+        )
+
+    def _increase_completed_count(
+        self,
+        run_state: dict,
+    ):
+        run_state["completed_count"] = int(
+            run_state.get("completed_count", 0) or 0
+        ) + 1
+
+    def _should_stop_after_item(
+        self,
+        run_state: dict,
+        artist_folders: list[Path],
+        local_index: int,
+    ) -> bool:
+        if not self.stop_requested:
+            return False
+
+        self.current_folder_changed.emit("-")
+        self.stopped.emit(
+            self._build_control_payload(
+                run_state,
+                artist_folders,
+                local_index,
+            )
+        )
+        return True
+
+    def _should_pause_after_item(
+        self,
+        run_state: dict,
+        artist_folders: list[Path],
+        local_index: int,
+    ) -> bool:
+        if not self.pause_requested:
+            return False
+
+        self.current_folder_changed.emit("-")
+        self.paused.emit(
+            self._build_control_payload(
+                run_state,
+                artist_folders,
+                local_index,
+            )
+        )
+        return True
+
+    def _should_stop_after_preview_item(
+        self,
+        run_state: dict,
+        artist_folders: list[Path],
+        local_index: int,
+        preview_rows: list[dict],
+    ) -> bool:
+        if not self.stop_requested:
+            return False
+
+        self.current_folder_changed.emit("-")
+        self.preview_result_requested.emit(
+            self._strip_preview_runtime_objects(preview_rows)
+        )
+        self.stopped.emit(
+            self._build_control_payload(
+                run_state,
+                artist_folders,
+                local_index,
+            )
+        )
+        return True
+
+    def _should_pause_after_preview_item(
+        self,
+        run_state: dict,
+        artist_folders: list[Path],
+        local_index: int,
+        preview_rows: list[dict],
+    ) -> bool:
+        if not self.pause_requested:
+            return False
+
+        self.current_folder_changed.emit("-")
+        self.preview_result_requested.emit(
+            self._strip_preview_runtime_objects(preview_rows)
+        )
+        self.paused.emit(
+            self._build_control_payload(
+                run_state,
+                artist_folders,
+                local_index,
+            )
+        )
+        return True
+
+    def _build_control_payload(
+        self,
+        run_state: dict,
+        artist_folders: list[Path],
+        local_index: int,
+    ) -> dict:
+        remaining_folders = artist_folders[local_index:]
+
+        return {
+            "root_folder_path": self.root_folder_path,
+            "preview_mode": self.preview_mode,
+            "total_count": int(run_state.get("total_count", 0) or 0),
+            "completed_count": int(run_state.get("completed_count", 0) or 0),
+            "summary": dict(run_state.get("summary", {}) or {}),
+            "statistics": dict(run_state.get("statistics", {}) or {}),
+            "remaining_folder_paths": [
+                str(folder_path)
+                for folder_path in remaining_folders
+            ],
+        }
 
     def _get_artist_folders(self) -> list[Path]:
         if self.target_folder_paths is not None:
@@ -601,13 +825,18 @@ class ScanWorker(QObject):
         )
         update_data["update_status"] = update_status.status
 
-        if self._has_preview_changes(existing_artist, update_data):
+        change_message = self._build_preview_change_message(
+            existing_artist,
+            update_data,
+        )
+
+        if change_message:
             return self._build_preview_row(
                 preview_result="업데이트 예정",
                 can_scan=True,
                 scan_result=scan_result,
                 existing_artist=existing_artist,
-                message="기존 작가 정보가 갱신됩니다.",
+                message=change_message,
             )
 
         return self._build_preview_row(
@@ -689,30 +918,158 @@ class ScanWorker(QObject):
 
         return result
 
-    def _has_preview_changes(
+    def _build_preview_change_message(
         self,
         existing_artist: dict,
         update_data: dict,
-    ) -> bool:
-        compare_fields = [
-            "artist_name",
-            "pixiv_id",
-            "folder_path",
-            "folder_size_bytes",
-            "folder_file_count",
-            "folder_artwork_count",
-            "local_latest_artwork_ids",
-            "update_status",
+    ) -> str:
+        messages = []
+
+        change_targets = [
+            ("작가명", "artist_name", self._format_text_change_value),
+            ("폴더 경로", "folder_path", self._format_text_change_value),
+            ("작품 수", "folder_artwork_count", self._format_number_change_value),
+            ("파일 수", "folder_file_count", self._format_number_change_value),
+            ("폴더 크기", "folder_size_bytes", self._format_size_change_value),
+            ("업데이트 상태", "update_status", self._format_text_change_value),
         ]
 
-        for field_name in compare_fields:
+        for label, field_name, formatter in change_targets:
             old_value = existing_artist.get(field_name)
             new_value = update_data.get(field_name)
 
-            if str(old_value or "") != str(new_value or ""):
-                return True
+            if not self._is_value_changed(old_value, new_value):
+                continue
 
-        return False
+            messages.append(
+                f"{label} {formatter(old_value)} → {formatter(new_value)}"
+            )
+
+        old_artwork_ids = str(
+            existing_artist.get("local_latest_artwork_ids", "") or ""
+        )
+        new_artwork_ids = str(
+            update_data.get("local_latest_artwork_ids", "") or ""
+        )
+
+        if self._is_value_changed(old_artwork_ids, new_artwork_ids):
+            messages.extend(
+                self._build_artwork_id_change_messages(
+                    old_artwork_ids,
+                    new_artwork_ids,
+                )
+            )
+
+        return " / ".join(messages)
+
+    def _build_artwork_id_change_messages(
+        self,
+        old_value: str,
+        new_value: str,
+    ) -> list[str]:
+        old_ids = self._split_artwork_ids(old_value)
+        new_ids = self._split_artwork_ids(new_value)
+
+        added_ids = [
+            artwork_id
+            for artwork_id in new_ids
+            if artwork_id not in old_ids
+        ]
+        removed_ids = [
+            artwork_id
+            for artwork_id in old_ids
+            if artwork_id not in new_ids
+        ]
+
+        messages = []
+
+        if added_ids:
+            messages.append(
+                "신규 작품 ID "
+                + ", ".join(added_ids[:5])
+                + self._format_overflow_count(len(added_ids), 5)
+            )
+
+        if removed_ids:
+            messages.append(
+                "제외된 작품 ID "
+                + ", ".join(removed_ids[:5])
+                + self._format_overflow_count(len(removed_ids), 5)
+            )
+
+        if not messages:
+            messages.append("최신 작품 ID 순서 변경")
+
+        return messages
+
+    def _split_artwork_ids(
+        self,
+        value: str,
+    ) -> list[str]:
+        return [
+            item.strip()
+            for item in str(value or "").split(",")
+            if item.strip()
+        ]
+
+    def _format_overflow_count(
+        self,
+        total_count: int,
+        display_limit: int,
+    ) -> str:
+        remain_count = int(total_count or 0) - int(display_limit or 0)
+
+        if remain_count <= 0:
+            return ""
+
+        return f" 외 {remain_count}개"
+
+    def _is_value_changed(
+        self,
+        old_value,
+        new_value,
+    ) -> bool:
+        return str(old_value or "") != str(new_value or "")
+
+    def _format_text_change_value(
+        self,
+        value,
+    ) -> str:
+        value = str(value or "").strip()
+
+        if not value:
+            return "-"
+
+        return value
+
+    def _format_number_change_value(
+        self,
+        value,
+    ) -> str:
+        try:
+            return str(int(value or 0))
+        except (TypeError, ValueError):
+            return "0"
+
+    def _format_size_change_value(
+        self,
+        value,
+    ) -> str:
+        try:
+            size = int(value or 0)
+        except (TypeError, ValueError):
+            size = 0
+
+        if size >= 1024 * 1024 * 1024:
+            return f"{size / (1024 * 1024 * 1024):.2f} GB"
+
+        if size >= 1024 * 1024:
+            return f"{size / (1024 * 1024):.2f} MB"
+
+        if size >= 1024:
+            return f"{size / 1024:.2f} KB"
+
+        return f"{size} B"
 
     def _build_existing_pixiv_id_map(
         self,
