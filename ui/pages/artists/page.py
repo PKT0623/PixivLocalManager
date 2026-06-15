@@ -119,6 +119,29 @@ class ArtistsPage(QWidget):
         self.toolbar.refresh_button.clicked.connect(
             self.actions.load_artists
         )
+
+        self.toolbar.bulk_rating_button.clicked.connect(
+            self.actions.handle_bulk_rating_change
+        )
+        self.toolbar.bulk_favorite_button.clicked.connect(
+            self.actions.handle_bulk_favorite
+        )
+        self.toolbar.bulk_unfavorite_button.clicked.connect(
+            self.actions.handle_bulk_unfavorite
+        )
+        self.toolbar.bulk_hide_button.clicked.connect(
+            self.actions.handle_bulk_hide
+        )
+        self.toolbar.bulk_unhide_button.clicked.connect(
+            self.actions.handle_bulk_unhide
+        )
+        self.toolbar.bulk_delete_button.clicked.connect(
+            self.actions.handle_bulk_delete
+        )
+        self.toolbar.restore_deleted_button.clicked.connect(
+            self.actions.handle_restore_deleted_artists
+        )
+
         self.artist_table.artist_selected.connect(
             self.artist_selected.emit
         )
@@ -127,6 +150,9 @@ class ArtistsPage(QWidget):
         )
         self.artist_table.favorite_toggled.connect(
             self.actions.handle_favorite_toggled
+        )
+        self.artist_table.rating_changed.connect(
+            self.actions.handle_rating_changed
         )
 
     def load_artists(self):

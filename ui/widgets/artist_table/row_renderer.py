@@ -152,8 +152,8 @@ class ArtistTableRowRenderer:
         self.table.setItem(row, column, item)
 
     def apply_hidden_style(self, item: QTableWidgetItem):
-        item.setBackground(QColor("#e3e3e3"))
-        item.setForeground(QColor("#777777"))
+        item.setBackground(QColor("#b8b8b8"))
+        item.setForeground(QColor("#111111"))
 
     def set_favorite_button(
         self,

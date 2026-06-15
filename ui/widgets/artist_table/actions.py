@@ -1,8 +1,13 @@
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QInputDialog
 
-from .columns import COLUMN_FAVORITE, COLUMN_SHORTCUTS, COLUMN_SORT_FIELDS
+from .columns import (
+    COLUMN_FAVORITE,
+    COLUMN_RATING,
+    COLUMN_SHORTCUTS,
+    COLUMN_SORT_FIELDS,
+)
 
 
 class ArtistTableActions:
@@ -56,12 +61,6 @@ class ArtistTableActions:
         self.table.favorite_toggled.emit(int(artist_id))
 
     def handle_cell_double_clicked(self, row: int, column: int):
-        if column in (
-            COLUMN_FAVORITE,
-            COLUMN_SHORTCUTS,
-        ):
-            return
-
         if row < 0 or row >= len(self.table.artist_ids):
             return
 
@@ -70,4 +69,60 @@ class ArtistTableActions:
         if artist_id is None:
             return
 
+        if column == COLUMN_RATING:
+            self._handle_rating_double_clicked(
+                row,
+                int(artist_id),
+            )
+            return
+
+        if column in (
+            COLUMN_FAVORITE,
+            COLUMN_SHORTCUTS,
+        ):
+            return
+
         self.table.artist_selected.emit(int(artist_id))
+
+    def _handle_rating_double_clicked(
+        self,
+        row: int,
+        artist_id: int,
+    ):
+        current_rating = 0
+
+        if row < len(self.table.artists):
+            current_rating = int(
+                self.table.artists[row].get("rating", 0) or 0
+            )
+
+        rating_text, ok = QInputDialog.getText(
+            self.table,
+            "평점 수정",
+            "평점 입력 (0~10)",
+            text=str(current_rating),
+        )
+
+        if not ok:
+            return
+
+        rating_text = rating_text.strip()
+
+        if not rating_text:
+            return
+
+        try:
+            rating = int(rating_text)
+        except ValueError:
+            return
+
+        if rating < 0 or rating > 10:
+            return
+
+        if rating == current_rating:
+            return
+
+        self.table.rating_changed.emit(
+            artist_id,
+            rating,
+        )

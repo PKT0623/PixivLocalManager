@@ -309,18 +309,32 @@ class ArtistDetailActions:
         if folder_path == "-":
             folder_path = ""
 
-        update_data = dict(self.page.current_artist)
-        update_data["artist_name"] = artist_name
-        update_data["folder_artwork_count"] = artwork_count
-        update_data["folder_file_count"] = file_count
-        update_data["rating"] = rating
-        update_data["is_favorite"] = int(section.favorite_checkbox.isChecked())
-        update_data["is_hidden"] = int(section.hidden_checkbox.isChecked())
-        update_data["artist_tags"] = artist_tags
-        update_data["memo"] = section.memo_edit.toPlainText().strip()
-        update_data["folder_path"] = folder_path
+        previous_folder_path = str(
+            self.page.current_artist.get("folder_path", "") or ""
+        ).strip()
 
         try:
+            if folder_path and folder_path != previous_folder_path:
+                self.page.current_artist = (
+                    self.page.artist_service.change_artist_folder(
+                        self.page.artist_id,
+                        folder_path,
+                    )
+                )
+
+            update_data = dict(self.page.current_artist)
+            update_data["artist_name"] = artist_name
+            update_data["folder_artwork_count"] = artwork_count
+            update_data["folder_file_count"] = file_count
+            update_data["rating"] = rating
+            update_data["is_favorite"] = int(
+                section.favorite_checkbox.isChecked()
+            )
+            update_data["is_hidden"] = int(section.hidden_checkbox.isChecked())
+            update_data["artist_tags"] = artist_tags
+            update_data["memo"] = section.memo_edit.toPlainText().strip()
+            update_data["folder_path"] = folder_path
+
             self.page.artist_service.update_artist(
                 self.page.artist_id,
                 update_data,
@@ -335,6 +349,10 @@ class ArtistDetailActions:
         self.page.current_artist = self.page.artist_service.get_artist(
             self.page.artist_id
         )
+
+        if self.page.current_artist is not None:
+            self.set_artist_data(self.page.current_artist)
+
         self.page.artist_updated.emit(self.page.artist_id)
 
         self.show_information(

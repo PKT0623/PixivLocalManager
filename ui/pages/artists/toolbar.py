@@ -81,8 +81,30 @@ class ArtistsToolbar(QWidget):
         filter_layout.addWidget(self.reset_sort_button)
         filter_layout.addStretch()
 
+        bulk_layout = QHBoxLayout()
+        bulk_layout.setContentsMargins(0, 0, 0, 0)
+        bulk_layout.setSpacing(8)
+
+        self.bulk_rating_button = QPushButton("선택 평점 변경")
+        self.bulk_favorite_button = QPushButton("선택 즐겨찾기")
+        self.bulk_unfavorite_button = QPushButton("선택 즐겨찾기 해제")
+        self.bulk_hide_button = QPushButton("선택 숨김")
+        self.bulk_unhide_button = QPushButton("선택 숨김 해제")
+        self.bulk_delete_button = QPushButton("선택 삭제")
+        self.restore_deleted_button = QPushButton("삭제 작가 복구")
+
+        bulk_layout.addWidget(self.bulk_rating_button)
+        bulk_layout.addWidget(self.bulk_favorite_button)
+        bulk_layout.addWidget(self.bulk_unfavorite_button)
+        bulk_layout.addWidget(self.bulk_hide_button)
+        bulk_layout.addWidget(self.bulk_unhide_button)
+        bulk_layout.addWidget(self.bulk_delete_button)
+        bulk_layout.addWidget(self.restore_deleted_button)
+        bulk_layout.addStretch()
+
         main_layout.addLayout(top_layout)
         main_layout.addLayout(filter_layout)
+        main_layout.addLayout(bulk_layout)
 
     def normalize_rating_filter_input(self):
         text = self.rating_filter_input.text().strip()

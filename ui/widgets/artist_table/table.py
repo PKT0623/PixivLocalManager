@@ -31,6 +31,7 @@ class ArtistTable(QTableWidget):
     artist_selected = Signal(int)
     sort_requested = Signal(str, bool)
     favorite_toggled = Signal(int)
+    rating_changed = Signal(int, int)
 
     def __init__(self):
         super().__init__()
@@ -51,7 +52,7 @@ class ArtistTable(QTableWidget):
 
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(False)
 
@@ -138,6 +139,52 @@ class ArtistTable(QTableWidget):
                 row,
                 index,
                 artist,
+            )
+
+    def get_selected_artist_ids(self) -> list[int]:
+        selected_rows = {
+            index.row()
+            for index in self.selectionModel().selectedRows()
+        }
+
+        artist_ids = []
+
+        for row in sorted(selected_rows):
+            if row < 0 or row >= len(self.artist_ids):
+                continue
+
+            artist_id = self.artist_ids[row]
+
+            if artist_id is None:
+                continue
+
+            artist_ids.append(int(artist_id))
+
+        return artist_ids
+
+    def select_artist_ids(self, artist_ids: list[int]):
+        target_ids = {
+            int(artist_id)
+            for artist_id in artist_ids
+        }
+
+        self.clearSelection()
+
+        selection_model = self.selectionModel()
+
+        for row, artist_id in enumerate(self.artist_ids):
+            if artist_id is None:
+                continue
+
+            if int(artist_id) not in target_ids:
+                continue
+
+            index = self.model().index(row, 0)
+
+            selection_model.select(
+                index,
+                selection_model.SelectionFlag.Select
+                | selection_model.SelectionFlag.Rows,
             )
 
     def set_sort_indicators(
