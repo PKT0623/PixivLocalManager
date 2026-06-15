@@ -83,7 +83,7 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>Artist Detail</td>
-    <td>작가 상세 정보 수정</td>
+    <td>작가 상세 정보 조회 및 수정</td>
 </tr>
 
 <tr>
@@ -443,71 +443,189 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>작가명</td>
-    <td>작가 이름 수정</td>
+    <td>기본 정보</td>
+    <td>작가명, Pixiv ID, 폴더 경로, 상태 표시</td>
 </tr>
 
 <tr>
-    <td>Pixiv ID</td>
-    <td>Pixiv 사용자 ID 표시</td>
-</tr>
-
-<tr>
-    <td>작품 수</td>
-    <td>로컬 작품 수 표시 및 수정</td>
-</tr>
-
-<tr>
-    <td>파일 수</td>
-    <td>실제 이미지 파일 수 표시 및 수정</td>
+    <td>작품 정보</td>
+    <td>작품 수, 파일 수, 폴더 용량 표시</td>
 </tr>
 
 <tr>
     <td>평점</td>
-    <td>0~10 평점 수정</td>
-</tr>
-
-<tr>
-    <td>상태</td>
-    <td>작가 상태 표시</td>
-</tr>
-
-<tr>
-    <td>업데이트 상태</td>
-    <td>업데이트 상태 표시</td>
+    <td>작가 평점 수정</td>
 </tr>
 
 <tr>
     <td>즐겨찾기</td>
-    <td>즐겨찾기 설정</td>
+    <td>즐겨찾기 설정 및 해제</td>
 </tr>
 
 <tr>
     <td>숨김</td>
-    <td>숨김 설정</td>
+    <td>숨김 설정 및 해제</td>
 </tr>
 
 <tr>
-    <td>최근 열람</td>
-    <td>최근 상세 페이지 진입 시각 표시</td>
+    <td>폴더 변경</td>
+    <td>작가 저장 위치 변경</td>
 </tr>
 
 <tr>
-    <td>폴더 경로</td>
-    <td>작가 폴더 경로 표시 및 변경</td>
+    <td>최근 로컬 작품</td>
+    <td>최근 저장된 작품 목록 표시</td>
 </tr>
 
 <tr>
-    <td>태그 통계</td>
-    <td>태그 원문, 한글 번역, 작품 수 관리</td>
+    <td>누락 작품 ID 목록</td>
+    <td>Pixiv에는 있으나 로컬에 없는 작품 표시</td>
 </tr>
 
 <tr>
-    <td>메모</td>
-    <td>작가 메모 관리</td>
+    <td>Pixiv 바로가기</td>
+    <td>작가 또는 작품 Pixiv 페이지 열기</td>
+</tr>
+
+<tr>
+    <td>폴더 바로가기</td>
+    <td>파일 위치 열기</td>
+</tr>
+
+<tr>
+    <td>태그 관리</td>
+    <td>태그 정보 조회 및 수정</td>
+</tr>
+
+<tr>
+    <td>메모 관리</td>
+    <td>장문 메모 저장</td>
+</tr>
+
+<tr>
+    <td>참고 링크</td>
+    <td>작가 관련 링크 저장</td>
+</tr>
+
+<tr>
+    <td>다운로드 메모</td>
+    <td>다운로드 관련 메모 저장</td>
 </tr>
 
 </table>
+
+---
+
+## 태그 관리 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>태그명</td>
+    <td>Pixiv 원본 태그</td>
+</tr>
+
+<tr>
+    <td>번역명</td>
+    <td>사용자 번역명</td>
+</tr>
+
+<tr>
+    <td>작품 수</td>
+    <td>태그가 사용된 작품 수</td>
+</tr>
+
+<tr>
+    <td>파일 수</td>
+    <td>태그가 사용된 파일 수</td>
+</tr>
+
+<tr>
+    <td>작품 수 정렬</td>
+    <td>작품 수 기준 정렬</td>
+</tr>
+
+<tr>
+    <td>중복 태그 정리</td>
+    <td>동일 태그 자동 병합</td>
+</tr>
+
+<tr>
+    <td>빈 태그 정리</td>
+    <td>빈 태그 자동 제거</td>
+</tr>
+
+</table>
+
+---
+
+## 최근 로컬 작품 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>작품 ID</td>
+    <td>작품 식별 번호 표시</td>
+</tr>
+
+<tr>
+    <td>Pixiv</td>
+    <td>Pixiv 작품 페이지 열기</td>
+</tr>
+
+<tr>
+    <td>폴더</td>
+    <td>해당 파일 위치 열기</td>
+</tr>
+
+</table>
+
+---
+
+## 누락 작품 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>작품 ID</td>
+    <td>누락 작품 ID 표시</td>
+</tr>
+
+<tr>
+    <td>Pixiv</td>
+    <td>Pixiv 작품 페이지 열기</td>
+</tr>
+
+</table>
+
+---
+
+## 스크롤 구조
+
+```text
+QScrollArea
+ └─ Artist Detail Container
+     ├─ 기본 정보
+     ├─ 작품 정보
+     ├─ 최근 로컬 작품
+     ├─ 누락 작품
+     ├─ 태그 관리
+     ├─ 메모
+     ├─ 참고 링크
+     └─ 다운로드 메모
+```
 
 ---
 
@@ -522,48 +640,33 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>작가 선택 테이블</td>
-    <td>업데이트 대상 선택</td>
+    <td>작가 목록</td>
+    <td>업데이트 대상 작가 표시</td>
 </tr>
 
 <tr>
-    <td>전체 선택</td>
-    <td>모든 작가 선택</td>
-</tr>
-
-<tr>
-    <td>전체 해제</td>
-    <td>선택 해제</td>
-</tr>
-
-<tr>
-    <td>미확인 선택</td>
-    <td>unknown 상태 선택</td>
-</tr>
-
-<tr>
-    <td>업데이트 필요 선택</td>
-    <td>need_update 상태 선택</td>
-</tr>
-
-<tr>
-    <td>최근 확인 제외</td>
-    <td>최근 6시간 확인한 작가 제외</td>
+    <td>선택 영역</td>
+    <td>전체 선택 / 해제</td>
 </tr>
 
 <tr>
     <td>진행률</td>
-    <td>작업 진행 상황</td>
+    <td>현재 진행 상태 표시</td>
 </tr>
 
 <tr>
     <td>결과 로그</td>
-    <td>작업 결과 출력</td>
+    <td>업데이트 결과 출력</td>
+</tr>
+
+<tr>
+    <td>시작</td>
+    <td>업데이트 확인 시작</td>
 </tr>
 
 <tr>
     <td>취소</td>
-    <td>업데이트 확인 중 취소 요청</td>
+    <td>업데이트 확인 취소</td>
 </tr>
 
 </table>
@@ -576,117 +679,80 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <table>
 <tr>
-    <th>설정</th>
+    <th>구성</th>
     <th>설명</th>
 </tr>
 
 <tr>
-    <td>PHPSESSID</td>
-    <td>Pixiv 로그인 쿠키</td>
+    <td>기본 폴더 설정</td>
+    <td>Pixiv 루트 폴더 지정</td>
 </tr>
 
 <tr>
-    <td>기본 Pixiv 폴더</td>
-    <td>스캔 기본 경로</td>
+    <td>PHPSESSID 설정</td>
+    <td>Pixiv 로그인 쿠키 저장</td>
 </tr>
 
 <tr>
     <td>DB 백업</td>
-    <td>SQLite 백업</td>
+    <td>전체 DB 백업 생성</td>
 </tr>
 
 <tr>
     <td>DB 복원</td>
-    <td>SQLite 복원</td>
+    <td>백업 DB 복원</td>
 </tr>
 
 <tr>
     <td>CSV 내보내기</td>
-    <td>작가 목록 저장</td>
+    <td>작가 목록 CSV 저장</td>
 </tr>
 
 <tr>
-    <td>DB 폴더 열기</td>
-    <td>데이터 저장 위치 열기</td>
+    <td>삭제 작가 복구</td>
+    <td>삭제 백업 파일 기반 복구</td>
+</tr>
+
+<tr>
+    <td>프로그램 정보</td>
+    <td>버전 및 DB 정보 표시</td>
 </tr>
 
 </table>
 
 ---
 
-# 상태 표시 기준
+# 디자인 원칙
 
 <table>
 <tr>
-    <th>상태</th>
+    <th>항목</th>
     <th>설명</th>
 </tr>
 
 <tr>
-    <td>unknown</td>
-    <td>확인하지 않음</td>
+    <td>가독성</td>
+    <td>한 화면에서 최대한 많은 정보를 확인할 수 있도록 구성</td>
 </tr>
 
 <tr>
-    <td>up_to_date</td>
-    <td>최신 상태</td>
+    <td>일관성</td>
+    <td>모든 페이지에서 동일한 UI 패턴 사용</td>
 </tr>
 
 <tr>
-    <td>need_update</td>
-    <td>업데이트 필요</td>
+    <td>단순성</td>
+    <td>불필요한 팝업 최소화</td>
 </tr>
 
 <tr>
-    <td>updated</td>
-    <td>업데이트 완료</td>
+    <td>속도</td>
+    <td>최소 클릭으로 주요 기능 접근</td>
 </tr>
 
 <tr>
-    <td>error</td>
-    <td>오류 발생</td>
-</tr>
-
-</table>
-
----
-
-# UI 우선순위
-
-<table>
-<tr>
-    <th>우선순위</th>
-    <th>내용</th>
-</tr>
-
-<tr>
-    <td>1</td>
-    <td>작가 목록 접근성</td>
-</tr>
-
-<tr>
-    <td>2</td>
-    <td>빠른 검색 및 정렬</td>
-</tr>
-
-<tr>
-    <td>3</td>
-    <td>다중 선택 및 일괄 관리 편의성</td>
-</tr>
-
-<tr>
-    <td>4</td>
-    <td>삭제 및 복구 안정성</td>
-</tr>
-
-<tr>
-    <td>5</td>
-    <td>업데이트 상태 확인 편의성</td>
-</tr>
-
-<tr>
-    <td>6</td>
-    <td>유지보수 가능한 UI 구조</td>
+    <td>확장성</td>
+    <td>V3 작품 관리 및 뷰어 기능 추가 가능 구조 유지</td>
 </tr>
 
 </table>

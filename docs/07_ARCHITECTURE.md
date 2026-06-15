@@ -213,7 +213,13 @@ SQLite
 * 작가 정보 저장
 * 설정 저장
 * 업데이트 상태 저장
-* 즐겨찾기 / 숨김 / 태그 / 메모 저장
+* 즐겨찾기 저장
+* 숨김 상태 저장
+* 태그 저장
+* 메모 저장
+* 참고 링크 저장
+* 다운로드 메모 저장
+* 최근 열람 기록 저장
 * 백업 및 복구 대상 데이터 보관
 
 ---
@@ -332,9 +338,11 @@ ArtistsPage
 
 ---
 
+# 주요 기능 흐름 (계속)
+
 ## 업데이트 확인
 
-```mermaid
+```mermaid id="7th5c8"
 flowchart LR
 
 UpdateCheckDialog
@@ -358,7 +366,7 @@ UpdateCheckDialog
 
 ## 설정 저장
 
-```mermaid
+```mermaid id="ykcb1x"
 flowchart LR
 
 SettingsPage
@@ -374,7 +382,7 @@ SettingsPage
 
 # UI 구조
 
-```mermaid
+```mermaid id="2fwb3f"
 flowchart TD
 
 MainWindow
@@ -400,7 +408,7 @@ ArtistDetailPage --> ArtistInfoSection
 
 # Service 구조
 
-```mermaid
+```mermaid id="4o5gg2"
 flowchart TD
 
 ArtistService
@@ -432,7 +440,7 @@ SettingsService --> AppSettingRepository
 
 # Repository 구조
 
-```mermaid
+```mermaid id="mrh9n3"
 flowchart TD
 
 ArtistRepository
@@ -450,7 +458,7 @@ AppSettingRepository --> app_settings
 
 ## Artists Page
 
-```text
+```text id="4hgw0w"
 ui/pages/artists/
 ├─ page.py
 ├─ actions.py
@@ -459,7 +467,7 @@ ui/pages/artists/
 └─ __init__.py
 ```
 
-역할
+### 역할
 
 * 작가 목록 조회
 * 검색 / 필터 / 정렬
@@ -471,7 +479,7 @@ ui/pages/artists/
 
 ## Artist Detail Page
 
-```text
+```text id="7d6a8l"
 ui/pages/artist_detail/
 ├─ page.py
 ├─ actions.py
@@ -480,18 +488,26 @@ ui/pages/artist_detail/
 └─ __init__.py
 ```
 
-역할
+### 역할
 
 * 작가 상세 정보 표시
-* 평점 / 태그 / 메모 관리
+* 평점 관리
 * 즐겨찾기 / 숨김 설정
+* 태그 관리
+* 장문 메모 관리
+* 참고 링크 관리
+* 다운로드 메모 관리
+* 최근 로컬 작품 표시
+* 누락 작품 표시
+* Pixiv 바로가기
+* 폴더 바로가기
 * 폴더 변경 및 재스캔
 
 ---
 
 ## Artist Table
 
-```text
+```text id="k07yha"
 ui/widgets/artist_table/
 ├─ table.py
 ├─ actions.py
@@ -502,7 +518,7 @@ ui/widgets/artist_table/
 └─ __init__.py
 ```
 
-역할
+### 역할
 
 * 작가 목록 테이블 표시
 * 행 렌더링
@@ -515,7 +531,7 @@ ui/widgets/artist_table/
 
 ## Update Check Dialog
 
-```text
+```text id="i5xpd5"
 ui/dialogs/update_check/
 ├─ dialog.py
 ├─ actions.py
@@ -527,7 +543,7 @@ ui/dialogs/update_check/
 └─ __init__.py
 ```
 
-역할
+### 역할
 
 * 업데이트 대상 선택
 * 업데이트 확인 실행
@@ -568,7 +584,7 @@ ui/dialogs/update_check/
 
 <tr>
     <td>확장성</td>
-    <td>기능 추가 시 기존 코드 수정 범위를 줄인다.</td>
+    <td>기능 추가 시 기존 코드 수정 범위를 최소화한다.</td>
 </tr>
 
 <tr>
@@ -594,24 +610,79 @@ ui/dialogs/update_check/
 
 ## V2
 
-```text
-V2
-├─ Artist Detail Enhancement
-├─ Scan System Enhancement
-├─ Update Check Enhancement
-├─ Dashboard Enhancement
-├─ Settings / Management Enhancement
-└─ Statistics / Analysis
+```text id="m1bgjy"
+Update Check Enhancement
+Dashboard Enhancement
+Settings / Management Enhancement
+Statistics / Analysis
 ```
+
+### 예정 서비스
+
+```text id="8ahp9l"
+UpdateHistoryService
+StatisticsService
+LogService
+```
+
+---
 
 ## V3
 
-```text
-V3
-├─ View Mode Extension
-├─ Artwork Management
-├─ Internal Viewer
-└─ Long-term Features
+```text id="g1mlhu"
+View Mode Extension
+Artwork Management
+Internal Viewer
+Long-term Features
 ```
+
+### 예정 Repository
+
+```text id="lzv6q2"
+artwork_repository.py
+update_history_repository.py
+statistics_repository.py
+viewer_repository.py
+```
+
+### 예정 Service
+
+```text id="9ckgk4"
+ArtworkService
+StatisticsService
+ViewerService
+DownloadService
+```
+
+### 예정 UI
+
+```text id="d4ph8s"
+ui/pages/artworks
+ui/pages/statistics
+
+ui/widgets/artwork_table
+ui/widgets/thumbnail_grid
+```
+
+---
+
+# 최종 구조 목표
+
+```text id="rvokkh"
+UI Layer
+→ Service Layer
+→ Repository Layer
+→ Database Layer
+```
+
+각 계층은 자신의 책임만 수행하며,
+
+UI는 데이터 저장 방식을 알 필요가 없고,
+
+Service는 화면 구조를 알 필요가 없으며,
+
+Repository는 비즈니스 로직을 알 필요가 없는 구조를 유지한다.
+
+이를 통해 기능 추가 시 수정 범위를 최소화하고 유지보수성을 확보하는 것을 목표로 한다.
 
 ---

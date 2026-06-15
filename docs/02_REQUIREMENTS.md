@@ -11,8 +11,8 @@ REQ --> DASHBOARD[대시보드]
 REQ --> SCAN[폴더 스캔]
 REQ --> ARTIST[작가 관리]
 REQ --> UPDATE[업데이트 확인]
-REQ --> SETTINGS[설정]
-REQ --> DATA[데이터 관리]
+REQ --> SETTINGS[설정 / 관리]
+REQ --> STATISTICS[통계 / 분석]
 ```
 
 ---
@@ -62,6 +62,18 @@ REQ --> DATA[데이터 관리]
     <td>D-06</td>
     <td>랜덤 작가</td>
     <td>등록 작가 중 무작위 선택</td>
+</tr>
+
+<tr>
+    <td>D-07</td>
+    <td>최근 등록 작가</td>
+    <td>최근 추가된 작가 목록 표시</td>
+</tr>
+
+<tr>
+    <td>D-08</td>
+    <td>최근 스캔 정보</td>
+    <td>마지막 스캔 결과 및 시각 표시</td>
 </tr>
 
 </table>
@@ -186,6 +198,78 @@ REQ --> DATA[데이터 관리]
     <td>Pixiv 페이지 열기</td>
 </tr>
 
+<tr>
+    <td>A-09</td>
+    <td>즐겨찾기</td>
+    <td>작가 즐겨찾기 등록 및 해제</td>
+</tr>
+
+<tr>
+    <td>A-10</td>
+    <td>숨김 기능</td>
+    <td>작가 숨김 및 숨김 해제</td>
+</tr>
+
+<tr>
+    <td>A-11</td>
+    <td>다중 선택 관리</td>
+    <td>여러 작가 일괄 수정</td>
+</tr>
+
+<tr>
+    <td>A-12</td>
+    <td>작가 삭제</td>
+    <td>선택 작가 삭제</td>
+</tr>
+
+<tr>
+    <td>A-13</td>
+    <td>삭제 작가 복구</td>
+    <td>백업 파일 기반 복구</td>
+</tr>
+
+<tr>
+    <td>A-14</td>
+    <td>최근 열람 기록</td>
+    <td>최근 확인한 작가 기록</td>
+</tr>
+
+<tr>
+    <td>A-15</td>
+    <td>태그 관리</td>
+    <td>태그 원문, 번역, 작품 수 관리</td>
+</tr>
+
+<tr>
+    <td>A-16</td>
+    <td>최근 로컬 작품</td>
+    <td>최근 저장 작품 표시</td>
+</tr>
+
+<tr>
+    <td>A-17</td>
+    <td>누락 작품 목록</td>
+    <td>Pixiv에는 있으나 로컬에 없는 작품 목록 표시</td>
+</tr>
+
+<tr>
+    <td>A-18</td>
+    <td>작가 폴더 변경</td>
+    <td>작가 저장 폴더 경로 변경</td>
+</tr>
+
+<tr>
+    <td>A-19</td>
+    <td>참고 링크</td>
+    <td>작가 관련 참고 링크 저장</td>
+</tr>
+
+<tr>
+    <td>A-20</td>
+    <td>다운로드 메모</td>
+    <td>다운로드 관련 메모 저장</td>
+</tr>
+
 </table>
 
 ---
@@ -208,7 +292,7 @@ REQ --> DATA[데이터 관리]
 <tr>
     <td>U-02</td>
     <td>업데이트 확인</td>
-    <td>Pixiv 최신 작품 조회</td>
+    <td>Pixiv 최신 작품 정보 조회</td>
 </tr>
 
 <tr>
@@ -219,39 +303,63 @@ REQ --> DATA[데이터 관리]
 
 <tr>
     <td>U-04</td>
-    <td>누락 계산</td>
-    <td>누락 작품 수 계산</td>
+    <td>작품 ID 비교</td>
+    <td>작품 ID 기준 누락 작품 확인</td>
 </tr>
 
 <tr>
     <td>U-05</td>
-    <td>상태 갱신</td>
-    <td>업데이트 상태 자동 저장</td>
+    <td>누락 작품 수 계산</td>
+    <td>누락 작품 개수 계산</td>
 </tr>
 
 <tr>
     <td>U-06</td>
+    <td>업데이트 상태 저장</td>
+    <td>업데이트 상태 자동 저장</td>
+</tr>
+
+<tr>
+    <td>U-07</td>
     <td>최근 확인 제외</td>
     <td>최근 확인 작가 제외</td>
 </tr>
 
 <tr>
-    <td>U-07</td>
+    <td>U-08</td>
     <td>작업 취소</td>
     <td>실행 중 취소 지원</td>
 </tr>
 
 <tr>
-    <td>U-08</td>
-    <td>결과 로그</td>
-    <td>작업 결과 기록</td>
+    <td>U-09</td>
+    <td>진행률 표시</td>
+    <td>실시간 진행률 표시</td>
+</tr>
+
+<tr>
+    <td>U-10</td>
+    <td>결과 로그 출력</td>
+    <td>실시간 결과 로그 표시</td>
+</tr>
+
+<tr>
+    <td>U-11</td>
+    <td>오류 기록</td>
+    <td>업데이트 오류 정보 기록</td>
+</tr>
+
+<tr>
+    <td>U-12</td>
+    <td>요청 간격 제어</td>
+    <td>Pixiv 요청 간격 자동 제어</td>
 </tr>
 
 </table>
 
 ---
 
-## FR-05 설정
+## FR-05 설정 / 관리
 
 <table>
 <tr>
@@ -288,6 +396,97 @@ REQ --> DATA[데이터 관리]
     <td>S-05</td>
     <td>CSV 내보내기</td>
     <td>작가 목록 CSV 저장</td>
+</tr>
+
+<tr>
+    <td>S-06</td>
+    <td>삭제 작가 백업</td>
+    <td>삭제 전 자동 백업 생성</td>
+</tr>
+
+<tr>
+    <td>S-07</td>
+    <td>삭제 작가 복구</td>
+    <td>삭제 백업 파일 기반 복구</td>
+</tr>
+
+<tr>
+    <td>S-08</td>
+    <td>설정 저장</td>
+    <td>프로그램 설정 자동 저장</td>
+</tr>
+
+<tr>
+    <td>S-09</td>
+    <td>최근 사용 경로 저장</td>
+    <td>최근 사용 폴더 저장</td>
+</tr>
+
+<tr>
+    <td>S-10</td>
+    <td>로그 관리</td>
+    <td>로그 조회 및 관리</td>
+</tr>
+
+</table>
+
+---
+
+## FR-06 통계 / 분석
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>T-01</td>
+    <td>작가 통계</td>
+    <td>전체 작가 수 분석</td>
+</tr>
+
+<tr>
+    <td>T-02</td>
+    <td>작품 통계</td>
+    <td>전체 작품 수 분석</td>
+</tr>
+
+<tr>
+    <td>T-03</td>
+    <td>평점 통계</td>
+    <td>평균 평점 및 평점 분포 분석</td>
+</tr>
+
+<tr>
+    <td>T-04</td>
+    <td>업데이트 통계</td>
+    <td>업데이트 상태 비율 분석</td>
+</tr>
+
+<tr>
+    <td>T-05</td>
+    <td>태그 통계</td>
+    <td>태그 사용 빈도 분석</td>
+</tr>
+
+<tr>
+    <td>T-06</td>
+    <td>즐겨찾기 통계</td>
+    <td>즐겨찾기 관련 통계 제공</td>
+</tr>
+
+<tr>
+    <td>T-07</td>
+    <td>등록 추이</td>
+    <td>기간별 등록 수 분석</td>
+</tr>
+
+<tr>
+    <td>T-08</td>
+    <td>업데이트 추이</td>
+    <td>기간별 업데이트 결과 분석</td>
 </tr>
 
 </table>
@@ -329,302 +528,20 @@ REQ --> DATA[데이터 관리]
 
 <tr>
     <td>NFR-05</td>
-    <td>확장성</td>
-    <td>서비스 단위 기능 추가 가능</td>
-</tr>
-
-</table>
-
----
-
-# V1 제외 기능
-
-<table>
-<tr>
-    <th>기능</th>
-</tr>
-
-<tr><td>작품 상세 관리</td></tr>
-<tr><td>작품별 평점</td></tr>
-<tr><td>작품별 메모</td></tr>
-<tr><td>썸네일 UI</td></tr>
-<tr><td>태그 관리</td></tr>
-<tr><td>태그 검색</td></tr>
-<tr><td>자동 주기 갱신</td></tr>
-<tr><td>브라우저 확장 프로그램</td></tr>
-
-</table>
-
----
-
-## FR-04 업데이트 확인
-
-<table>
-<tr>
-    <th>ID</th>
-    <th>기능</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>U-01</td>
-    <td>다중 선택</td>
-    <td>여러 작가 동시 선택.</td>
-</tr>
-
-<tr>
-    <td>U-02</td>
-    <td>업데이트 확인</td>
-    <td>Pixiv 최신 작품 정보 조회.</td>
-</tr>
-
-<tr>
-    <td>U-03</td>
-    <td>작품 수 비교</td>
-    <td>로컬 작품 수와 Pixiv 작품 수 비교.</td>
-</tr>
-
-<tr>
-    <td>U-04</td>
-    <td>작품 ID 비교</td>
-    <td>작품 ID 기준 누락 작품 확인.</td>
-</tr>
-
-<tr>
-    <td>U-05</td>
-    <td>누락 작품 수 계산</td>
-    <td>누락 작품 개수 계산.</td>
-</tr>
-
-<tr>
-    <td>U-06</td>
-    <td>업데이트 상태 저장</td>
-    <td>업데이트 상태 자동 저장.</td>
-</tr>
-
-<tr>
-    <td>U-07</td>
-    <td>최근 확인 제외</td>
-    <td>최근 확인 작가 제외.</td>
-</tr>
-
-<tr>
-    <td>U-08</td>
-    <td>작업 취소</td>
-    <td>실행 중 취소 지원.</td>
-</tr>
-
-<tr>
-    <td>U-09</td>
-    <td>진행률 표시</td>
-    <td>실시간 진행률 표시.</td>
-</tr>
-
-<tr>
-    <td>U-10</td>
-    <td>결과 로그 출력</td>
-    <td>실시간 결과 로그 표시.</td>
-</tr>
-
-<tr>
-    <td>U-11</td>
-    <td>오류 기록</td>
-    <td>업데이트 오류 정보 기록.</td>
-</tr>
-
-<tr>
-    <td>U-12</td>
-    <td>요청 간격 제어</td>
-    <td>Pixiv 요청 간격 자동 제어.</td>
-</tr>
-
-</table>
-
----
-
-## FR-05 설정 / 관리
-
-<table>
-<tr>
-    <th>ID</th>
-    <th>기능</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>S-01</td>
-    <td>기본 폴더 설정</td>
-    <td>기본 Pixiv 폴더 저장.</td>
-</tr>
-
-<tr>
-    <td>S-02</td>
-    <td>PHPSESSID 저장</td>
-    <td>Pixiv 로그인 쿠키 저장.</td>
-</tr>
-
-<tr>
-    <td>S-03</td>
-    <td>DB 백업</td>
-    <td>SQLite DB 백업.</td>
-</tr>
-
-<tr>
-    <td>S-04</td>
-    <td>DB 복원</td>
-    <td>SQLite DB 복원.</td>
-</tr>
-
-<tr>
-    <td>S-05</td>
-    <td>CSV 내보내기</td>
-    <td>작가 목록 CSV 저장.</td>
-</tr>
-
-<tr>
-    <td>S-06</td>
-    <td>삭제 작가 백업</td>
-    <td>삭제 전 자동 백업 생성.</td>
-</tr>
-
-<tr>
-    <td>S-07</td>
-    <td>삭제 작가 복구</td>
-    <td>삭제 백업 파일 기반 복구.</td>
-</tr>
-
-<tr>
-    <td>S-08</td>
-    <td>설정 저장</td>
-    <td>프로그램 설정 자동 저장.</td>
-</tr>
-
-<tr>
-    <td>S-09</td>
-    <td>최근 사용 경로 저장</td>
-    <td>최근 사용 폴더 저장.</td>
-</tr>
-
-<tr>
-    <td>S-10</td>
-    <td>로그 관리</td>
-    <td>로그 조회 및 관리.</td>
-</tr>
-
-</table>
-
----
-
-## FR-06 통계 / 분석
-
-<table>
-<tr>
-    <th>ID</th>
-    <th>기능</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>T-01</td>
-    <td>작가 통계</td>
-    <td>전체 작가 수 분석.</td>
-</tr>
-
-<tr>
-    <td>T-02</td>
-    <td>작품 통계</td>
-    <td>전체 작품 수 분석.</td>
-</tr>
-
-<tr>
-    <td>T-03</td>
-    <td>평점 통계</td>
-    <td>평균 평점 및 평점 분포 분석.</td>
-</tr>
-
-<tr>
-    <td>T-04</td>
-    <td>업데이트 통계</td>
-    <td>업데이트 상태 비율 분석.</td>
-</tr>
-
-<tr>
-    <td>T-05</td>
-    <td>태그 통계</td>
-    <td>태그 사용 빈도 분석.</td>
-</tr>
-
-<tr>
-    <td>T-06</td>
-    <td>즐겨찾기 통계</td>
-    <td>즐겨찾기 관련 통계 제공.</td>
-</tr>
-
-<tr>
-    <td>T-07</td>
-    <td>등록 추이</td>
-    <td>기간별 등록 수 분석.</td>
-</tr>
-
-<tr>
-    <td>T-08</td>
-    <td>업데이트 추이</td>
-    <td>기간별 업데이트 결과 분석.</td>
-</tr>
-
-</table>
-
----
-
-# 비기능 요구사항 (NFR)
-
-<table>
-<tr>
-    <th>ID</th>
-    <th>항목</th>
-    <th>목표</th>
-</tr>
-
-<tr>
-    <td>NFR-01</td>
-    <td>실행 속도</td>
-    <td>프로그램 시작 3초 이내.</td>
-</tr>
-
-<tr>
-    <td>NFR-02</td>
-    <td>검색 성능</td>
-    <td>즉시 응답.</td>
-</tr>
-
-<tr>
-    <td>NFR-03</td>
-    <td>대용량 폴더 대응</td>
-    <td>수천 개 파일 처리 가능.</td>
-</tr>
-
-<tr>
-    <td>NFR-04</td>
-    <td>Pixiv 요청 최소화</td>
-    <td>불필요한 네트워크 요청 방지.</td>
-</tr>
-
-<tr>
-    <td>NFR-05</td>
     <td>데이터 안정성</td>
-    <td>백업 및 복구 지원.</td>
+    <td>백업 및 복구 지원</td>
 </tr>
 
 <tr>
     <td>NFR-06</td>
     <td>확장성</td>
-    <td>서비스 단위 기능 추가 가능.</td>
+    <td>서비스 단위 기능 추가 가능</td>
 </tr>
 
 <tr>
     <td>NFR-07</td>
     <td>유지보수성</td>
-    <td>모듈 단위 구조 유지.</td>
+    <td>모듈 단위 구조 유지</td>
 </tr>
 
 </table>
@@ -671,3 +588,5 @@ REQ --> DATA[데이터 관리]
 <tr><td>다중 라이브러리 관리</td></tr>
 
 </table>
+
+---

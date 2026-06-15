@@ -6,6 +6,8 @@ Pixiv Local Manager는 기능 단위 모듈 구조를 사용한다.
 
 초기에는 단일 파일 중심 구조였으나, 기능 증가에 따라 Page, Dialog, Widget, Service 단위로 분리하였다.
 
+현재 구조는 V2 개발 기준 구조이며, 향후 V3 작품 관리 및 뷰어 기능 확장을 고려하여 설계되었다.
+
 ---
 
 # 전체 구조
@@ -84,7 +86,7 @@ database
 
 <tr>
     <td>artist_repository.py</td>
-    <td>작가 데이터 CRUD, 일괄 수정, 삭제 복구용 삽입</td>
+    <td>작가 CRUD, 일괄 수정, 복구용 삽입</td>
 </tr>
 
 <tr>
@@ -159,12 +161,12 @@ services
 
 <tr>
     <td>ArtistService</td>
-    <td>작가 관리, 일괄 작업, 폴더 변경, 삭제 복구</td>
+    <td>작가 관리, 태그 관리, 일괄 작업, 삭제 복구</td>
 </tr>
 
 <tr>
     <td>FolderScanService</td>
-    <td>폴더 분석, 작품 수 계산, 파일 수 계산, Pixiv ID 추출</td>
+    <td>폴더 분석, 파일 수 계산, 작품 수 계산</td>
 </tr>
 
 <tr>
@@ -174,7 +176,7 @@ services
 
 <tr>
     <td>ArtistUpdateService</td>
-    <td>Pixiv 업데이트 확인 결과 저장</td>
+    <td>업데이트 확인 결과 저장</td>
 </tr>
 
 <tr>
@@ -184,12 +186,12 @@ services
 
 <tr>
     <td>ArtworkStatusService</td>
-    <td>로컬 / Pixiv 작품 ID 비교 및 업데이트 상태 계산</td>
+    <td>로컬/Pixiv 작품 비교 및 상태 계산</td>
 </tr>
 
 <tr>
     <td>BackupService</td>
-    <td>DB 백업, 삭제 작가 백업, 삭제 작가 복구</td>
+    <td>DB 백업, 삭제 작가 백업 및 복구</td>
 </tr>
 
 <tr>
@@ -200,6 +202,46 @@ services
 <tr>
     <td>SettingsService</td>
     <td>프로그램 설정 관리</td>
+</tr>
+
+</table>
+
+---
+
+# app/utils
+
+공통 유틸리티.
+
+```text
+utils
+│
+├─ date_utils.py
+├─ folder_parser.py
+├─ path_utils.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>date_utils.py</td>
+    <td>날짜 및 시간 처리</td>
+</tr>
+
+<tr>
+    <td>folder_parser.py</td>
+    <td>폴더명에서 작가명 및 Pixiv ID 추출</td>
+</tr>
+
+<tr>
+    <td>path_utils.py</td>
+    <td>경로 관련 공통 기능</td>
 </tr>
 
 </table>
@@ -249,8 +291,12 @@ dashboard
 ├─ page.py
 ├─ actions.py
 ├─ summary_section.py
-├─ recent_section.py
+├─ recent_artists_section.py
+├─ recent_scan_section.py
 ├─ recommendation_section.py
+├─ recommendation_card.py
+├─ random_artist_section.py
+├─ utils.py
 └─ __init__.py
 ```
 
@@ -274,7 +320,11 @@ scan
 ├─ page.py
 ├─ actions.py
 ├─ worker.py
+├─ folder_scanner.py
+├─ folder_section.py
+├─ progress_section.py
 ├─ log_table.py
+├─ log_utils.py
 └─ __init__.py
 ```
 
@@ -284,6 +334,7 @@ scan
 * 스캔 시작
 * 진행률 표시
 * 스캔 로그 출력
+* 백그라운드 스캔 작업
 
 ---
 
@@ -337,7 +388,11 @@ artist_detail
 * 즐겨찾기 설정
 * 숨김 설정
 * 태그 관리
+* 최근 로컬 작품 표시
+* 누락 작품 표시
 * 메모 관리
+* 참고 링크 관리
+* 다운로드 메모 관리
 * 폴더 경로 변경
 * 폴더 변경 후 재스캔
 
@@ -352,6 +407,11 @@ settings
 │
 ├─ page.py
 ├─ actions.py
+├─ app_info_section.py
+├─ database_section.py
+├─ database_utils.py
+├─ folder_section.py
+├─ pixiv_section.py
 └─ __init__.py
 ```
 
@@ -363,6 +423,7 @@ settings
 * DB 복원
 * CSV 내보내기
 * DB 폴더 열기
+* 프로그램 정보 표시
 
 ---
 
@@ -522,9 +583,10 @@ artist_table
 ```text
 data
 │
-├─ pixiv_manager.db
+├─ database.db
 │
 ├─ backups
+│  ├─ database
 │  └─ deleted_artists
 │
 └─ exports
@@ -539,8 +601,13 @@ data
 </tr>
 
 <tr>
-    <td>pixiv_manager.db</td>
+    <td>database.db</td>
     <td>SQLite 데이터베이스</td>
+</tr>
+
+<tr>
+    <td>backups/database</td>
+    <td>DB 백업 파일 저장</td>
 </tr>
 
 <tr>
@@ -586,7 +653,6 @@ docs
 tests
 │
 ├─ test_database.py
-├─ test_services.py
 └─ ...
 ```
 
@@ -639,6 +705,7 @@ tests
 ```text
 ui/pages/artworks
 ui/pages/statistics
+
 ui/widgets/artwork_table
 ui/widgets/thumbnail_grid
 
@@ -649,3 +716,5 @@ app/services/viewer_service.py
 app/database/artwork_repository.py
 app/database/update_history_repository.py
 ```
+
+---

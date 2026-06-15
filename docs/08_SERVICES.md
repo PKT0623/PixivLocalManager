@@ -84,7 +84,22 @@ SETTINGS --> SETTING_REPO[AppSettingRepository]
 
 <tr>
     <td>태그 관리</td>
-    <td>태그 추가 및 삭제</td>
+    <td>태그 추가, 삭제, 정렬, 정리</td>
+</tr>
+
+<tr>
+    <td>메모 관리</td>
+    <td>장문 메모 저장</td>
+</tr>
+
+<tr>
+    <td>참고 링크 관리</td>
+    <td>작가 관련 링크 저장</td>
+</tr>
+
+<tr>
+    <td>다운로드 메모 관리</td>
+    <td>다운로드 관련 메모 저장</td>
 </tr>
 
 <tr>
@@ -156,6 +171,11 @@ ArtistService
 </tr>
 
 <tr>
+    <td>폴더 용량 계산</td>
+    <td>폴더 전체 용량 계산</td>
+</tr>
+
+<tr>
     <td>작품 수 계산</td>
     <td>작품 ID 수 계산</td>
 </tr>
@@ -199,6 +219,42 @@ ArtistService
 <tr>
     <td>스캔 로그 생성</td>
     <td>결과 로그 생성</td>
+</tr>
+
+</table>
+
+---
+
+# ArtistUpdateService
+
+업데이트 확인 결과 저장 담당.
+
+## 주요 역할
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>업데이트 결과 저장</td>
+    <td>Pixiv 확인 결과 DB 반영</td>
+</tr>
+
+<tr>
+    <td>최신 작품 정보 저장</td>
+    <td>Pixiv 최신 작품 ID 목록 저장</td>
+</tr>
+
+<tr>
+    <td>최근 확인 시각 저장</td>
+    <td>last_checked_at 갱신</td>
+</tr>
+
+<tr>
+    <td>업데이트 상태 저장</td>
+    <td>need_update, up_to_date 등 저장</td>
 </tr>
 
 </table>
@@ -261,6 +317,11 @@ Pixiv 최신 정보 수집 담당.
 <tr>
     <td>누락 작품 계산</td>
     <td>누락 작품 수 계산</td>
+</tr>
+
+<tr>
+    <td>누락 작품 목록 생성</td>
+    <td>누락 작품 ID 목록 생성</td>
 </tr>
 
 <tr>
