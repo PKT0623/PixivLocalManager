@@ -1,19 +1,59 @@
-from .folder_scan_service import FolderScanService
+from .artist import (
+    ArtistDeleteService,
+    ArtistFolderService,
+    ArtistMetadataService,
+    ArtistService,
+    validate_artist_ids,
+)
+
+from .backup import (
+    BackupJsonUtils,
+    BackupService,
+    DeletedArtistBackupService,
+)
+
+from .scan import (
+    ArtistRescanService,
+    ArtistScanBuilder,
+    ArtistScanCompare,
+    ArtistScanService,
+    FolderScanService,
+)
+
+from .update import (
+    ArtistBulkUpdateService,
+    ArtistUpdateService,
+    ArtistUpdateUtils,
+)
+
 from .artwork_status_service import ArtworkStatusService
-from .artist_service import ArtistService
-from .artist_scan_service import ArtistScanService
-from .artist_update_service import ArtistUpdateService
-from .settings_service import SettingsService
 from .export_service import ExportService
-from .backup_service import BackupService
+from .pixiv_update_service import PixivUpdateService
+from .settings_service import SettingsService
 
 __all__ = [
-    "FolderScanService",
-    "ArtworkStatusService",
+    "ArtistDeleteService",
+    "ArtistFolderService",
+    "ArtistMetadataService",
     "ArtistService",
-    "ArtistScanService",
-    "ArtistUpdateService",
-    "SettingsService",
-    "ExportService",
+    "validate_artist_ids",
+
+    "BackupJsonUtils",
     "BackupService",
+    "DeletedArtistBackupService",
+
+    "ArtistRescanService",
+    "ArtistScanBuilder",
+    "ArtistScanCompare",
+    "ArtistScanService",
+    "FolderScanService",
+
+    "ArtistBulkUpdateService",
+    "ArtistUpdateService",
+    "ArtistUpdateUtils",
+
+    "ArtworkStatusService",
+    "ExportService",
+    "PixivUpdateService",
+    "SettingsService",
 ]

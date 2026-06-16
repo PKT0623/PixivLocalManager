@@ -1,7 +1,7 @@
 import csv
 from typing import List, Dict, Any
 
-from app.database.artist_repository import ArtistRepository
+from app.database.artist import ArtistRepository
 
 
 class ExportService:

@@ -1,8 +1,7 @@
 from pathlib import Path
-
-from app.services.folder_scan_service import FolderScanService
+from app.services.scan import FolderScanService
 from app.services.artwork_status_service import ArtworkStatusService
-from app.services.artist_service import ArtistService
+from app.services.artist import ArtistService
 from app.services.settings_service import SettingsService
 
 

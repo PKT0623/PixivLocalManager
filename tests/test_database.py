@@ -1,4 +1,4 @@
-from app.database.artist_repository import ArtistRepository
+from app.database.artist import ArtistRepository
 from app.database.app_setting_repository import AppSettingRepository
 
 
