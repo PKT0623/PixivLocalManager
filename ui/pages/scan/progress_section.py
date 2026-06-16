@@ -7,6 +7,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .progress_parts import (
+    format_extension_counts,
+    format_recent_scan_history,
+    format_scan_compare_info,
+)
+
 
 class ScanProgressSection(QWidget):
     def __init__(self):
@@ -351,65 +357,16 @@ class ScanProgressSection(QWidget):
         self,
         history: list[dict],
     ):
-        if not history:
-            self.recent_scan_history_label.setText(
-                "최근 스캔 기록이 없습니다."
-            )
-            return
-
-        lines = []
-
-        for index, item in enumerate(history[:10], start=1):
-            finished_at = str(item.get("finished_at_text", "-") or "-")
-            total = int(item.get("total", 0) or 0)
-            created = int(item.get("created", 0) or 0)
-            updated = int(item.get("updated", 0) or 0)
-            failed = int(item.get("failed", 0) or 0)
-
-            lines.append(
-                f"{index}. {finished_at} / 대상 {total}개 / "
-                f"등록 {created}, 업데이트 {updated}, 실패 {failed}"
-            )
-
-        self.recent_scan_history_label.setText("\n".join(lines))
+        self.recent_scan_history_label.setText(
+            format_recent_scan_history(history)
+        )
 
     def update_scan_compare_info(
         self,
         compare_result: dict | None,
     ):
-        if not compare_result:
-            self.scan_compare_label.setText(
-                "비교할 이전 스캔 기록이 없습니다."
-            )
-            return
-
-        items = compare_result.get("items", [])
-
-        if not items:
-            self.scan_compare_label.setText(
-                "비교할 이전 스캔 기록이 없습니다."
-            )
-            return
-
-        parts = []
-
-        for item in items:
-            label = str(item.get("label", "-") or "-")
-            diff = int(item.get("diff", 0) or 0)
-            parts.append(
-                f"{label} {self._format_diff(diff)}"
-            )
-
-        latest_finished_at = str(
-            compare_result.get("latest_finished_at", "-") or "-"
-        )
-        previous_finished_at = str(
-            compare_result.get("previous_finished_at", "-") or "-"
-        )
-
         self.scan_compare_label.setText(
-            f"{previous_finished_at} → {latest_finished_at}\n"
-            + " / ".join(parts)
+            format_scan_compare_info(compare_result)
         )
 
     def update_statistics(
@@ -432,30 +389,5 @@ class ScanProgressSection(QWidget):
         )
         self.extension_counts_label.setText(
             "확장자별 파일 수: "
-            f"{self._format_extension_counts(extension_counts)}"
+            f"{format_extension_counts(extension_counts)}"
         )
-
-    def _format_extension_counts(
-        self,
-        extension_counts: dict,
-    ) -> str:
-        if not extension_counts:
-            return "-"
-
-        parts = []
-
-        for extension, count in sorted(extension_counts.items()):
-            parts.append(f"{extension}: {count}")
-
-        return ", ".join(parts)
-
-    def _format_diff(
-        self,
-        value: int,
-    ) -> str:
-        value = int(value or 0)
-
-        if value > 0:
-            return f"+{value}"
-
-        return str(value)

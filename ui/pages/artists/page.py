@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from app.services.artist_service import ArtistService
+from app.services.artist import ArtistService
 from ui.widgets.artist_table import ArtistTable
 
 from .actions import ArtistsActions

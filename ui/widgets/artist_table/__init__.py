@@ -1,3 +1,33 @@
 from .table import ArtistTable
+from .columns import (
+    COLUMN_ARTIST_NAME,
+    COLUMN_ARTWORK_COUNT,
+    COLUMN_CREATED_AT,
+    COLUMN_FAVORITE,
+    COLUMN_FILE_COUNT,
+    COLUMN_LAST_VIEWED_AT,
+    COLUMN_MEMO,
+    COLUMN_NO,
+    COLUMN_PIXIV_ID,
+    COLUMN_RATING,
+    COLUMN_SHORTCUTS,
+    COLUMN_STATUS,
+    COLUMN_TAGS,
+)
 
-__all__ = ["ArtistTable"]
+__all__ = [
+    "ArtistTable",
+    "COLUMN_NO",
+    "COLUMN_FAVORITE",
+    "COLUMN_ARTIST_NAME",
+    "COLUMN_PIXIV_ID",
+    "COLUMN_ARTWORK_COUNT",
+    "COLUMN_FILE_COUNT",
+    "COLUMN_STATUS",
+    "COLUMN_RATING",
+    "COLUMN_TAGS",
+    "COLUMN_LAST_VIEWED_AT",
+    "COLUMN_CREATED_AT",
+    "COLUMN_MEMO",
+    "COLUMN_SHORTCUTS",
+]

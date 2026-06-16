@@ -7,7 +7,7 @@ from ui.pages import (
     ScanPage,
     SettingsPage,
 )
-from ui.widgets.sidebar import Sidebar
+from ui.widgets import Sidebar
 
 
 class MainWindow(QMainWindow):

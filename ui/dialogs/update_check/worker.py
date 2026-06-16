@@ -4,7 +4,15 @@ from datetime import datetime
 
 from PySide6.QtCore import QObject, Signal
 
-from app.services.artist_service import ArtistService
+from app.services.artist import ArtistService
+
+from .worker_config import (
+    BATCH_SIZE,
+    MAX_BATCH_REST_SECONDS,
+    MAX_WAIT_SECONDS,
+    MIN_BATCH_REST_SECONDS,
+    MIN_WAIT_SECONDS,
+)
 
 
 class UpdateCheckWorker(QObject):
@@ -12,12 +20,6 @@ class UpdateCheckWorker(QObject):
     progress_updated = Signal(int, int)
     finished = Signal()
     failed = Signal(str)
-
-    MIN_WAIT_SECONDS = 5
-    MAX_WAIT_SECONDS = 10
-    BATCH_SIZE = 20
-    MIN_BATCH_REST_SECONDS = 180
-    MAX_BATCH_REST_SECONDS = 300
 
     def __init__(self, artist_ids: list[int]):
         super().__init__()
@@ -46,8 +48,8 @@ class UpdateCheckWorker(QObject):
                 if index > 1:
                     self._safe_sleep(
                         random.uniform(
-                            self.MIN_WAIT_SECONDS,
-                            self.MAX_WAIT_SECONDS,
+                            MIN_WAIT_SECONDS,
+                            MAX_WAIT_SECONDS,
                         )
                     )
 
@@ -101,16 +103,16 @@ class UpdateCheckWorker(QObject):
                     total,
                 )
 
-                if index % self.BATCH_SIZE == 0 and index < total:
+                if index % BATCH_SIZE == 0 and index < total:
                     rest_seconds = random.uniform(
-                        self.MIN_BATCH_REST_SECONDS,
-                        self.MAX_BATCH_REST_SECONDS,
+                        MIN_BATCH_REST_SECONDS,
+                        MAX_BATCH_REST_SECONDS,
                     )
                     self._emit_info(
                         index,
                         total,
                         "휴식",
-                        f"{self.BATCH_SIZE}명 처리 완료. 잠시 대기합니다.",
+                        f"{BATCH_SIZE}명 처리 완료. 잠시 대기합니다.",
                     )
                     self._safe_sleep(rest_seconds)
 
