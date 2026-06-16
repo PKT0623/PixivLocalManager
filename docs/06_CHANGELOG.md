@@ -589,9 +589,90 @@ feat: enhance scan system with preview and resume support
 
 ---
 
+# v0.10.0
+
+## 2차 리팩토링
+
+### 목표
+
+* 대형 파일 추가 분리
+* 기능별 구조 정리
+* 유지보수성 향상
+* 향후 기능 개발 준비
+
+### 변경
+
+#### app/database
+
+* artist 폴더 분리
+* schema 분리
+* migrations 분리
+* table_definitions 분리
+
+#### app/services
+
+* artist 서비스 그룹화
+* scan 서비스 그룹화
+* update 서비스 그룹화
+* backup 서비스 그룹화
+
+#### ui/dialogs/update_check
+
+* worker_config.py 분리
+* dialog_styles.py 분리
+
+#### ui/pages/dashboard
+
+* dashboard_styles.py 분리
+* dashboard_metrics.py 분리
+
+#### ui/pages/settings
+
+* settings_styles.py 분리
+
+#### ui/pages/artists
+
+* action_parts 구조 도입
+* 기능별 액션 분리
+
+#### ui/pages/artist_detail
+
+* action_parts 구조 도입
+* 기능별 액션 분리
+* styles.py 분리
+
+#### ui/pages/scan
+
+* action_parts 분리
+* worker_parts 분리
+* preview_table_parts 분리
+* progress_parts 분리
+* scan_styles.py 분리
+
+#### 기타
+
+* 미사용 app/utils 제거
+* import 구조 단순화
+* __init__ export 정리
+
+### 개선
+
+* 기능 탐색 속도 향상
+* 유지보수성 향상
+* 기능 추가 시 충돌 감소
+* 대형 파일 관리 편의성 향상
+
+### 완료 커밋
+
+```text
+refactor: complete second refactoring
+```
+
+---
+
 # 향후 예정
 
-## v0.10.0
+## v0.11.0
 
 ### 업데이트 확인 고도화
 
@@ -620,7 +701,7 @@ feat: enhance scan system with preview and resume support
 
 ---
 
-## v0.11.0
+## v0.12.0
 
 ### 대시보드 고도화
 
@@ -639,7 +720,7 @@ feat: enhance scan system with preview and resume support
 
 ---
 
-## v0.12.0
+## v0.13.0
 
 ### 설정 / 관리 고도화
 
@@ -659,7 +740,7 @@ feat: enhance scan system with preview and resume support
 
 ---
 
-## v0.13.0
+## v0.14.0
 
 ### 통계 / 분석 시스템
 
@@ -678,11 +759,19 @@ feat: enhance scan system with preview and resume support
 
 ---
 
-## v0.14.0
+## v0.15.0
+
+### 3차 리팩토링
+
+v0.11.0 ~ v0.14.0 까지 진행하면서 비대해진 파일 리팩토링
+
+---
+
+## v0.16.0
 
 ### 누락 기능 및 신규 기능 추가
 
-v0.13.0까지 진행하면서 누락된 기능 또는 새롭게 추가할 기능들을 추가
+v0.14.0까지 진행하면서 누락된 기능 또는 새롭게 추가할 기능들을 추가
 
 ---
 

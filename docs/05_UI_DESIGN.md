@@ -164,12 +164,12 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>추천 작가</td>
-    <td>평점 기반 추천</td>
+    <td>평점 기반 추천 작가 카드 표시</td>
 </tr>
 
 <tr>
     <td>랜덤 작가</td>
-    <td>무작위 작가 선택</td>
+    <td>무작위 추천 작가 카드 표시</td>
 </tr>
 
 </table>
@@ -372,11 +372,6 @@ ARTISTS --> UPDATE[Update Check Dialog]
 <tr>
     <td>최근 열람</td>
     <td>최근 상세 페이지 진입 시각</td>
-</tr>
-
-<tr>
-    <td>등록일</td>
-    <td>작가 등록 시각</td>
 </tr>
 
 <tr>
@@ -813,3 +808,7 @@ QScrollArea
 </table>
 
 ---
+
+# 버전 기준
+
+본 문서는 v0.10.0 (2차 리팩토링 완료) 기준으로 작성되었다.
