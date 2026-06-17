@@ -19,6 +19,8 @@ v0.12.0 대시보드 고도화 이후 업데이트 이력 데이터를 활용한
 
 v0.13.0 설정 / 관리 고도화 이후 자동 백업, 데이터 무결성 검사, DB 최적화, 설정 백업/복원 기능이 추가되었다.
 
+v0.14.0 통계 분석 시스템 이후 상태 분포, 평점 분포, 랭킹 분석, 태그 분석, 데이터 품질 분석 기능이 추가되었다.
+
 ---
 
 # 서비스 구성
@@ -55,6 +57,16 @@ app/services
 │  ├─ update_utils.py
 │  └─ __init__.py
 │
+├─ statistics
+│  ├─ service.py
+│  ├─ status_service.py
+│  ├─ rating_service.py
+│  ├─ ranking_service.py
+│  ├─ tag_service.py
+│  ├─ quality_service.py
+│  ├─ favorite_service.py
+│  └─ __init__.py
+│
 ├─ artwork_status_service.py
 ├─ database_info_service.py
 ├─ database_integrity_service.py
@@ -79,6 +91,8 @@ UI --> ARTIST[ArtistService]
 UI --> SCAN[Scan Services]
 UI --> UPDATE[Update Services]
 UI --> DASHBOARD[Dashboard Metrics]
+UI --> STATISTICS[Statistics Services]
+
 UI --> PIXIV[PixivUpdateService]
 
 UI --> BACKUP[Backup Services]
@@ -104,6 +118,8 @@ UPDATE --> PIXIV
 
 DASHBOARD --> ARTIST_REPO
 DASHBOARD --> HISTORY_REPO
+
+STATISTICS --> ARTIST_REPO
 
 BACKUP --> ARTIST_REPO
 
@@ -479,6 +495,120 @@ Pixiv 통신 담당.
 </tr>
 
 </table>
+
+---
+
+# statistics 서비스 그룹
+
+v0.14.0 통계 분석 시스템 이후 추가.
+
+## StatisticsService
+
+통계 데이터 통합 담당.
+
+### 주요 역할
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>기초 통계 생성</td>
+    <td>전체 통계 카드 데이터 생성</td>
+</tr>
+
+<tr>
+    <td>통계 통합</td>
+    <td>하위 서비스 결과 통합</td>
+</tr>
+
+<tr>
+    <td>Statistics Page 제공</td>
+    <td>UI 표시용 데이터 제공</td>
+</tr>
+
+</table>
+
+---
+
+## StatisticsStatusService
+
+상태 분포 분석 담당.
+
+### 주요 역할
+
+* 업데이트 미확인 집계
+* 최신 상태 집계
+* 업데이트 필요 집계
+* 확인 실패 집계
+* 업데이트 완료 집계
+* 상태 분포 생성
+
+---
+
+## StatisticsRatingService
+
+평점 분포 분석 담당.
+
+### 주요 역할
+
+* 평점 수집
+* 구간별 분포 계산
+* 평점 통계 생성
+* 평균 평점 계산
+
+---
+
+## StatisticsRankingService
+
+랭킹 분석 담당.
+
+### 주요 역할
+
+* 작품 수 TOP 생성
+* 파일 수 TOP 생성
+* 저장 용량 TOP 생성
+* 정렬 및 순위 계산
+
+---
+
+## StatisticsTagService
+
+태그 분석 담당.
+
+### 주요 역할
+
+* 태그 수집
+* 태그 사용 횟수 계산
+* 태그별 작가 수 계산
+* 상위 태그 생성
+
+---
+
+## StatisticsQualityService
+
+데이터 품질 분석 담당.
+
+### 주요 역할
+
+* 태그 보유 비율 계산
+* 메모 작성 비율 계산
+* 평점 설정 비율 계산
+* 폴더 오류 비율 계산
+
+---
+
+## StatisticsFavoriteService
+
+즐겨찾기 통계 담당.
+
+### 주요 역할
+
+* 즐겨찾기 작가 수 계산
+* 즐겨찾기 평균 평점 계산
+* 즐겨찾기 통계 생성
 
 ---
 
@@ -1043,6 +1173,61 @@ Settings Page
 
 ---
 
+# 통계 분석 데이터 흐름
+
+v0.14.0 통계 분석 시스템 이후 추가.
+
+```text
+Statistics Page
+│
+├─ StatisticsService
+│
+├─ StatisticsStatusService
+├─ StatisticsRatingService
+├─ StatisticsRankingService
+├─ StatisticsTagService
+├─ StatisticsQualityService
+└─ StatisticsFavoriteService
+```
+
+## 데이터 생성 흐름
+
+```text
+ArtistRepository
+      │
+      ├─ 전체 작가 데이터
+      ├─ 작품 수
+      ├─ 파일 수
+      ├─ 폴더 용량
+      ├─ 평점
+      ├─ 태그
+      ├─ 즐겨찾기
+      └─ 업데이트 상태
+                │
+                ▼
+StatisticsService
+                │
+                ▼
+Statistics Page
+```
+
+```text
+StatisticsService
+      │
+      ├─ 기초 통계
+      ├─ 상태 분포
+      ├─ 평점 분포
+      ├─ 랭킹 분석
+      ├─ 태그 분석
+      ├─ 데이터 품질 분석
+      └─ 즐겨찾기 통계
+                │
+                ▼
+Statistics UI
+```
+
+---
+
 # 설계 원칙
 
 ## 1. UI 직접 DB 접근 금지
@@ -1062,6 +1247,7 @@ UI
 Artist
 Scan
 Update
+Statistics
 Backup
 Database Management
 Export
@@ -1083,6 +1269,13 @@ ArtistService
 ├─ Artists
 ├─ Artist Detail
 └─ Update Check
+```
+
+```text
+StatisticsService
+
+├─ Statistics Page
+└─ 이후 통계 기반 기능
 ```
 
 ---
@@ -1125,6 +1318,25 @@ DatabaseBackupService
 
 ---
 
+## 7. 통계 분석 기능 분리
+
+통계 분석은 UI에서 직접 계산하지 않고 Statistics 서비스 그룹에서 처리한다.
+
+```text
+Statistics UI
+      ↓
+StatisticsService
+      ↓
+StatisticsStatusService
+StatisticsRatingService
+StatisticsRankingService
+StatisticsTagService
+StatisticsQualityService
+StatisticsFavoriteService
+```
+
+---
+
 # 버전 기준
 
-본 문서는 v0.13.0 (설정 / 관리 고도화 완료) 기준으로 작성되었다.
+본 문서는 v0.14.0 (통계 분석 시스템 완료) 기준으로 작성되었다.

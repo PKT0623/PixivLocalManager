@@ -7,7 +7,7 @@ Pixiv Local Manager는 기능 단위 모듈 구조를 사용한다.
 초기에는 단일 파일 중심 구조였으나, 기능 증가와 리팩토링을 거치면서
 Page, Widget, Service, Repository 단위로 분리하였다.
 
-현재 구조는 V2 개발 및 v0.12.0 대시보드 고도화 완료 기준 구조이며,
+현재 구조는 V2 개발 및 v0.14.0 통계 분석 시스템 완료 기준 구조이며,
 향후 V3 작품 관리 및 뷰어 기능 확장을 고려하여 설계되었다.
 
 ---
@@ -187,11 +187,17 @@ services
 │
 ├─ scan
 │
+├─ statistics
+│
 ├─ update
 │
 ├─ artwork_status_service.py
+├─ database_info_service.py
+├─ database_integrity_service.py
+├─ database_maintenance_service.py
 ├─ export_service.py
 ├─ pixiv_update_service.py
+├─ settings_backup_service.py
 ├─ settings_service.py
 │
 └─ __init__.py
@@ -259,6 +265,7 @@ artist
 backup
 │
 ├─ service.py
+├─ database_backup_service.py
 ├─ deleted_artist_backup_service.py
 ├─ json_utils.py
 └─ __init__.py
@@ -275,6 +282,11 @@ backup
 <tr>
     <td>service.py</td>
     <td>BackupService</td>
+</tr>
+
+<tr>
+    <td>database_backup_service.py</td>
+    <td>데이터베이스 백업, 복원, 자동 백업 관리</td>
 </tr>
 
 <tr>
@@ -343,6 +355,70 @@ scan
 
 ---
 
+# app/services/statistics
+
+통계 분석 서비스.
+
+```text
+statistics
+│
+├─ service.py
+├─ favorite_service.py
+├─ quality_service.py
+├─ ranking_service.py
+├─ rating_service.py
+├─ status_service.py
+├─ tag_service.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>service.py</td>
+    <td>StatisticsService 메인 진입점</td>
+</tr>
+
+<tr>
+    <td>favorite_service.py</td>
+    <td>즐겨찾기 작가 통계</td>
+</tr>
+
+<tr>
+    <td>quality_service.py</td>
+    <td>데이터 품질 분석</td>
+</tr>
+
+<tr>
+    <td>ranking_service.py</td>
+    <td>작품 수, 파일 수, 저장 용량 TOP 랭킹 분석</td>
+</tr>
+
+<tr>
+    <td>rating_service.py</td>
+    <td>평점 분포 분석</td>
+</tr>
+
+<tr>
+    <td>status_service.py</td>
+    <td>업데이트 상태 분포 분석</td>
+</tr>
+
+<tr>
+    <td>tag_service.py</td>
+    <td>태그 사용 빈도 분석</td>
+</tr>
+
+</table>
+
+---
+
 # app/services/update
 
 업데이트 확인 서비스.
@@ -402,8 +478,28 @@ update
 </tr>
 
 <tr>
+    <td>database_info_service.py</td>
+    <td>DB 정보 및 프로그램 정보 조회</td>
+</tr>
+
+<tr>
+    <td>database_integrity_service.py</td>
+    <td>데이터 무결성 검사</td>
+</tr>
+
+<tr>
+    <td>database_maintenance_service.py</td>
+    <td>SQLite DB 최적화</td>
+</tr>
+
+<tr>
     <td>export_service.py</td>
     <td>CSV 내보내기</td>
+</tr>
+
+<tr>
+    <td>settings_backup_service.py</td>
+    <td>설정 백업 및 복원</td>
 </tr>
 
 <tr>
@@ -435,7 +531,7 @@ ui
 
 프로그램 메인 페이지.
 
-```text
+```text id="6jxv4h"
 pages
 │
 ├─ dashboard
@@ -443,6 +539,7 @@ pages
 ├─ artists
 ├─ artist_detail
 ├─ update_check
+├─ statistics
 ├─ settings
 └─ __init__.py
 ```
@@ -453,7 +550,7 @@ pages
 
 대시보드 페이지.
 
-```text
+```text id="7r2c5o"
 dashboard
 │
 ├─ page.py
@@ -547,6 +644,11 @@ dashboard
     <td>랜덤 작가 영역</td>
 </tr>
 
+<tr>
+    <td>recent_artists_section.py</td>
+    <td>최근 등록 작가 영역</td>
+</tr>
+
 </table>
 
 ---
@@ -555,7 +657,7 @@ dashboard
 
 스캔 페이지.
 
-```text
+```text id="jntx7h"
 scan
 │
 ├─ action_parts
@@ -637,7 +739,7 @@ scan
 
 작가 목록 페이지.
 
-```text
+```text id="c6k8jo"
 artists
 │
 ├─ action_parts
@@ -691,7 +793,7 @@ artists
 
 작가 상세 페이지.
 
-```text
+```text id="7miyuq"
 artist_detail
 │
 ├─ action_parts
@@ -752,7 +854,7 @@ artist_detail
 
 업데이트 확인 페이지.
 
-```text
+```text id="4uc4xg"
 update_check
 │
 ├─ page.py
@@ -818,34 +920,175 @@ update_check
 
 ---
 
+# statistics
+
+통계 분석 페이지.
+
+```text id="8fmkvu"
+statistics
+│
+├─ page.py
+├─ actions.py
+├─ styles.py
+│
+├─ summary_card.py
+├─ summary_section.py
+│
+├─ quality_section.py
+├─ status_section.py
+├─ rating_section.py
+├─ ranking_section.py
+├─ tag_section.py
+│
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>page.py</td>
+    <td>통계 분석 페이지</td>
+</tr>
+
+<tr>
+    <td>actions.py</td>
+    <td>통계 데이터 로드</td>
+</tr>
+
+<tr>
+    <td>styles.py</td>
+    <td>통계 페이지 스타일</td>
+</tr>
+
+<tr>
+    <td>summary_card.py</td>
+    <td>기초 통계 카드</td>
+</tr>
+
+<tr>
+    <td>summary_section.py</td>
+    <td>기초 통계 영역</td>
+</tr>
+
+<tr>
+    <td>quality_section.py</td>
+    <td>데이터 품질 분석</td>
+</tr>
+
+<tr>
+    <td>status_section.py</td>
+    <td>상태 분포 분석</td>
+</tr>
+
+<tr>
+    <td>rating_section.py</td>
+    <td>평점 분포 분석</td>
+</tr>
+
+<tr>
+    <td>ranking_section.py</td>
+    <td>랭킹 분석</td>
+</tr>
+
+<tr>
+    <td>tag_section.py</td>
+    <td>태그 분석</td>
+</tr>
+
+</table>
+
+---
+
 # settings
 
 설정 페이지.
 
-```text
+```text id="54sw00"
 settings
 │
 ├─ page.py
 ├─ actions.py
-├─ settings_styles.py
 │
 ├─ folder_section.py
 ├─ database_section.py
 ├─ pixiv_section.py
+├─ settings_management_section.py
 ├─ app_info_section.py
 │
 ├─ database_utils.py
+├─ settings_styles.py
 │
 └─ __init__.py
 ```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>page.py</td>
+    <td>설정 페이지</td>
+</tr>
+
+<tr>
+    <td>actions.py</td>
+    <td>설정 액션 처리</td>
+</tr>
+
+<tr>
+    <td>folder_section.py</td>
+    <td>루트 폴더 설정</td>
+</tr>
+
+<tr>
+    <td>database_section.py</td>
+    <td>DB 관리</td>
+</tr>
+
+<tr>
+    <td>pixiv_section.py</td>
+    <td>Pixiv 설정</td>
+</tr>
+
+<tr>
+    <td>settings_management_section.py</td>
+    <td>설정 백업 및 복원</td>
+</tr>
+
+<tr>
+    <td>app_info_section.py</td>
+    <td>프로그램 정보</td>
+</tr>
+
+<tr>
+    <td>database_utils.py</td>
+    <td>DB 관련 유틸</td>
+</tr>
+
+<tr>
+    <td>settings_styles.py</td>
+    <td>설정 페이지 스타일</td>
+</tr>
+
+</table>
 
 ---
 
 # ui/widgets
 
-공통 위젯.
+공용 위젯.
 
-```text
+```text id="j0jge2"
 widgets
 │
 ├─ artist_table
@@ -860,19 +1103,60 @@ widgets
 
 # artist_table
 
-작가 목록 테이블 위젯.
+작가 목록 테이블 구성 요소.
 
-```text
+```text id="x0m4ut"
 artist_table
 │
-├─ table.py
-├─ row_renderer.py
 ├─ actions.py
+├─ cell_widgets.py
 ├─ columns.py
 ├─ formatters.py
-├─ cell_widgets.py
+├─ row_renderer.py
+├─ table.py
+│
 └─ __init__.py
 ```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>table.py</td>
+    <td>작가 목록 테이블</td>
+</tr>
+
+<tr>
+    <td>row_renderer.py</td>
+    <td>행 렌더링</td>
+</tr>
+
+<tr>
+    <td>columns.py</td>
+    <td>컬럼 정의</td>
+</tr>
+
+<tr>
+    <td>cell_widgets.py</td>
+    <td>별점, 버튼 등 셀 위젯</td>
+</tr>
+
+<tr>
+    <td>formatters.py</td>
+    <td>데이터 포맷팅</td>
+</tr>
+
+<tr>
+    <td>actions.py</td>
+    <td>테이블 액션</td>
+</tr>
+
+</table>
 
 ---
 
@@ -880,7 +1164,7 @@ artist_table
 
 프로그램 데이터 저장 폴더.
 
-```text
+```text id="8yfr3m"
 data
 │
 ├─ pixiv_manager.db
@@ -897,7 +1181,7 @@ data
 
 백업 데이터 저장 폴더.
 
-```text
+```text id="ujn7pz"
 backups
 │
 ├─ database
@@ -910,7 +1194,7 @@ backups
 
 내보내기 데이터 저장 폴더.
 
-```text
+```text id="9ojfqr"
 exports
 ```
 
@@ -920,7 +1204,7 @@ exports
 
 썸네일 캐시 저장 폴더.
 
-```text
+```text id="77o1gq"
 thumbnails
 ```
 
@@ -930,7 +1214,7 @@ thumbnails
 
 프로젝트 문서.
 
-```text
+```text id="c0ndh1"
 docs
 │
 ├─ 01_PROJECT_OVERVIEW.md
@@ -951,7 +1235,7 @@ docs
 
 테스트 코드.
 
-```text
+```text id="38rdah"
 tests
 │
 ├─ test_database.py
@@ -965,7 +1249,7 @@ tests
 
 ## 1. Page 중심 구조
 
-```text
+```text id="99axd9"
 Page
  ├─ Actions
  ├─ Sections
@@ -977,7 +1261,7 @@ Page
 
 ## 2. 기능별 분리
 
-```text
+```text id="a5xqrg"
 actions.py
  ↓
 
@@ -991,7 +1275,7 @@ action_parts
 
 ## 3. Worker 분리
 
-```text
+```text id="097oa6"
 worker.py
  ↓
 
@@ -1007,7 +1291,7 @@ worker_parts
 
 ## 4. Style 분리
 
-```text
+```text id="u3cncu"
 page.py
  ↓
 
@@ -1016,7 +1300,7 @@ styles.py
 
 또는
 
-```text
+```text id="kqg340"
 dashboard_styles.py
 settings_styles.py
 scan_styles.py
@@ -1026,7 +1310,7 @@ scan_styles.py
 
 ## 5. Import 단순화
 
-```python
+```python id="rpz1c5"
 from ui.pages.scan import ScanPage
 from app.services.artist import ArtistService
 ```
@@ -1035,13 +1319,13 @@ from app.services.artist import ArtistService
 
 # 향후 확장 구조
 
-```text
+```text id="uahqxu"
 ui
 │
 ├─ pages
 │  ├─ viewer
 │  ├─ artwork_manager
-│  └─ statistics
+│  └─ pixiv_sync
 │
 ├─ dialogs
 │  ├─ artwork_preview
@@ -1053,8 +1337,22 @@ ui
    └─ artwork_viewer
 ```
 
+```text id="i2eilw"
+app
+│
+├─ services
+│  ├─ artwork
+│  ├─ viewer
+│  ├─ download
+│  └─ pixiv_sync
+│
+└─ database
+   ├─ artwork
+   └─ pixiv_sync
+```
+
 ---
 
 # 버전 기준
 
-본 문서는 v0.12.0 (대시보드 고도화 완료) 기준으로 작성되었다.
+본 문서는 v0.14.0 (통계 분석 시스템 완료) 기준으로 작성되었다.
