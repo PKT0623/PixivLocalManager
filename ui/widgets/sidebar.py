@@ -28,6 +28,7 @@ class Sidebar(QFrame):
 
         self._add_button(layout, "dashboard", "대시보드")
         self._add_button(layout, "scan", "폴더 스캔")
+        self._add_button(layout, "update_check", "업데이트 확인")
         self._add_button(layout, "artists", "작가 목록")
 
         layout.addStretch()
@@ -72,7 +73,9 @@ class Sidebar(QFrame):
     def _add_button(self, layout: QVBoxLayout, page_name: str, text: str):
         button = QPushButton(text)
         button.setCursor(Qt.PointingHandCursor)
-        button.clicked.connect(lambda checked=False, name=page_name: self.page_changed.emit(name))
+        button.clicked.connect(
+            lambda checked=False, name=page_name: self.page_changed.emit(name)
+        )
 
         self.buttons[page_name] = button
         layout.addWidget(button)

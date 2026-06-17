@@ -4,6 +4,8 @@ from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog
 
+from app.services.pixiv_update_service import PixivUpdateService
+
 from .database_utils import (
     create_database_backup,
     create_restore_safety_backup,
@@ -24,7 +26,9 @@ class SettingsActions:
         )
 
         if pixiv_root_folder:
-            self.page.folder_section.pixiv_root_input.setText(pixiv_root_folder)
+            self.page.folder_section.pixiv_root_input.setText(
+                pixiv_root_folder
+            )
 
         phpsessid = self.page.settings_service.get_setting("pixiv_phpsessid")
 
@@ -34,8 +38,46 @@ class SettingsActions:
                 f"저장됨: {self.mask_secret(phpsessid)}"
             )
 
+        self._load_pixiv_request_settings()
+
         db_path = get_database_path()
         self.page.database_section.db_path_input.setText(str(db_path))
+
+    def _load_pixiv_request_settings(self):
+        section = self.page.pixiv_section
+
+        section.request_interval_min_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "pixiv_request_interval_min",
+                    3,
+                )
+            )
+        )
+        section.request_interval_max_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "pixiv_request_interval_max",
+                    6,
+                )
+            )
+        )
+        section.retry_count_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "pixiv_retry_count",
+                    2,
+                )
+            )
+        )
+        section.retry_interval_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "pixiv_retry_interval",
+                    5,
+                )
+            )
+        )
 
     def select_pixiv_root_folder(self):
         folder_path = QFileDialog.getExistingDirectory(
@@ -88,6 +130,89 @@ class SettingsActions:
             f"저장됨: {self.mask_secret(phpsessid)}"
         )
         self.set_status("Pixiv PHPSESSID가 저장되었습니다.")
+
+    def test_phpsessid(self):
+        phpsessid = self.page.pixiv_section.phpsessid_input.text().strip()
+
+        if not phpsessid:
+            phpsessid = self.page.settings_service.get_setting(
+                "pixiv_phpsessid"
+            )
+
+        if not phpsessid:
+            self.set_status("테스트할 PHPSESSID가 없습니다.", error=True)
+            return
+
+        self.page.pixiv_section.test_phpsessid_button.setEnabled(False)
+        self.set_status("PHPSESSID 테스트 중...")
+
+        try:
+            pixiv_service = PixivUpdateService.from_settings(
+                self.page.settings_service
+            )
+            result = pixiv_service.test_phpsessid(phpsessid)
+        except Exception as error:
+            self.set_status(f"PHPSESSID 테스트 실패: {error}", error=True)
+            self.page.pixiv_section.test_phpsessid_button.setEnabled(True)
+            return
+
+        self.page.pixiv_section.test_phpsessid_button.setEnabled(True)
+
+        if result.get("success"):
+            self.set_status("PHPSESSID가 유효합니다.")
+            return
+
+        self.set_status(
+            f"PHPSESSID 테스트 실패: {result.get('message')}",
+            error=True,
+        )
+
+    def save_pixiv_request_settings(self):
+        section = self.page.pixiv_section
+
+        min_interval = self._read_int(
+            section.request_interval_min_input.text(),
+            3,
+        )
+        max_interval = self._read_int(
+            section.request_interval_max_input.text(),
+            6,
+        )
+        retry_count = self._read_int(
+            section.retry_count_input.text(),
+            2,
+        )
+        retry_interval = self._read_int(
+            section.retry_interval_input.text(),
+            5,
+        )
+
+        if max_interval < min_interval:
+            max_interval = min_interval
+
+        try:
+            self.page.settings_service.set_setting(
+                "pixiv_request_interval_min",
+                min_interval,
+            )
+            self.page.settings_service.set_setting(
+                "pixiv_request_interval_max",
+                max_interval,
+            )
+            self.page.settings_service.set_setting(
+                "pixiv_retry_count",
+                retry_count,
+            )
+            self.page.settings_service.set_setting(
+                "pixiv_retry_interval",
+                retry_interval,
+            )
+        except Exception as error:
+            self.set_status(f"요청 설정 저장 실패: {error}", error=True)
+            return
+
+        self._load_pixiv_request_settings()
+        self.set_status("Pixiv 요청 설정이 저장되었습니다.")
 
     def open_db_folder(self):
         db_path = get_database_path()
@@ -191,6 +316,16 @@ class SettingsActions:
             return "*" * len(value)
 
         return f"{value[:4]}{'*' * 8}{value[-4:]}"
+
+    def _read_int(
+        self,
+        value: str,
+        default: int,
+    ) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
 
     def set_status(self, message: str, error: bool = False):
         self.page.status_label.setText(message)

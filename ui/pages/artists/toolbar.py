@@ -33,12 +33,10 @@ class ArtistsToolbar(QWidget):
         )
 
         self.rating_toggle_button = QPushButton("평점: 별")
-        self.update_check_button = QPushButton("업데이트 확인")
         self.refresh_button = QPushButton("새로고침")
 
         top_layout.addWidget(self.search_input, 1)
         top_layout.addWidget(self.rating_toggle_button)
-        top_layout.addWidget(self.update_check_button)
         top_layout.addWidget(self.refresh_button)
 
         filter_layout = QHBoxLayout()

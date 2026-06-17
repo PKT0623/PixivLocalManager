@@ -1,4 +1,6 @@
 from app.database.artist import ArtistRepository
+from app.services.pixiv_update_service import PixivRequestError
+
 from .update_utils import ArtistUpdateUtils
 
 
@@ -31,11 +33,14 @@ class ArtistBulkUpdateService:
             if skip_recent and self.update_utils.was_recently_checked(
                 artist
             ):
+                self.update_service.save_skipped_recent_history(artist)
+
                 results.append(
                     {
                         "action": "skipped_recent",
                         "artist": artist,
                         "status": artist.get("update_status", "unknown"),
+                        "result_label": "스킵",
                     }
                 )
                 continue
@@ -63,12 +68,13 @@ class ArtistBulkUpdateService:
             results.append(result)
 
             return True
-        except RuntimeError as error:
-            error_message = str(error)
+        except PixivRequestError as error:
+            error_message = error.to_display_text()
 
             self.update_utils.mark_artist_update_error(
-                artist,
-                error_message,
+                artist=artist,
+                error_message=error_message,
+                error_reason=error.reason,
             )
 
             results.append(
@@ -76,7 +82,10 @@ class ArtistBulkUpdateService:
                     "action": "error",
                     "artist": artist,
                     "status": "error",
+                    "result_label": "확인 실패",
                     "error": error_message,
+                    "error_reason": error.reason,
+                    "should_stop": error.should_stop,
                 }
             )
 
@@ -85,8 +94,9 @@ class ArtistBulkUpdateService:
             error_message = str(error)
 
             self.update_utils.mark_artist_update_error(
-                artist,
-                error_message,
+                artist=artist,
+                error_message=error_message,
+                error_reason="UNKNOWN_ERROR",
             )
 
             results.append(
@@ -94,7 +104,10 @@ class ArtistBulkUpdateService:
                     "action": "error",
                     "artist": artist,
                     "status": "error",
+                    "result_label": "확인 실패",
                     "error": error_message,
+                    "error_reason": "UNKNOWN_ERROR",
+                    "should_stop": False,
                 }
             )
 
@@ -108,6 +121,5 @@ class ArtistBulkUpdateService:
             return False
 
         latest_result = results[-1]
-        error_message = latest_result.get("error", "")
 
-        return "HTTP 403" in error_message or "HTTP 429" in error_message
+        return bool(latest_result.get("should_stop"))

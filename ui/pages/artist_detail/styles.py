@@ -10,6 +10,12 @@ QLabel#sectionTitle {
     margin-top: 8px;
 }
 
+QLabel#historySummaryLabel {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
 QFrame#infoFrame {
     border: 1px solid #dddddd;
     border-radius: 8px;

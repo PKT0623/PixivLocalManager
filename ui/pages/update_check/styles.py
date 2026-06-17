@@ -1,13 +1,32 @@
-UPDATE_CHECK_DIALOG_STYLE = """
-QLabel#dialogTitle {
-    font-size: 24px;
-    font-weight: 800;
+UPDATE_CHECK_PAGE_STYLES = """
+QLabel#pageTitle {
+    font-size: 28px;
+    font-weight: 700;
 }
 
-QLabel#descriptionLabel,
+QLabel#pageDescription,
 QLabel#statusLabel {
     font-size: 14px;
     color: #555555;
+}
+
+QLabel#targetCountLabel {
+    padding: 7px 14px;
+    border-radius: 8px;
+    background-color: #e9f5ff;
+    color: #0d6efd;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+QLabel#summaryValueLabel {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+QLabel#summaryTextLabel {
+    font-size: 12px;
+    color: #666666;
 }
 
 QLabel#sectionTitle {
@@ -15,10 +34,20 @@ QLabel#sectionTitle {
     font-weight: 700;
 }
 
-QFrame#optionFrame {
+QFrame#optionFrame,
+QFrame#summaryFrame,
+QFrame#progressFrame,
+QFrame#tableFrame,
+QFrame#logFrame {
     border: 1px solid #dddddd;
     border-radius: 10px;
     background-color: #ffffff;
+}
+
+QFrame#summaryItemFrame {
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    background-color: #fafafa;
 }
 
 QPushButton {
@@ -44,9 +73,14 @@ QPushButton#primaryButton:hover {
     background-color: #157347;
 }
 
+QPushButton:disabled {
+    color: #999999;
+    background-color: #eeeeee;
+    border-color: #dddddd;
+}
+
 QTableWidget {
-    border: 1px solid #dddddd;
-    border-radius: 8px;
+    border: none;
     background-color: #ffffff;
     gridline-color: #eeeeee;
     font-size: 13px;

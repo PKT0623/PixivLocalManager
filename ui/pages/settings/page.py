@@ -69,6 +69,12 @@ class SettingsPage(QWidget):
         self.pixiv_section.save_phpsessid_button.clicked.connect(
             self.actions.save_phpsessid
         )
+        self.pixiv_section.test_phpsessid_button.clicked.connect(
+            self.actions.test_phpsessid
+        )
+        self.pixiv_section.save_request_settings_button.clicked.connect(
+            self.actions.save_pixiv_request_settings
+        )
         self.database_section.open_db_folder_button.clicked.connect(
             self.actions.open_db_folder
         )

@@ -113,9 +113,6 @@ class ArtistsPage(QWidget):
         self.toolbar.rating_toggle_button.clicked.connect(
             self.actions.toggle_rating_display
         )
-        self.toolbar.update_check_button.clicked.connect(
-            self.actions.open_update_check_dialog
-        )
         self.toolbar.refresh_button.clicked.connect(
             self.actions.load_artists
         )

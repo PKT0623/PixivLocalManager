@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 
 
+RECENT_CHECK_SKIP_HOURS = 24
+
+
 def format_datetime(value) -> str:
     if value is None or value == "":
         return "-"
@@ -14,7 +17,7 @@ def format_datetime(value) -> str:
 
 def was_recently_checked(
     artist: dict,
-    hours: int = 6,
+    hours: int = RECENT_CHECK_SKIP_HOURS,
 ) -> bool:
     last_checked_at = artist.get("last_checked_at")
 
@@ -32,7 +35,7 @@ def was_recently_checked(
 def exclude_recently_checked(
     artists: list[dict],
     artist_ids: list[int],
-    hours: int = 6,
+    hours: int = RECENT_CHECK_SKIP_HOURS,
 ) -> list[int]:
     artist_map = {
         int(artist["id"]): artist

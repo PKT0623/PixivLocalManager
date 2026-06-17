@@ -1,21 +1,26 @@
 from datetime import datetime
 
 from app.database.artist import ArtistRepository
-from .bulk_update_service import ArtistBulkUpdateService
 from app.services.artwork_status_service import ArtworkStatusService
 from app.services.pixiv_update_service import PixivUpdateService
 from app.services.settings_service import SettingsService
 
+from .bulk_update_service import ArtistBulkUpdateService
+from .update_utils import ArtistUpdateUtils
+
 
 class ArtistUpdateService:
-    RECENT_CHECK_SKIP_HOURS = 6
+    RECENT_CHECK_SKIP_HOURS = 24
     MAX_BULK_UPDATE_COUNT = 20
 
     def __init__(self):
         self.repo = ArtistRepository()
         self.status_service = ArtworkStatusService()
-        self.pixiv_update_service = PixivUpdateService()
         self.settings_service = SettingsService()
+        self.pixiv_update_service = PixivUpdateService.from_settings(
+            self.settings_service
+        )
+        self.update_utils = ArtistUpdateUtils()
         self.bulk_update_service = ArtistBulkUpdateService(self)
 
     def check_artist_update(
@@ -40,12 +45,14 @@ class ArtistUpdateService:
             fetch_result.artwork_ids_text,
         )
 
+        checked_at = datetime.now().isoformat()
+
         update_data = dict(artist)
         update_data["pixiv_latest_artwork_ids"] = (
             fetch_result.artwork_ids_text
         )
         update_data["update_status"] = status_result.status
-        update_data["last_checked_at"] = datetime.now().isoformat()
+        update_data["last_checked_at"] = checked_at
 
         self.repo.update_artist(
             artist_id,
@@ -53,15 +60,34 @@ class ArtistUpdateService:
         )
 
         updated_artist = self.repo.get_by_id(artist_id)
+        result_label = self.update_utils.status_to_label(
+            status_result.status
+        )
+        download_candidate_ids = list(status_result.missing_ids)
+
+        self.update_utils.save_update_history(
+            artist=updated_artist,
+            checked_at=checked_at,
+            action="checked",
+            result_status=status_result.status,
+            result_label=result_label,
+            local_count=status_result.local_count,
+            pixiv_count=status_result.pixiv_count,
+            missing_count=status_result.missing_count,
+            missing_ids=status_result.missing_ids,
+            download_candidate_ids=download_candidate_ids,
+        )
 
         return {
             "action": "checked",
             "artist": updated_artist,
             "status": status_result.status,
+            "result_label": result_label,
             "local_count": status_result.local_count,
             "pixiv_count": status_result.pixiv_count,
             "missing_count": status_result.missing_count,
             "missing_ids": status_result.missing_ids,
+            "download_candidate_ids": download_candidate_ids,
         }
 
     def check_all_artist_updates(
@@ -73,6 +99,12 @@ class ArtistUpdateService:
             max_count=max_count,
             skip_recent=skip_recent,
         )
+
+    def save_skipped_recent_history(
+        self,
+        artist: dict,
+    ) -> None:
+        self.update_utils.save_skipped_recent_history(artist)
 
     def _get_artist_pixiv_id(
         self,

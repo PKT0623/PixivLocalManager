@@ -1,3 +1,10 @@
+from app.database.table_definitions import (
+    CREATE_ARTIST_UPDATE_HISTORY_CHECKED_AT_INDEX_SQL,
+    CREATE_ARTIST_UPDATE_HISTORY_INDEX_SQL,
+    CREATE_ARTIST_UPDATE_HISTORY_TABLE_SQL,
+)
+
+
 ARTIST_COLUMN_MIGRATIONS = {
     "is_favorite": (
         "ALTER TABLE artists "
@@ -28,6 +35,7 @@ ARTIST_COLUMN_MIGRATIONS = {
 
 def run_migrations(cursor) -> None:
     _ensure_artist_columns(cursor)
+    _ensure_artist_update_history_table(cursor)
 
 
 def _ensure_artist_columns(cursor) -> None:
@@ -36,6 +44,12 @@ def _ensure_artist_columns(cursor) -> None:
     for column_name, query in ARTIST_COLUMN_MIGRATIONS.items():
         if column_name not in existing_columns:
             cursor.execute(query)
+
+
+def _ensure_artist_update_history_table(cursor) -> None:
+    cursor.execute(CREATE_ARTIST_UPDATE_HISTORY_TABLE_SQL)
+    cursor.execute(CREATE_ARTIST_UPDATE_HISTORY_INDEX_SQL)
+    cursor.execute(CREATE_ARTIST_UPDATE_HISTORY_CHECKED_AT_INDEX_SQL)
 
 
 def _get_table_columns(cursor, table_name: str) -> set[str]:

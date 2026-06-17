@@ -6,6 +6,7 @@ from ui.pages import (
     DashboardPage,
     ScanPage,
     SettingsPage,
+    UpdateCheckPage,
 )
 from ui.widgets import Sidebar
 
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         return {
             "dashboard": DashboardPage(),
             "scan": ScanPage(),
+            "update_check": UpdateCheckPage(),
             "artists": ArtistsPage(),
             "artist_detail": ArtistDetailPage(),
             "settings": SettingsPage(),
@@ -73,6 +75,9 @@ class MainWindow(QMainWindow):
         if page_name == "artists":
             page.load_artists()
 
+        if page_name == "update_check":
+            page.load_artists()
+
         self.page_stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_name)
 
@@ -85,3 +90,11 @@ class MainWindow(QMainWindow):
     def _handle_artist_updated(self, artist_id: int):
         artists_page = self.pages["artists"]
         artists_page.load_artists()
+
+    def closeEvent(self, event):
+        update_page = self.pages.get("update_check")
+
+        if update_page is not None:
+            update_page.shutdown_worker()
+
+        super().closeEvent(event)

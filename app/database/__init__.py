@@ -7,6 +7,7 @@ from .artist import (
 )
 from .connection import get_connection
 from .schema import initialize_database
+from .update_history_repository import ArtistUpdateHistoryRepository
 
 __all__ = [
     "ARTIST_COLUMNS",
@@ -14,6 +15,7 @@ __all__ = [
     "ArtistRepository",
     "ArtistRestoreRepository",
     "ArtistUpdateRepository",
+    "ArtistUpdateHistoryRepository",
     "get_connection",
     "initialize_database",
 ]

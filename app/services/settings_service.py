@@ -21,6 +21,21 @@ class SettingsService:
 
         return setting.value
 
+    def get_int_setting(
+        self,
+        key: str,
+        default: int,
+    ) -> int:
+        value = self.get_setting(key)
+
+        if value is None or value == "":
+            return default
+
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
     def set_setting(
         self,
         key: str,
@@ -39,6 +54,10 @@ class SettingsService:
             "scan_interval": 60,
             "auto_rescan": True,
             "theme": "light",
+            "pixiv_request_interval_min": 3,
+            "pixiv_request_interval_max": 6,
+            "pixiv_retry_count": 2,
+            "pixiv_retry_interval": 5,
         }
 
         for key, value in default_settings.items():

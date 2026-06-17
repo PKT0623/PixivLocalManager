@@ -1,5 +1,3 @@
-from ui.dialogs.update_check import UpdateCheckDialog
-
 from ..filters import (
     DEFAULT_SORT_REVERSE,
     filter_artists,
@@ -61,16 +59,6 @@ class ArtistsDataActions:
     def toggle_rating_filter_mode(self):
         self.page.toolbar.toggle_rating_filter_mode()
         self.apply_filter_and_sort()
-
-    def open_update_check_dialog(self):
-        dialog = UpdateCheckDialog(
-            self.page.all_artists,
-            self.page,
-        )
-        dialog.update_finished.connect(self.load_artists)
-        dialog.exec()
-
-        self.load_artists()
 
     def handle_sort_requested(
         self,
