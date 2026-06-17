@@ -50,10 +50,10 @@ MAIN --> STACK[QStackedWidget]
 SIDEBAR --> DASHBOARD[Dashboard]
 SIDEBAR --> SCAN[Scan]
 SIDEBAR --> ARTISTS[Artists]
+SIDEBAR --> UPDATE[Update Check]
 SIDEBAR --> SETTINGS[Settings]
 
 ARTISTS --> DETAIL[Artist Detail]
-ARTISTS --> UPDATE[Update Check Dialog]
 ```
 
 ---
@@ -92,8 +92,8 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
-    <td>Update Check Dialog</td>
-    <td>Pixiv 업데이트 확인</td>
+    <td>Update Check</td>
+    <td>Pixiv 업데이트 확인 및 결과 관리</td>
 </tr>
 
 </table>
@@ -121,6 +121,11 @@ ARTISTS --> UPDATE[Update Check Dialog]
 <tr>
     <td>작가 목록</td>
     <td>작가 관리</td>
+</tr>
+
+<tr>
+    <td>업데이트 확인</td>
+    <td>Pixiv 업데이트 확인</td>
 </tr>
 
 <tr>
@@ -283,11 +288,6 @@ ARTISTS --> UPDATE[Update Check Dialog]
 <tr>
     <td>평점 표시 전환</td>
     <td>별점 ↔ 숫자 전환</td>
-</tr>
-
-<tr>
-    <td>업데이트 확인</td>
-    <td>업데이트 확인 다이얼로그 실행</td>
 </tr>
 
 <tr>
@@ -494,12 +494,12 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>기본 정보</td>
-    <td>작가명, Pixiv ID, 폴더 경로, 상태 표시</td>
+    <td>작가명, Pixiv ID, 상태, 최근 확인일, 최근 열람일 표시</td>
 </tr>
 
 <tr>
     <td>작품 정보</td>
-    <td>작품 수, 파일 수, 폴더 용량 표시</td>
+    <td>작품 수, 파일 수, 폴더 상태 표시</td>
 </tr>
 
 <tr>
@@ -519,17 +519,42 @@ ARTISTS --> UPDATE[Update Check Dialog]
 
 <tr>
     <td>폴더 변경</td>
-    <td>작가 저장 위치 변경</td>
+    <td>작가 저장 위치 변경 및 재스캔</td>
+</tr>
+
+<tr>
+    <td>현재 작가 재스캔</td>
+    <td>현재 작가 폴더를 다시 분석하여 로컬 작품 정보 갱신</td>
+</tr>
+
+<tr>
+    <td>현재 작가 업데이트 확인</td>
+    <td>현재 작가의 Pixiv 최신 작품 정보를 확인하고 로컬 데이터와 비교</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID 복사</td>
+    <td>작가 Pixiv ID를 클립보드에 복사</td>
+</tr>
+
+<tr>
+    <td>폴더 경로 복사</td>
+    <td>작가 폴더 경로를 클립보드에 복사</td>
 </tr>
 
 <tr>
     <td>최근 로컬 작품</td>
-    <td>최근 저장된 작품 목록 표시</td>
+    <td>최근 저장된 로컬 작품 목록 표시</td>
 </tr>
 
 <tr>
     <td>누락 작품 ID 목록</td>
     <td>Pixiv에는 있으나 로컬에 없는 작품 표시</td>
+</tr>
+
+<tr>
+    <td>업데이트 이력</td>
+    <td>최근 업데이트 확인 결과와 누락 작품 수 변화 표시</td>
 </tr>
 
 <tr>
@@ -627,6 +652,16 @@ ARTISTS --> UPDATE[Update Check Dialog]
 </tr>
 
 <tr>
+    <td>파일 수</td>
+    <td>동일 작품 ID로 인식된 파일 수 표시</td>
+</tr>
+
+<tr>
+    <td>최근 변경일</td>
+    <td>해당 작품 파일의 최근 변경 시각 표시</td>
+</tr>
+
+<tr>
     <td>Pixiv</td>
     <td>Pixiv 작품 페이지 열기</td>
 </tr>
@@ -658,6 +693,63 @@ ARTISTS --> UPDATE[Update Check Dialog]
     <td>Pixiv 작품 페이지 열기</td>
 </tr>
 
+<tr>
+    <td>전체 Pixiv 열기</td>
+    <td>현재 누락 작품 ID 전체를 Pixiv 작품 페이지로 열기</td>
+</tr>
+
+</table>
+
+---
+
+## 업데이트 이력 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>확인 시각</td>
+    <td>업데이트 확인 실행 시각</td>
+</tr>
+
+<tr>
+    <td>결과</td>
+    <td>최신, 업데이트 필요, 확인 실패 등 결과 표시</td>
+</tr>
+
+<tr>
+    <td>로컬 작품 수</td>
+    <td>확인 시점의 로컬 작품 수</td>
+</tr>
+
+<tr>
+    <td>Pixiv 작품 수</td>
+    <td>확인 시점의 Pixiv 작품 수</td>
+</tr>
+
+<tr>
+    <td>누락 작품 수</td>
+    <td>확인 시점의 누락 작품 수</td>
+</tr>
+
+<tr>
+    <td>변화량</td>
+    <td>직전 확인 결과 대비 누락 작품 수 변화</td>
+</tr>
+
+<tr>
+    <td>신규 / 해결</td>
+    <td>신규 누락 수와 해결된 누락 수 표시</td>
+</tr>
+
+<tr>
+    <td>상세</td>
+    <td>신규 누락 ID, 해결 ID, 오류 메시지 표시</td>
+</tr>
+
 </table>
 
 ---
@@ -672,6 +764,7 @@ QScrollArea
      ├─ 최근 로컬 작품
      ├─ 누락 작품
      ├─ 태그 관리
+     ├─ 업데이트 이력
      ├─ 메모
      ├─ 참고 링크
      └─ 다운로드 메모
@@ -679,7 +772,7 @@ QScrollArea
 
 ---
 
-# Update Check Dialog
+# Update Check 페이지
 
 ## 구성 요소
 
@@ -691,12 +784,17 @@ QScrollArea
 
 <tr>
     <td>작가 목록</td>
-    <td>업데이트 대상 작가 표시</td>
+    <td>업데이트 확인 대상 작가 표시</td>
 </tr>
 
 <tr>
     <td>선택 영역</td>
-    <td>전체 선택 / 해제</td>
+    <td>전체 선택, 전체 해제, 업데이트 필요 선택, 미확인 선택, 실패 항목 선택</td>
+</tr>
+
+<tr>
+    <td>실행 옵션</td>
+    <td>최근 확인 작가 제외 등 확인 조건 설정</td>
 </tr>
 
 <tr>
@@ -705,21 +803,248 @@ QScrollArea
 </tr>
 
 <tr>
+    <td>결과 요약</td>
+    <td>최신, 업데이트 필요, 오류, 스킵, 누락 수 집계</td>
+</tr>
+
+<tr>
     <td>결과 로그</td>
-    <td>업데이트 결과 출력</td>
+    <td>업데이트 확인 결과 출력</td>
 </tr>
 
 <tr>
-    <td>시작</td>
-    <td>업데이트 확인 시작</td>
+    <td>업데이트 시작</td>
+    <td>선택한 작가의 업데이트 확인 시작</td>
 </tr>
 
 <tr>
-    <td>취소</td>
+    <td>일시정지</td>
+    <td>현재 작업 완료 후 일시정지</td>
+</tr>
+
+<tr>
+    <td>재개</td>
+    <td>일시정지 위치부터 재개</td>
+</tr>
+
+<tr>
+    <td>중단</td>
     <td>업데이트 확인 취소</td>
 </tr>
 
+<tr>
+    <td>CSV 저장</td>
+    <td>결과 로그를 CSV 파일로 저장</td>
+</tr>
+
 </table>
+
+---
+
+## 작가 목록 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>선택</td>
+    <td>업데이트 확인 대상 선택</td>
+</tr>
+
+<tr>
+    <td>작가명</td>
+    <td>작가 이름 표시</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID</td>
+    <td>Pixiv 사용자 ID 표시</td>
+</tr>
+
+<tr>
+    <td>상태</td>
+    <td>현재 업데이트 상태 표시</td>
+</tr>
+
+<tr>
+    <td>최근 확인</td>
+    <td>마지막 업데이트 확인 시각 표시</td>
+</tr>
+
+</table>
+
+---
+
+## 결과 요약 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>전체</td>
+    <td>확인 대상 전체 수</td>
+</tr>
+
+<tr>
+    <td>최신</td>
+    <td>최신 상태 작가 수</td>
+</tr>
+
+<tr>
+    <td>업데이트 필요</td>
+    <td>누락 작품이 존재하는 작가 수</td>
+</tr>
+
+<tr>
+    <td>오류</td>
+    <td>확인 실패 작가 수</td>
+</tr>
+
+<tr>
+    <td>스킵</td>
+    <td>최근 확인 제외 조건으로 건너뛴 작가 수</td>
+</tr>
+
+<tr>
+    <td>누락</td>
+    <td>전체 누락 작품 수</td>
+</tr>
+
+</table>
+
+---
+
+## 결과 로그 영역
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>시간</td>
+    <td>업데이트 확인 시각</td>
+</tr>
+
+<tr>
+    <td>진행</td>
+    <td>현재 진행 위치</td>
+</tr>
+
+<tr>
+    <td>결과</td>
+    <td>최신, 업데이트 필요, 오류 등 결과 표시</td>
+</tr>
+
+<tr>
+    <td>작가명</td>
+    <td>확인 대상 작가</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID</td>
+    <td>작가 Pixiv ID</td>
+</tr>
+
+<tr>
+    <td>로컬</td>
+    <td>로컬 작품 수</td>
+</tr>
+
+<tr>
+    <td>Pixiv</td>
+    <td>Pixiv 작품 수</td>
+</tr>
+
+<tr>
+    <td>누락</td>
+    <td>현재 누락 작품 수</td>
+</tr>
+
+<tr>
+    <td>변화</td>
+    <td>직전 확인 결과 대비 누락 작품 수 변화량</td>
+</tr>
+
+<tr>
+    <td>신규</td>
+    <td>새롭게 누락된 작품 수</td>
+</tr>
+
+<tr>
+    <td>해결</td>
+    <td>누락 상태가 해소된 작품 수</td>
+</tr>
+
+<tr>
+    <td>누락 ID</td>
+    <td>누락 작품 ID 목록</td>
+</tr>
+
+<tr>
+    <td>상태</td>
+    <td>오류 메시지 또는 추가 정보</td>
+</tr>
+
+</table>
+
+---
+
+## 결과 비교 기능
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>과거 결과 비교</td>
+    <td>직전 확인 결과와 현재 결과 비교</td>
+</tr>
+
+<tr>
+    <td>누락 수 변화 추적</td>
+    <td>누락 작품 증가 및 감소 확인</td>
+</tr>
+
+<tr>
+    <td>신규 누락 계산</td>
+    <td>새롭게 누락된 작품 수 계산</td>
+</tr>
+
+<tr>
+    <td>해결 작품 계산</td>
+    <td>누락 상태가 해소된 작품 수 계산</td>
+</tr>
+
+<tr>
+    <td>작가별 추이 확인</td>
+    <td>상세 페이지에서 누락 변화 추이 확인</td>
+</tr>
+
+</table>
+
+---
+
+## 처리 흐름
+
+```text
+작가 선택
+ → 업데이트 확인
+ → 결과 저장
+ → 결과 비교
+ → 로그 출력
+ → CSV 저장
+ → 상세 페이지 이력 조회
+```
 
 ---
 
