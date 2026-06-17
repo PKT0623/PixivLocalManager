@@ -29,6 +29,7 @@ from .update import (
 from .artwork_status_service import ArtworkStatusService
 from .export_service import ExportService
 from .pixiv_update_service import PixivUpdateService
+from .settings_backup_service import SettingsBackupService
 from .settings_service import SettingsService
 
 __all__ = [
@@ -55,5 +56,6 @@ __all__ = [
     "ArtworkStatusService",
     "ExportService",
     "PixivUpdateService",
+    "SettingsBackupService",
     "SettingsService",
 ]

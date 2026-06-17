@@ -36,12 +36,29 @@ class SettingsService:
         except (TypeError, ValueError):
             return default
 
+    def get_bool_setting(
+        self,
+        key: str,
+        default: bool = False,
+    ) -> bool:
+        value = self.get_setting(key)
+
+        if value is None:
+            return default
+
+        return str(value).lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
     def set_setting(
         self,
         key: str,
         value: Any,
     ):
-        return self.repo.set(key, value)
+        return self.repo.set(key, str(value))
 
     def delete_setting(
         self,
@@ -50,6 +67,8 @@ class SettingsService:
         return self.repo.delete(key)
 
     def reset_to_default(self):
+        self.repo.delete_all()
+
         default_settings = {
             "scan_interval": 60,
             "auto_rescan": True,
@@ -58,6 +77,9 @@ class SettingsService:
             "pixiv_request_interval_max": 6,
             "pixiv_retry_count": 2,
             "pixiv_retry_interval": 5,
+            "auto_backup_enabled": False,
+            "auto_backup_interval_days": 7,
+            "auto_backup_keep_count": 10,
         }
 
         for key, value in default_settings.items():

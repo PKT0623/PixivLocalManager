@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QHBoxLayout, QMainWindow, QStackedWidget, QWidget
 
+from app.services.backup import DatabaseBackupService
+from app.services.settings_service import SettingsService
 from ui.pages import (
     ArtistDetailPage,
     ArtistsPage,
@@ -12,12 +14,22 @@ from ui.widgets import Sidebar
 
 
 class MainWindow(QMainWindow):
+    DEFAULT_WIDTH = 1500
+    DEFAULT_HEIGHT = 900
+    MIN_WIDTH = 1200
+    MIN_HEIGHT = 760
+
     def __init__(self):
         super().__init__()
 
+        self.settings_service = SettingsService()
+        self.should_restore_maximized = False
+        self.did_restore_window_state = False
+
         self.setWindowTitle("Pixiv Local Manager")
-        self.resize(1500, 900)
-        self.setMinimumSize(1200, 760)
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+        self.setMinimumSize(self.MIN_WIDTH, self.MIN_HEIGHT)
+        self._restore_window_geometry()
 
         self.previous_page = "artists"
 
@@ -27,6 +39,7 @@ class MainWindow(QMainWindow):
 
         self._setup_ui()
         self._connect_signals()
+        self._run_startup_auto_backup()
 
         self.show_page("dashboard")
 
@@ -72,6 +85,85 @@ class MainWindow(QMainWindow):
         detail_page.back_requested.connect(self.go_back_from_artist_detail)
         detail_page.artist_updated.connect(self._handle_artist_updated)
 
+    def _run_startup_auto_backup(self):
+        try:
+            DatabaseBackupService().run_startup_auto_backup()
+        except Exception:
+            return
+
+        settings_page = self.pages.get("settings")
+
+        if settings_page is not None:
+            settings_page.actions.refresh_backup_list()
+
+    def _restore_window_geometry(self):
+        self.should_restore_maximized = self.settings_service.get_bool_setting(
+            "window_maximized",
+            False,
+        )
+
+        if self.should_restore_maximized:
+            return
+
+        width = self.settings_service.get_int_setting(
+            "window_width",
+            self.DEFAULT_WIDTH,
+        )
+        height = self.settings_service.get_int_setting(
+            "window_height",
+            self.DEFAULT_HEIGHT,
+        )
+        x = self.settings_service.get_setting("window_x")
+        y = self.settings_service.get_setting("window_y")
+
+        width = max(self.MIN_WIDTH, width)
+        height = max(self.MIN_HEIGHT, height)
+
+        self.resize(
+            width,
+            height,
+        )
+
+        if x is None or y is None:
+            return
+
+        try:
+            self.move(
+                int(x),
+                int(y),
+            )
+        except (TypeError, ValueError):
+            return
+
+    def _save_window_geometry(self):
+        self.settings_service.set_setting(
+            "window_maximized",
+            self.isMaximized(),
+        )
+
+        if self.isMaximized():
+            return
+
+        size = self.size()
+        position = self.pos()
+
+        self.settings_service.set_setting(
+            "window_width",
+            size.width(),
+        )
+        self.settings_service.set_setting(
+            "window_height",
+            size.height(),
+        )
+        self.settings_service.set_setting(
+            "window_x",
+            position.x(),
+        )
+        self.settings_service.set_setting(
+            "window_y",
+            position.y(),
+        )
+
     def show_page(self, page_name: str):
         page = self.pages.get(page_name)
 
@@ -83,6 +175,11 @@ class MainWindow(QMainWindow):
 
         if page_name == "update_check":
             page.load_artists()
+
+        if page_name == "settings":
+            page.actions.refresh_backup_list()
+            page.actions.refresh_database_info()
+            page.actions.refresh_environment_info()
 
         self.page_stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_name)
@@ -122,7 +219,20 @@ class MainWindow(QMainWindow):
         artists_page = self.pages["artists"]
         artists_page.load_artists()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+
+        if self.did_restore_window_state:
+            return
+
+        self.did_restore_window_state = True
+
+        if self.should_restore_maximized:
+            self.showMaximized()
+
     def closeEvent(self, event):
+        self._save_window_geometry()
+
         update_page = self.pages.get("update_check")
 
         if update_page is not None:

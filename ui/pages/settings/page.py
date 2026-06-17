@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import (
     QLabel,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -12,6 +13,7 @@ from .app_info_section import AppInfoSection
 from .database_section import DatabaseSection
 from .folder_section import FolderSection
 from .pixiv_section import PixivSection
+from .settings_management_section import SettingsManagementSection
 from .settings_styles import SETTINGS_PAGE_STYLE
 
 
@@ -28,36 +30,89 @@ class SettingsPage(QWidget):
         self.actions.load_settings()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(32, 32, 32, 32)
-        layout.setSpacing(16)
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(32, 32, 32, 32)
+        root_layout.setSpacing(16)
 
         title_label = QLabel("설정")
         title_label.setObjectName("pageTitle")
 
         description_label = QLabel(
-            "DB 경로, 백업, 내보내기 같은 프로그램 설정을 관리하는 화면입니다."
+            "프로그램 설정, 데이터 관리, 백업 상태를 관리하는 화면입니다."
         )
         description_label.setObjectName("pageDescription")
+
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setObjectName("settingsTabWidget")
 
         self.folder_section = FolderSection()
         self.pixiv_section = PixivSection()
         self.database_section = DatabaseSection()
+        self.settings_management_section = SettingsManagementSection()
         self.app_info_section = AppInfoSection()
+
+        self.basic_tab = self._create_basic_tab()
+        self.database_tab = self._create_database_tab()
+        self.environment_tab = self._create_environment_tab()
+        self.info_tab = self._create_info_tab()
+
+        self.tab_widget.addTab(self.basic_tab, "기본 설정")
+        self.tab_widget.addTab(self.database_tab, "데이터 관리")
+        self.tab_widget.addTab(self.environment_tab, "환경 설정")
+        self.tab_widget.addTab(self.info_tab, "프로그램 정보")
 
         self.status_label = QLabel("준비됨")
         self.status_label.setObjectName("statusLabel")
 
-        layout.addWidget(title_label)
-        layout.addWidget(description_label)
-        layout.addWidget(self.folder_section)
-        layout.addWidget(self.pixiv_section)
-        layout.addWidget(self.database_section)
-        layout.addWidget(self.app_info_section)
-        layout.addWidget(self.status_label)
-        layout.addStretch()
+        root_layout.addWidget(title_label)
+        root_layout.addWidget(description_label)
+        root_layout.addWidget(self.tab_widget, 1)
+        root_layout.addWidget(self.status_label)
 
         self.setStyleSheet(SETTINGS_PAGE_STYLE)
+
+    def _create_basic_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(16)
+
+        layout.addWidget(self.folder_section)
+        layout.addWidget(self.pixiv_section)
+        layout.addStretch()
+
+        return tab
+
+    def _create_database_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(16)
+
+        layout.addWidget(self.database_section, 1)
+
+        return tab
+
+    def _create_environment_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(16)
+
+        layout.addWidget(self.settings_management_section, 1)
+
+        return tab
+
+    def _create_info_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(16)
+
+        layout.addWidget(self.app_info_section)
+        layout.addStretch()
+
+        return tab
 
     def _connect_signals(self):
         self.folder_section.select_pixiv_root_button.clicked.connect(
@@ -84,6 +139,36 @@ class SettingsPage(QWidget):
         self.database_section.restore_db_button.clicked.connect(
             self.actions.restore_database
         )
+        self.database_section.delete_backup_button.clicked.connect(
+            self.actions.delete_selected_backup
+        )
+        self.database_section.refresh_backup_button.clicked.connect(
+            self.actions.refresh_backup_list
+        )
+        self.database_section.open_backup_folder_button.clicked.connect(
+            self.actions.open_backup_folder
+        )
+        self.database_section.save_backup_settings_button.clicked.connect(
+            self.actions.save_backup_settings
+        )
         self.database_section.export_csv_button.clicked.connect(
             self.actions.export_artists_csv
+        )
+        self.database_section.check_integrity_button.clicked.connect(
+            self.actions.run_integrity_check
+        )
+        self.database_section.optimize_db_button.clicked.connect(
+            self.actions.optimize_database
+        )
+        self.database_section.refresh_db_info_button.clicked.connect(
+            self.actions.refresh_database_info
+        )
+        self.settings_management_section.backup_settings_button.clicked.connect(
+            self.actions.backup_settings
+        )
+        self.settings_management_section.restore_settings_button.clicked.connect(
+            self.actions.restore_settings
+        )
+        self.settings_management_section.reset_settings_button.clicked.connect(
+            self.actions.reset_settings
         )

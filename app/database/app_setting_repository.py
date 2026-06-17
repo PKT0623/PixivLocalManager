@@ -20,7 +20,7 @@ class AppSettingRepository:
                 """,
                 (
                     key,
-                    value,
+                    str(value),
                 ),
             )
 
@@ -65,5 +65,13 @@ class AppSettingRepository:
                 "DELETE FROM app_settings WHERE key = ?",
                 (key,),
             )
+
+            conn.commit()
+
+    def delete_all(self) -> None:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("DELETE FROM app_settings")
 
             conn.commit()
