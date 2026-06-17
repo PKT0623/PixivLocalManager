@@ -30,6 +30,7 @@ class Sidebar(QFrame):
         self._add_button(layout, "scan", "폴더 스캔")
         self._add_button(layout, "update_check", "업데이트 확인")
         self._add_button(layout, "artists", "작가 목록")
+        self._add_button(layout, "statistics", "통계 분석")
 
         layout.addStretch()
 

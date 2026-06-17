@@ -20,6 +20,16 @@ from .scan import (
     FolderScanService,
 )
 
+from .statistics import (
+    StatisticsFavoriteService,
+    StatisticsQualityService,
+    StatisticsRankingService,
+    StatisticsRatingService,
+    StatisticsService,
+    StatisticsStatusService,
+    StatisticsTagService,
+)
+
 from .update import (
     ArtistBulkUpdateService,
     ArtistUpdateService,
@@ -48,6 +58,14 @@ __all__ = [
     "ArtistScanCompare",
     "ArtistScanService",
     "FolderScanService",
+
+    "StatisticsFavoriteService",
+    "StatisticsQualityService",
+    "StatisticsRankingService",
+    "StatisticsRatingService",
+    "StatisticsService",
+    "StatisticsStatusService",
+    "StatisticsTagService",
 
     "ArtistBulkUpdateService",
     "ArtistUpdateService",

@@ -8,6 +8,7 @@ from ui.pages import (
     DashboardPage,
     ScanPage,
     SettingsPage,
+    StatisticsPage,
     UpdateCheckPage,
 )
 from ui.widgets import Sidebar
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
             "scan": ScanPage(),
             "update_check": UpdateCheckPage(),
             "artists": ArtistsPage(),
+            "statistics": StatisticsPage(),
             "artist_detail": ArtistDetailPage(),
             "settings": SettingsPage(),
         }
@@ -175,6 +177,9 @@ class MainWindow(QMainWindow):
 
         if page_name == "update_check":
             page.load_artists()
+
+        if page_name == "statistics":
+            page.load_statistics()
 
         if page_name == "settings":
             page.actions.refresh_backup_list()

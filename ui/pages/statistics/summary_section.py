@@ -1,0 +1,135 @@
+from PySide6.QtWidgets import QGridLayout
+
+from .summary_card import StatisticsSummaryCard
+
+
+class StatisticsSummarySection(QGridLayout):
+    def __init__(self):
+        super().__init__()
+
+        self.setSpacing(8)
+
+        self.cards = {
+            "total_artists": StatisticsSummaryCard("전체 작가 수"),
+            "total_artworks": StatisticsSummaryCard("전체 작품 수"),
+            "total_files": StatisticsSummaryCard("전체 파일 수"),
+            "total_folder_size": StatisticsSummaryCard("총 저장 용량"),
+            "favorite_count": StatisticsSummaryCard("즐겨찾기 작가 수"),
+            "average_rating": StatisticsSummaryCard("평균 평점"),
+            "average_artworks": StatisticsSummaryCard("평균 작품 수"),
+            "average_files": StatisticsSummaryCard("평균 파일 수"),
+            "average_folder_size": StatisticsSummaryCard("평균 저장 용량"),
+            "favorite_average_rating": StatisticsSummaryCard(
+                "즐겨찾기 평균 평점"
+            ),
+        }
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.addWidget(self.cards["total_artists"], 0, 0)
+        self.addWidget(self.cards["total_artworks"], 0, 1)
+        self.addWidget(self.cards["total_files"], 0, 2)
+        self.addWidget(self.cards["total_folder_size"], 0, 3)
+        self.addWidget(self.cards["favorite_count"], 0, 4)
+
+        self.addWidget(self.cards["average_rating"], 1, 0)
+        self.addWidget(self.cards["average_artworks"], 1, 1)
+        self.addWidget(self.cards["average_files"], 1, 2)
+        self.addWidget(self.cards["average_folder_size"], 1, 3)
+        self.addWidget(self.cards["favorite_average_rating"], 1, 4)
+
+    def update_summary(
+        self,
+        summary: dict,
+        favorite: dict | None = None,
+    ):
+        favorite = favorite or {}
+
+        self.cards["total_artists"].set_value(
+            self._format_count(summary.get("total_artists", 0))
+        )
+        self.cards["total_artworks"].set_value(
+            self._format_count(summary.get("total_artworks", 0))
+        )
+        self.cards["total_files"].set_value(
+            self._format_count(summary.get("total_files", 0))
+        )
+        self.cards["total_folder_size"].set_value(
+            self._format_bytes(summary.get("total_folder_size", 0))
+        )
+        self.cards["favorite_count"].set_value(
+            f"{self._to_int(favorite.get('favorite_count', 0)):,}"
+        )
+        self.cards["average_rating"].set_value(
+            self._format_rating(summary.get("average_rating", 0))
+        )
+        self.cards["average_artworks"].set_value(
+            self._format_number(summary.get("average_artworks", 0))
+        )
+        self.cards["average_files"].set_value(
+            self._format_number(summary.get("average_files", 0))
+        )
+        self.cards["average_folder_size"].set_value(
+            self._format_bytes(summary.get("average_folder_size", 0))
+        )
+        self.cards["favorite_average_rating"].set_value(
+            self._format_rating(
+                favorite.get("favorite_average_rating", 0)
+            )
+        )
+
+    def _format_count(self, value) -> str:
+        return f"{self._to_int(value):,}"
+
+    def _format_number(self, value) -> str:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return "0"
+
+        if number.is_integer():
+            return f"{int(number):,}"
+
+        return f"{number:,.1f}"
+
+    def _format_rating(self, value) -> str:
+        number = self._to_float(value)
+
+        if number <= 0:
+            return "-"
+
+        return f"{number:.1f}"
+
+    def _format_bytes(self, value) -> str:
+        try:
+            size = float(value)
+        except (TypeError, ValueError):
+            size = 0
+
+        if size <= 0:
+            return "0 B"
+
+        units = ["B", "KB", "MB", "GB", "TB"]
+        unit_index = 0
+
+        while size >= 1024 and unit_index < len(units) - 1:
+            size /= 1024
+            unit_index += 1
+
+        if unit_index == 0:
+            return f"{int(size)} {units[unit_index]}"
+
+        return f"{size:.1f} {units[unit_index]}"
+
+    def _to_int(self, value) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 0
+
+    def _to_float(self, value) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return 0.0
