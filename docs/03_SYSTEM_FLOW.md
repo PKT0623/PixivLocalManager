@@ -13,9 +13,69 @@ START --> ARTISTS[작가 관리]
 START --> UPDATE[업데이트 확인]
 START --> SETTINGS[설정]
 
-ARTISTS --> DETAIL[작가 상세]
+DASHBOARD --> DETAIL[작가 상세]
+ARTISTS --> DETAIL
+SCAN --> DETAIL
+UPDATE --> DETAIL
+
+DETAIL --> DASHBOARD
+DETAIL --> ARTISTS
+DETAIL --> SCAN
 DETAIL --> UPDATE
-DETAIL --> SETTINGS
+```
+
+---
+
+# 대시보드 흐름
+
+```mermaid
+flowchart LR
+
+A[대시보드 진입]
+
+A --> B[작가 데이터 조회]
+A --> C[업데이트 이력 조회]
+
+B --> D[통계 카드 계산]
+B --> E[TOP 랭킹 계산]
+B --> F[추천 작가 생성]
+B --> G[랜덤 작가 생성]
+
+C --> H[업데이트 현황 계산]
+C --> I[최근 활동 생성]
+C --> J[최근 스캔 결과 생성]
+C --> K[누락 변화 계산]
+
+D --> L[대시보드 표시]
+E --> L
+F --> L
+G --> L
+H --> L
+I --> L
+J --> L
+K --> L
+```
+
+---
+
+# 대시보드 상세 이동 흐름
+
+```mermaid
+flowchart LR
+
+A[대시보드]
+
+A --> B[최근 활동]
+A --> C[TOP 랭킹]
+
+B --> D[작가명 더블클릭]
+C --> D
+
+D --> E[작가 ID 확인]
+E --> F[작가 상세 이동]
+
+F --> G[돌아가기]
+G --> H[대시보드 복귀]
 ```
 
 ---
@@ -32,15 +92,74 @@ B --> C[작가명 추출]
 C --> D[Pixiv ID 추출]
 D --> E[작품 수 계산]
 E --> F[파일 수 계산]
-F --> G[작품 ID 수집]
+F --> G[폴더 용량 계산]
+G --> H[작품 ID 수집]
 
-G --> H{기존 작가 존재}
+H --> I{기존 작가 존재}
 
-H -->|없음| I[신규 등록]
-H -->|있음| J[정보 갱신]
+I -->|없음| J[신규 등록]
+I -->|있음| K[정보 갱신]
 
-I --> K[스캔 완료]
-J --> K
+J --> L[스캔 결과 저장]
+K --> L
+
+L --> M[스캔 완료]
+```
+
+---
+
+# 스캔 미리보기 흐름
+
+```mermaid
+flowchart LR
+
+A[미리보기 실행]
+
+A --> B[폴더 탐색]
+B --> C[스캔 예상 결과 생성]
+
+C --> D{예상 결과}
+
+D -->|신규| E[신규 등록 예정]
+D -->|기존| F[업데이트 예정]
+D -->|동일| G[변경 없음 예정]
+D -->|오류| H[오류 예상]
+
+E --> I[미리보기 테이블 표시]
+F --> I
+G --> I
+H --> I
+
+I --> J[항목 선택]
+J --> K[선택 항목 등록]
+```
+
+---
+
+# 스캔 제어 흐름
+
+```mermaid
+flowchart LR
+
+A[스캔 시작]
+
+A --> B[작업 반복 처리]
+
+B --> C{사용자 요청}
+
+C -->|없음| D[다음 폴더 처리]
+C -->|일시정지| E[현재 작업 완료 후 정지]
+C -->|중지| F[스캔 중단]
+
+E --> G[재개 대기]
+G --> H[이어서 스캔]
+
+H --> B
+D --> B
+
+B --> I{모든 작업 완료}
+I -->|예| J[스캔 완료]
+I -->|아니오| B
 ```
 
 ---
@@ -73,13 +192,13 @@ flowchart LR
 A[작가 선택]
 
 A --> B[기본 정보 표시]
-A --> C[평점 표시]
-A --> D[태그 표시]
-A --> E[메모 표시]
-A --> F[파일 수 표시]
-A --> G[업데이트 상태 표시]
-A --> H[최근 로컬 작품 표시]
-A --> I[누락 작품 표시]
+A --> C[작품 정보 표시]
+A --> D[평점 표시]
+A --> E[태그 표시]
+A --> F[메모 표시]
+A --> G[최근 로컬 작품 표시]
+A --> H[누락 작품 표시]
+A --> I[업데이트 이력 표시]
 A --> J[참고 링크 표시]
 A --> K[다운로드 메모 표시]
 
@@ -87,10 +206,30 @@ B --> L[수정]
 C --> L
 D --> L
 E --> L
+F --> L
 J --> L
 K --> L
 
 L --> M[저장]
+```
+
+---
+
+# 작가 상세 돌아가기 흐름
+
+```mermaid
+flowchart LR
+
+A[작가 상세 진입]
+
+A --> B[진입 전 페이지 저장]
+
+B --> C{진입 경로}
+
+C -->|대시보드| D[대시보드로 복귀]
+C -->|작가 목록| E[작가 목록으로 복귀]
+C -->|스캔| F[스캔으로 복귀]
+C -->|업데이트 확인| G[업데이트 확인으로 복귀]
 ```
 
 ---
@@ -114,10 +253,11 @@ F --> G[재스캔]
 G --> H[작가명 갱신]
 H --> I[작품 수 갱신]
 I --> J[파일 수 갱신]
-J --> K[작품 ID 갱신]
-K --> L[업데이트 상태 갱신]
+J --> K[폴더 용량 갱신]
+K --> L[작품 ID 갱신]
+L --> M[업데이트 상태 갱신]
 
-L --> M[완료]
+M --> N[완료]
 ```
 
 ---
@@ -127,17 +267,18 @@ L --> M[완료]
 ```mermaid
 flowchart LR
 
-A[작가 상세 페이지]
+A[업데이트 확인 결과]
 
-A --> B[Pixiv 최신 작품 ID]
+A --> B[Pixiv 작품 ID]
 A --> C[로컬 작품 ID]
 
-B --> D[비교]
+B --> D[작품 ID 비교]
 C --> D
 
 D --> E[누락 작품 목록 생성]
-
-E --> F[상세 페이지 표시]
+E --> F[누락 작품 수 계산]
+F --> G[상태 저장]
+G --> H[상세 페이지 및 대시보드 표시]
 ```
 
 ---
@@ -160,10 +301,16 @@ E --> F{누락 존재}
 F -->|예| G[업데이트 필요]
 F -->|아니오| H[최신 상태]
 
-G --> I[상태 저장]
+G --> I[결과 저장]
 H --> I
 
-I --> J[결과 표시]
+I --> J[업데이트 이력 저장]
+J --> K[직전 결과 비교]
+K --> L[신규 누락 계산]
+K --> M[해결 작품 계산]
+
+L --> N[결과 표시]
+M --> N
 ```
 
 ---
@@ -182,13 +329,68 @@ B --> C[작가 반복 처리]
 C --> D[최신 작품 조회]
 D --> E[작품 ID 비교]
 E --> F[상태 저장]
+F --> G[이력 저장]
+G --> H[결과 비교]
 
-F --> G{다음 작가 존재}
+H --> I{다음 작가 존재}
 
-G -->|예| C
-G -->|아니오| H[결과 요약]
+I -->|예| C
+I -->|아니오| J[결과 요약]
 
-H --> I[완료]
+J --> K[완료]
+```
+
+---
+
+# 업데이트 일시정지 / 재개 흐름
+
+```mermaid
+flowchart LR
+
+A[업데이트 확인 시작]
+
+A --> B[작가 반복 처리]
+
+B --> C{사용자 요청}
+
+C -->|없음| D[다음 작가 확인]
+C -->|일시정지| E[현재 작가 확인 완료 후 정지]
+C -->|중단| F[업데이트 중단]
+
+E --> G[재개 대기]
+G --> H[이어서 확인]
+
+H --> B
+D --> B
+
+B --> I{모든 작가 완료}
+I -->|예| J[결과 요약]
+I -->|아니오| B
+```
+
+---
+
+# 업데이트 이력 비교 흐름
+
+```mermaid
+flowchart LR
+
+A[현재 업데이트 결과]
+
+A --> B[직전 업데이트 결과 조회]
+
+B --> C[누락 ID 비교]
+
+C --> D[신규 누락 ID 계산]
+C --> E[해결 ID 계산]
+C --> F[누락 수 변화량 계산]
+
+D --> G[이력 저장]
+E --> G
+F --> G
+
+G --> H[상세 페이지 표시]
+G --> I[대시보드 반영]
 ```
 
 ---
@@ -206,15 +408,16 @@ B --> C[삭제 확인]
 C --> D[삭제 백업 생성]
 
 D --> E[작가 삭제]
+E --> F[업데이트 이력 삭제]
 
-E --> F[완료]
+F --> G[완료]
 ```
 
 ---
 
 # 삭제 작가 복구 흐름
 
-```mermaid id="u1s3xa"
+```mermaid
 flowchart LR
 
 A[복구 실행]
@@ -244,7 +447,7 @@ J --> K[완료]
 
 # DB 백업 흐름
 
-```mermaid id="cqkxvw"
+```mermaid
 flowchart LR
 
 A[DB 백업 실행]
@@ -261,7 +464,7 @@ D --> E[완료]
 
 # DB 복원 흐름
 
-```mermaid id="w5kxxz"
+```mermaid
 flowchart LR
 
 A[DB 복원 실행]
@@ -278,7 +481,7 @@ D --> E[완료]
 
 # CSV 내보내기 흐름
 
-```mermaid id="3jzv5v"
+```mermaid
 flowchart LR
 
 A[CSV 내보내기]
@@ -295,7 +498,7 @@ D --> E[완료]
 
 # 평점 일괄 변경 흐름
 
-```mermaid id="psh5oe"
+```mermaid
 flowchart LR
 
 A[작가 다중 선택]
@@ -316,7 +519,7 @@ E -->|아니오| F[완료]
 
 # 즐겨찾기 일괄 변경 흐름
 
-```mermaid id="kuzq5z"
+```mermaid
 flowchart LR
 
 A[작가 다중 선택]
@@ -337,7 +540,7 @@ E -->|아니오| F[완료]
 
 # 숨김 일괄 변경 흐름
 
-```mermaid id="3ru3x8"
+```mermaid
 flowchart LR
 
 A[작가 다중 선택]
@@ -358,7 +561,7 @@ E -->|아니오| F[완료]
 
 # 태그 정리 흐름
 
-```mermaid id="22c65i"
+```mermaid
 flowchart LR
 
 A[태그 정리 실행]
@@ -377,20 +580,33 @@ E --> F[저장]
 
 # 프로그램 종료 흐름
 
-```mermaid id="9aq0pz"
+```mermaid
 flowchart LR
 
 A[프로그램 종료]
 
-A --> B[설정 저장]
-B --> C[DB 연결 종료]
+A --> B[진행 중 작업 확인]
+B --> C[업데이트 워커 종료]
+C --> D[DB 연결 종료]
 
-C --> D[종료]
+D --> E[종료]
 ```
 
 ---
 
 # 주요 데이터 흐름
+
+## 대시보드
+
+```text
+Dashboard
+→ ArtistService
+→ ArtistUpdateHistoryRepository
+→ Dashboard Metrics
+→ Dashboard UI
+```
+
+---
 
 ## 작가 등록
 
@@ -417,12 +633,26 @@ Artist Detail
 ## 업데이트 확인
 
 ```text
-Update Dialog
+Update Check Page
 → PixivUpdateService
 → ArtworkStatusService
 → ArtistUpdateService
+→ ArtistUpdateHistoryRepository
 → ArtistRepository
 → SQLite 저장
+```
+
+---
+
+## 업데이트 결과 비교
+
+```text
+Update Result
+→ ArtistUpdateHistoryRepository
+→ Previous History
+→ Comparison
+→ History Save
+→ Dashboard / Artist Detail
 ```
 
 ---
@@ -455,11 +685,10 @@ Update Dialog
 ## V2
 
 ```text
-업데이트 이력
-오류 이력
-통계 생성
-대시보드 고도화
 설정 관리 고도화
+통계 / 분석 시스템
+3차 리팩토링
+누락 기능 및 신규 기능 추가
 ```
 
 ---
@@ -476,3 +705,7 @@ Update Dialog
 ```
 
 ---
+
+# 버전 기준
+
+본 문서는 v0.12.0 (대시보드 고도화 완료) 기준으로 작성되었다.

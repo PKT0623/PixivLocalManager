@@ -4,9 +4,11 @@
 
 Pixiv Local Manager는 기능 단위 모듈 구조를 사용한다.
 
-초기에는 단일 파일 중심 구조였으나, 기능 증가와 리팩토링을 거치면서 Page, Dialog, Widget, Service, Repository 단위로 분리하였다.
+초기에는 단일 파일 중심 구조였으나, 기능 증가와 리팩토링을 거치면서
+Page, Widget, Service, Repository 단위로 분리하였다.
 
-현재 구조는 V2 개발 및 v0.10.0 2차 리팩토링 기준 구조이며, 향후 V3 작품 관리 및 뷰어 기능 확장을 고려하여 설계되었다.
+현재 구조는 V2 개발 및 v0.12.0 대시보드 고도화 완료 기준 구조이며,
+향후 V3 작품 관리 및 뷰어 기능 확장을 고려하여 설계되었다.
 
 ---
 
@@ -21,11 +23,13 @@ PixivLocalManager
 │  └─ services
 │
 ├─ ui
-│  ├─ dialogs
 │  ├─ pages
 │  └─ widgets
 │
 ├─ data
+├─ backups
+├─ exports
+├─ thumbnails
 ├─ docs
 ├─ tests
 │
@@ -65,8 +69,9 @@ database
 │  ├─ columns.py
 │  └─ __init__.py
 │
-├─ connection.py
 ├─ app_setting_repository.py
+├─ update_history_repository.py
+├─ connection.py
 ├─ migrations.py
 ├─ schema.py
 ├─ table_definitions.py
@@ -83,12 +88,12 @@ database
 
 <tr>
     <td>connection.py</td>
-    <td>SQLite 연결 및 데이터 폴더 관리</td>
+    <td>SQLite 연결 관리</td>
 </tr>
 
 <tr>
     <td>schema.py</td>
-    <td>데이터베이스 초기화</td>
+    <td>DB 초기화</td>
 </tr>
 
 <tr>
@@ -102,23 +107,33 @@ database
 </tr>
 
 <tr>
+    <td>app_setting_repository.py</td>
+    <td>프로그램 설정 CRUD</td>
+</tr>
+
+<tr>
+    <td>update_history_repository.py</td>
+    <td>업데이트 이력 저장 및 조회</td>
+</tr>
+
+<tr>
     <td>artist/repository.py</td>
-    <td>작가 기본 CRUD</td>
+    <td>작가 CRUD</td>
 </tr>
 
 <tr>
     <td>artist/update_repository.py</td>
-    <td>작가 정보 갱신 전용 처리</td>
+    <td>작가 정보 갱신</td>
 </tr>
 
 <tr>
     <td>artist/restore_repository.py</td>
-    <td>삭제 작가 복구 처리</td>
+    <td>삭제 작가 복구</td>
 </tr>
 
 <tr>
-    <td>app_setting_repository.py</td>
-    <td>프로그램 설정 CRUD</td>
+    <td>artist/columns.py</td>
+    <td>작가 컬럼 정의</td>
 </tr>
 
 </table>
@@ -167,37 +182,35 @@ models
 services
 │
 ├─ artist
-│  ├─ service.py
-│  ├─ metadata_service.py
-│  ├─ folder_service.py
-│  ├─ delete_service.py
-│  ├─ validation.py
-│  └─ __init__.py
 │
 ├─ backup
-│  ├─ service.py
-│  ├─ deleted_artist_backup_service.py
-│  ├─ json_utils.py
-│  └─ __init__.py
 │
 ├─ scan
-│  ├─ folder_scan_service.py
-│  ├─ artist_scan_service.py
-│  ├─ rescan_service.py
-│  ├─ scan_builder.py
-│  ├─ scan_compare.py
-│  └─ __init__.py
 │
 ├─ update
-│  ├─ artist_update_service.py
-│  ├─ bulk_update_service.py
-│  ├─ update_utils.py
-│  └─ __init__.py
 │
 ├─ artwork_status_service.py
 ├─ export_service.py
 ├─ pixiv_update_service.py
 ├─ settings_service.py
+│
+└─ __init__.py
+```
+
+---
+
+# app/services/artist
+
+작가 관리 서비스.
+
+```text
+artist
+│
+├─ service.py
+├─ metadata_service.py
+├─ folder_service.py
+├─ delete_service.py
+├─ validation.py
 └─ __init__.py
 ```
 
@@ -210,58 +223,192 @@ services
 </tr>
 
 <tr>
-    <td>ArtistService</td>
-    <td>작가 데이터 관리 진입점</td>
+    <td>service.py</td>
+    <td>ArtistService 메인 진입점</td>
 </tr>
 
 <tr>
-    <td>FolderScanService</td>
-    <td>폴더 분석 및 메타데이터 추출</td>
+    <td>metadata_service.py</td>
+    <td>작가 메타데이터 처리</td>
 </tr>
 
 <tr>
-    <td>ArtistScanService</td>
-    <td>스캔 결과 등록 및 갱신</td>
+    <td>folder_service.py</td>
+    <td>폴더 관련 처리</td>
 </tr>
 
 <tr>
-    <td>RescanService</td>
+    <td>delete_service.py</td>
+    <td>삭제 및 복구 처리</td>
+</tr>
+
+<tr>
+    <td>validation.py</td>
+    <td>입력 검증</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/backup
+
+백업 서비스.
+
+```text
+backup
+│
+├─ service.py
+├─ deleted_artist_backup_service.py
+├─ json_utils.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>service.py</td>
+    <td>BackupService</td>
+</tr>
+
+<tr>
+    <td>deleted_artist_backup_service.py</td>
+    <td>삭제 작가 백업 처리</td>
+</tr>
+
+<tr>
+    <td>json_utils.py</td>
+    <td>JSON 저장 유틸</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/scan
+
+스캔 관련 서비스.
+
+```text
+scan
+│
+├─ folder_scan_service.py
+├─ artist_scan_service.py
+├─ rescan_service.py
+├─ scan_builder.py
+├─ scan_compare.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>folder_scan_service.py</td>
+    <td>폴더 분석</td>
+</tr>
+
+<tr>
+    <td>artist_scan_service.py</td>
+    <td>작가 등록 및 갱신</td>
+</tr>
+
+<tr>
+    <td>rescan_service.py</td>
     <td>기존 작가 재스캔</td>
 </tr>
 
 <tr>
-    <td>ArtistUpdateService</td>
-    <td>업데이트 정보 저장</td>
+    <td>scan_builder.py</td>
+    <td>스캔 데이터 생성</td>
 </tr>
 
 <tr>
-    <td>BulkUpdateService</td>
+    <td>scan_compare.py</td>
+    <td>스캔 결과 비교</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/update
+
+업데이트 확인 서비스.
+
+```text
+update
+│
+├─ artist_update_service.py
+├─ bulk_update_service.py
+├─ update_utils.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>artist_update_service.py</td>
+    <td>작가 업데이트 저장</td>
+</tr>
+
+<tr>
+    <td>bulk_update_service.py</td>
     <td>일괄 업데이트 처리</td>
 </tr>
 
 <tr>
-    <td>PixivUpdateService</td>
+    <td>update_utils.py</td>
+    <td>업데이트 공통 유틸</td>
+</tr>
+
+</table>
+
+---
+
+# 공통 서비스
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>pixiv_update_service.py</td>
     <td>Pixiv 최신 작품 조회</td>
 </tr>
 
 <tr>
-    <td>ArtworkStatusService</td>
+    <td>artwork_status_service.py</td>
     <td>작품 상태 계산</td>
 </tr>
 
 <tr>
-    <td>BackupService</td>
-    <td>백업 및 복구 처리</td>
-</tr>
-
-<tr>
-    <td>ExportService</td>
+    <td>export_service.py</td>
     <td>CSV 내보내기</td>
 </tr>
 
 <tr>
-    <td>SettingsService</td>
-    <td>프로그램 설정 관리</td>
+    <td>settings_service.py</td>
+    <td>설정 관리</td>
 </tr>
 
 </table>
@@ -272,10 +419,9 @@ services
 
 사용자 인터페이스 계층.
 
-```text id="xfbqxa"
+```text
 ui
 │
-├─ dialogs
 ├─ pages
 ├─ widgets
 │
@@ -285,76 +431,20 @@ ui
 
 ---
 
-# ui/dialogs
-
-독립 실행형 팝업 창.
-
-```text id="msjl07"
-dialogs
-│
-└─ update_check
-```
-
----
-
-# ui/dialogs/update_check
-
-업데이트 확인 창.
-
-```text id="jk8m7i"
-update_check
-│
-├─ dialog.py
-├─ dialog_styles.py
-├─ worker.py
-├─ worker_config.py
-└─ __init__.py
-```
-
-## 역할
-
-<table>
-<tr>
-    <th>파일</th>
-    <th>역할</th>
-</tr>
-
-<tr>
-    <td>dialog.py</td>
-    <td>업데이트 확인 UI</td>
-</tr>
-
-<tr>
-    <td>dialog_styles.py</td>
-    <td>스타일 정의</td>
-</tr>
-
-<tr>
-    <td>worker.py</td>
-    <td>백그라운드 처리</td>
-</tr>
-
-<tr>
-    <td>worker_config.py</td>
-    <td>설정 및 공통 상수</td>
-</tr>
-
-</table>
-
----
-
 # ui/pages
 
 프로그램 메인 페이지.
 
-```text id="ytd4pd"
+```text
 pages
 │
 ├─ dashboard
 ├─ scan
 ├─ artists
 ├─ artist_detail
-└─ settings
+├─ update_check
+├─ settings
+└─ __init__.py
 ```
 
 ---
@@ -363,7 +453,7 @@ pages
 
 대시보드 페이지.
 
-```text id="oh4yhn"
+```text
 dashboard
 │
 ├─ page.py
@@ -371,11 +461,20 @@ dashboard
 │
 ├─ dashboard_metrics.py
 ├─ dashboard_styles.py
+├─ utils.py
 │
+├─ summary_card.py
 ├─ summary_section.py
-├─ recent_artists_section.py
-├─ recent_scan_section.py
+├─ update_status_section.py
+├─ recent_activity_section.py
+├─ scan_statistics_section.py
+├─ top_ranking_section.py
+│
+├─ recommendation_card.py
+├─ recommendation_section.py
 ├─ random_artist_section.py
+│
+├─ recent_artists_section.py
 │
 └─ __init__.py
 ```
@@ -395,37 +494,57 @@ dashboard
 
 <tr>
     <td>actions.py</td>
-    <td>이벤트 처리</td>
+    <td>대시보드 데이터 로드 및 이벤트 처리</td>
 </tr>
 
 <tr>
     <td>dashboard_metrics.py</td>
-    <td>통계 계산</td>
+    <td>대시보드 통계 계산</td>
 </tr>
 
 <tr>
-    <td>dashboard_styles.py</td>
-    <td>스타일 정의</td>
+    <td>summary_card.py</td>
+    <td>요약 카드 위젯</td>
 </tr>
 
 <tr>
     <td>summary_section.py</td>
-    <td>요약 카드 영역</td>
+    <td>전체 통계 카드 영역</td>
 </tr>
 
 <tr>
-    <td>recent_artists_section.py</td>
-    <td>최근 등록 작가</td>
+    <td>update_status_section.py</td>
+    <td>업데이트 현황 영역</td>
 </tr>
 
 <tr>
-    <td>recent_scan_section.py</td>
-    <td>최근 스캔 정보</td>
+    <td>recent_activity_section.py</td>
+    <td>최근 활동 영역</td>
+</tr>
+
+<tr>
+    <td>scan_statistics_section.py</td>
+    <td>최근 스캔 결과 영역</td>
+</tr>
+
+<tr>
+    <td>top_ranking_section.py</td>
+    <td>TOP 랭킹 영역</td>
+</tr>
+
+<tr>
+    <td>recommendation_card.py</td>
+    <td>추천 카드 UI</td>
+</tr>
+
+<tr>
+    <td>recommendation_section.py</td>
+    <td>추천 작가 영역</td>
 </tr>
 
 <tr>
     <td>random_artist_section.py</td>
-    <td>추천 작가</td>
+    <td>랜덤 작가 영역</td>
 </tr>
 
 </table>
@@ -436,34 +555,13 @@ dashboard
 
 스캔 페이지.
 
-```text id="ufx8mq"
+```text
 scan
 │
 ├─ action_parts
-│  ├─ folder_actions.py
-│  ├─ worker_actions.py
-│  ├─ filter_actions.py
-│  ├─ result_actions.py
-│  └─ __init__.py
-│
 ├─ preview_table_parts
-│  ├─ filter_logic.py
-│  ├─ row_renderer.py
-│  ├─ summary.py
-│  └─ __init__.py
-│
 ├─ progress_parts
-│  ├─ history_formatter.py
-│  ├─ statistics_formatter.py
-│  └─ __init__.py
-│
 ├─ worker_parts
-│  ├─ validation.py
-│  ├─ preview_builder.py
-│  ├─ result_builder.py
-│  ├─ statistics.py
-│  ├─ runtime_utils.py
-│  └─ __init__.py
 │
 ├─ page.py
 ├─ actions.py
@@ -508,7 +606,7 @@ scan
 
 <tr>
     <td>worker.py</td>
-    <td>스캔 워커 본체</td>
+    <td>스캔 워커</td>
 </tr>
 
 <tr>
@@ -522,18 +620,13 @@ scan
 </tr>
 
 <tr>
-    <td>preview_table_parts</td>
-    <td>필터 및 렌더링 분리</td>
-</tr>
-
-<tr>
     <td>progress_section.py</td>
-    <td>진행 정보 표시</td>
+    <td>진행 상황 표시</td>
 </tr>
 
 <tr>
-    <td>progress_parts</td>
-    <td>포맷팅 로직 분리</td>
+    <td>log_table.py</td>
+    <td>결과 로그 표시</td>
 </tr>
 
 </table>
@@ -544,14 +637,10 @@ scan
 
 작가 목록 페이지.
 
-```text id="2ak8jg"
+```text
 artists
 │
 ├─ action_parts
-│  ├─ bulk_actions.py
-│  ├─ data_actions.py
-│  ├─ dialog_actions.py
-│  └─ __init__.py
 │
 ├─ page.py
 ├─ actions.py
@@ -576,12 +665,7 @@ artists
 
 <tr>
     <td>actions.py</td>
-    <td>액션 진입점</td>
-</tr>
-
-<tr>
-    <td>action_parts</td>
-    <td>기능별 액션 분리</td>
+    <td>작가 목록 액션 진입점</td>
 </tr>
 
 <tr>
@@ -591,7 +675,12 @@ artists
 
 <tr>
     <td>toolbar.py</td>
-    <td>도구 모음</td>
+    <td>목록 도구 모음</td>
+</tr>
+
+<tr>
+    <td>action_parts</td>
+    <td>기능별 액션 분리</td>
 </tr>
 
 </table>
@@ -602,15 +691,10 @@ artists
 
 작가 상세 페이지.
 
-```text id="c7v4e6"
+```text
 artist_detail
 │
 ├─ action_parts
-│  ├─ artwork_actions.py
-│  ├─ data_actions.py
-│  ├─ dialog_actions.py
-│  ├─ tag_actions.py
-│  └─ __init__.py
 │
 ├─ page.py
 ├─ actions.py
@@ -637,12 +721,12 @@ artist_detail
 
 <tr>
     <td>actions.py</td>
-    <td>액션 진입점</td>
+    <td>상세 페이지 액션 진입점</td>
 </tr>
 
 <tr>
     <td>action_parts</td>
-    <td>기능별 액션 분리</td>
+    <td>작품, 태그, 데이터 처리 분리</td>
 </tr>
 
 <tr>
@@ -658,6 +742,76 @@ artist_detail
 <tr>
     <td>utils.py</td>
     <td>공통 유틸</td>
+</tr>
+
+</table>
+
+---
+
+# update_check
+
+업데이트 확인 페이지.
+
+```text
+update_check
+│
+├─ page.py
+├─ actions.py
+│
+├─ worker.py
+├─ worker_config.py
+│
+├─ artist_table.py
+├─ log_table.py
+│
+├─ selection_actions.py
+├─ styles.py
+├─ utils.py
+│
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>page.py</td>
+    <td>업데이트 확인 페이지</td>
+</tr>
+
+<tr>
+    <td>actions.py</td>
+    <td>업데이트 실행 처리</td>
+</tr>
+
+<tr>
+    <td>worker.py</td>
+    <td>업데이트 워커</td>
+</tr>
+
+<tr>
+    <td>worker_config.py</td>
+    <td>설정 및 공통 상수</td>
+</tr>
+
+<tr>
+    <td>artist_table.py</td>
+    <td>대상 작가 목록</td>
+</tr>
+
+<tr>
+    <td>log_table.py</td>
+    <td>결과 로그</td>
+</tr>
+
+<tr>
+    <td>selection_actions.py</td>
+    <td>선택 관련 기능</td>
 </tr>
 
 </table>
@@ -685,73 +839,16 @@ settings
 └─ __init__.py
 ```
 
-## 역할
-
-<table>
-<tr>
-    <th>파일</th>
-    <th>역할</th>
-</tr>
-
-<tr>
-    <td>page.py</td>
-    <td>설정 페이지</td>
-</tr>
-
-<tr>
-    <td>actions.py</td>
-    <td>설정 저장 및 처리</td>
-</tr>
-
-<tr>
-    <td>settings_styles.py</td>
-    <td>설정 페이지 스타일</td>
-</tr>
-
-<tr>
-    <td>folder_section.py</td>
-    <td>폴더 설정</td>
-</tr>
-
-<tr>
-    <td>database_section.py</td>
-    <td>데이터베이스 관리</td>
-</tr>
-
-<tr>
-    <td>pixiv_section.py</td>
-    <td>Pixiv 관련 설정</td>
-</tr>
-
-<tr>
-    <td>app_info_section.py</td>
-    <td>프로그램 정보</td>
-</tr>
-
-<tr>
-    <td>database_utils.py</td>
-    <td>DB 유틸리티</td>
-</tr>
-
-</table>
-
 ---
 
 # ui/widgets
 
-프로그램 전체에서 재사용하는 공통 위젯.
+공통 위젯.
 
 ```text
 widgets
 │
 ├─ artist_table
-│  ├─ table.py
-│  ├─ row_renderer.py
-│  ├─ actions.py
-│  ├─ columns.py
-│  ├─ formatters.py
-│  ├─ cell_widgets.py
-│  └─ __init__.py
 │
 ├─ sidebar.py
 ├─ status_badge.py
@@ -759,30 +856,23 @@ widgets
 └─ __init__.py
 ```
 
-## 역할
+---
 
-<table>
-<tr>
-    <th>위젯</th>
-    <th>역할</th>
-</tr>
+# artist_table
 
-<tr>
-    <td>ArtistTable</td>
-    <td>작가 목록 테이블</td>
-</tr>
+작가 목록 테이블 위젯.
 
-<tr>
-    <td>Sidebar</td>
-    <td>메인 메뉴</td>
-</tr>
-
-<tr>
-    <td>StatusBadge</td>
-    <td>상태 표시 배지</td>
-</tr>
-
-</table>
+```text
+artist_table
+│
+├─ table.py
+├─ row_renderer.py
+├─ actions.py
+├─ columns.py
+├─ formatters.py
+├─ cell_widgets.py
+└─ __init__.py
+```
 
 ---
 
@@ -794,28 +884,12 @@ widgets
 data
 │
 ├─ pixiv_manager.db
-└─ settings.ini
+├─ settings.ini
+│
+├─ scan_results
+├─ update_history
+└─ logs
 ```
-
-## 역할
-
-<table>
-<tr>
-    <th>파일</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>pixiv_manager.db</td>
-    <td>SQLite 데이터베이스</td>
-</tr>
-
-<tr>
-    <td>settings.ini</td>
-    <td>프로그램 설정</td>
-</tr>
-
-</table>
 
 ---
 
@@ -826,10 +900,9 @@ data
 ```text
 backups
 │
+├─ database
 └─ deleted_artists
 ```
-
-삭제된 작가 백업 파일을 저장한다.
 
 ---
 
@@ -841,19 +914,15 @@ backups
 exports
 ```
 
-CSV 및 기타 내보내기 파일을 저장한다.
-
 ---
 
 # thumbnails
 
-썸네일 저장 폴더.
+썸네일 캐시 저장 폴더.
 
 ```text
 thumbnails
 ```
-
-향후 썸네일 캐시 저장에 사용된다.
 
 ---
 
@@ -896,8 +965,6 @@ tests
 
 ## 1. Page 중심 구조
 
-각 화면은 독립된 Page 단위로 구성한다.
-
 ```text
 Page
  ├─ Actions
@@ -910,13 +977,9 @@ Page
 
 ## 2. 기능별 분리
 
-파일 길이가 증가하면 기능 단위로 분리한다.
-
-예시:
-
 ```text
 actions.py
-↓
+ ↓
 
 action_parts
 ├─ data_actions.py
@@ -928,11 +991,9 @@ action_parts
 
 ## 3. Worker 분리
 
-대형 Worker는 실행 흐름과 보조 기능을 분리한다.
-
 ```text
 worker.py
-↓
+ ↓
 
 worker_parts
 ├─ validation.py
@@ -946,11 +1007,9 @@ worker_parts
 
 ## 4. Style 분리
 
-페이지 스타일은 별도 파일로 분리한다.
-
 ```text
 page.py
-↓
+ ↓
 
 styles.py
 ```
@@ -963,15 +1022,9 @@ settings_styles.py
 scan_styles.py
 ```
 
-형태를 사용한다.
-
 ---
 
 ## 5. Import 단순화
-
-가능한 경우 **init**.py를 사용하여 import 경로를 단순화한다.
-
-예시:
 
 ```python
 from ui.pages.scan import ScanPage
@@ -981,8 +1034,6 @@ from app.services.artist import ArtistService
 ---
 
 # 향후 확장 구조
-
-V3 이후 다음 구조가 추가될 수 있다.
 
 ```text
 ui
@@ -1006,4 +1057,4 @@ ui
 
 # 버전 기준
 
-본 문서는 v0.10.0 (2차 리팩토링 완료) 기준으로 작성되었다.
+본 문서는 v0.12.0 (대시보드 고도화 완료) 기준으로 작성되었다.

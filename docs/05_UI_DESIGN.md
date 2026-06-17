@@ -54,6 +54,9 @@ SIDEBAR --> UPDATE[Update Check]
 SIDEBAR --> SETTINGS[Settings]
 
 ARTISTS --> DETAIL[Artist Detail]
+DASHBOARD --> DETAIL
+SCAN --> DETAIL
+UPDATE --> DETAIL
 ```
 
 ---
@@ -68,7 +71,7 @@ ARTISTS --> DETAIL[Artist Detail]
 
 <tr>
     <td>Dashboard</td>
-    <td>전체 통계 및 추천 정보 표시</td>
+    <td>전체 통계, 최근 활동, 추천 정보 표시</td>
 </tr>
 
 <tr>
@@ -149,32 +152,84 @@ ARTISTS --> DETAIL[Artist Detail]
 
 <tr>
     <td>통계 카드</td>
-    <td>전체 작가 수, 작품 수, 평균 평점</td>
+    <td>전체 작가 수, 작품 수, 파일 수, 폴더 용량 표시</td>
 </tr>
 
 <tr>
     <td>업데이트 현황</td>
-    <td>상태별 작가 수 표시</td>
+    <td>최신, 업데이트 필요, 미확인, 오류 상태 분포 및 누락 통계 표시</td>
 </tr>
 
 <tr>
-    <td>최근 등록 작가</td>
-    <td>최근 추가된 작가 목록</td>
+    <td>최근 활동</td>
+    <td>최근 열람, 등록, 확인, 오류, 누락 증가 이력 표시</td>
 </tr>
 
 <tr>
-    <td>최근 스캔 정보</td>
-    <td>마지막 스캔 시각 표시</td>
+    <td>스캔 통계</td>
+    <td>최근 스캔 결과 표시</td>
+</tr>
+
+<tr>
+    <td>TOP 랭킹</td>
+    <td>작품 수, 파일 수, 폴더 용량 TOP 랭킹 표시</td>
 </tr>
 
 <tr>
     <td>추천 작가</td>
-    <td>평점 기반 추천 작가 카드 표시</td>
+    <td>고평점 및 즐겨찾기 기반 추천 작가 표시</td>
 </tr>
 
 <tr>
     <td>랜덤 작가</td>
-    <td>무작위 추천 작가 카드 표시</td>
+    <td>무작위 추천 작가 표시</td>
+</tr>
+
+</table>
+
+---
+
+## Dashboard 세부 구성
+
+<table>
+<tr>
+    <th>영역</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>통계 카드</td>
+    <td>4 × 2 카드 형태 요약 정보 표시</td>
+</tr>
+
+<tr>
+    <td>최근 활동</td>
+    <td>최근 열람, 최근 등록, 최근 확인, 업데이트 이력, 오류 작가, 누락 증가 탭 제공</td>
+</tr>
+
+<tr>
+    <td>스캔 통계</td>
+    <td>최근 스캔 결과 목록 표시</td>
+</tr>
+
+<tr>
+    <td>TOP 랭킹</td>
+    <td>10 / 30 / 50개 기준 랭킹 전환</td>
+</tr>
+
+<tr>
+    <td>추천 작가</td>
+    <td>대표 작품 썸네일, Pixiv ID, 평점, 작품 수, 파일 수 표시</td>
+</tr>
+
+<tr>
+    <td>랜덤 작가</td>
+    <td>Pixiv 바로가기, 폴더 바로가기 제공</td>
+</tr>
+
+<tr>
+    <td>상세 페이지 연동</td>
+    <td>최근 활동 및 TOP 랭킹 더블클릭 시 작가 상세 이동</td>
 </tr>
 
 </table>
@@ -228,7 +283,7 @@ ARTISTS --> DETAIL[Artist Detail]
 
 <tr>
     <td>최근 스캔 정보</td>
-    <td>최근 스캔 결과 및 이전 스캔 결과와의 비교 표시</td>
+    <td>최근 스캔 결과 및 이전 결과 비교 표시</td>
 </tr>
 
 <tr>
@@ -243,27 +298,27 @@ ARTISTS --> DETAIL[Artist Detail]
 
 <tr>
     <td>선택 항목 등록</td>
-    <td>미리보기 결과 중 선택한 항목만 등록</td>
+    <td>선택한 항목만 등록</td>
 </tr>
 
 <tr>
     <td>결과 로그</td>
-    <td>스캔 처리 결과와 오류 메시지 출력</td>
+    <td>스캔 처리 결과 및 오류 표시</td>
 </tr>
 
 <tr>
     <td>결과 필터</td>
-    <td>전체, 등록, 업데이트, 변경 없음, 실패 결과 필터링</td>
+    <td>전체, 등록, 업데이트, 변경 없음, 실패 필터링</td>
 </tr>
 
 <tr>
     <td>실패 항목 관리</td>
-    <td>실패 항목 재시도 및 실패 목록 초기화</td>
+    <td>실패 항목 재시도 및 초기화</td>
 </tr>
 
 <tr>
     <td>CSV 저장</td>
-    <td>전체 스캔 결과, 실패 항목, 미리보기 결과 CSV 저장</td>
+    <td>결과 저장</td>
 </tr>
 
 </table>
@@ -366,7 +421,7 @@ ARTISTS --> DETAIL[Artist Detail]
 
 <tr>
     <td>태그</td>
-    <td>작가 태그 정보</td>
+    <td>상위 태그 표시</td>
 </tr>
 
 <tr>
@@ -585,6 +640,11 @@ ARTISTS --> DETAIL[Artist Detail]
 <tr>
     <td>다운로드 메모</td>
     <td>다운로드 관련 메모 저장</td>
+</tr>
+
+<tr>
+    <td>돌아가기</td>
+    <td>상세 진입 전 페이지로 복귀</td>
 </tr>
 
 </table>
@@ -1069,6 +1129,11 @@ QScrollArea
 </tr>
 
 <tr>
+    <td>PHPSESSID 테스트</td>
+    <td>저장된 Pixiv 쿠키 유효성 확인</td>
+</tr>
+
+<tr>
     <td>DB 백업</td>
     <td>전체 DB 백업 생성</td>
 </tr>
@@ -1136,4 +1201,4 @@ QScrollArea
 
 # 버전 기준
 
-본 문서는 v0.10.0 (2차 리팩토링 완료) 기준으로 작성되었다.
+본 문서는 v0.12.0 (대시보드 고도화 완료) 기준으로 작성되었다.
