@@ -19,6 +19,8 @@ class MainWindow(QMainWindow):
         self.resize(1500, 900)
         self.setMinimumSize(1200, 760)
 
+        self.previous_page = "artists"
+
         self.sidebar = Sidebar()
         self.page_stack = QStackedWidget()
         self.pages = self._create_pages()
@@ -56,14 +58,18 @@ class MainWindow(QMainWindow):
     def _connect_signals(self):
         self.sidebar.page_changed.connect(self.show_page)
 
+        dashboard_page = self.pages["dashboard"]
         artists_page = self.pages["artists"]
         scan_page = self.pages["scan"]
         detail_page = self.pages["artist_detail"]
 
+        dashboard_page.artist_detail_requested.connect(
+            self.show_artist_detail
+        )
         artists_page.artist_selected.connect(self.show_artist_detail)
         scan_page.artist_detail_requested.connect(self.show_artist_detail)
 
-        detail_page.back_requested.connect(lambda: self.show_page("artists"))
+        detail_page.back_requested.connect(self.go_back_from_artist_detail)
         detail_page.artist_updated.connect(self._handle_artist_updated)
 
     def show_page(self, page_name: str):
@@ -82,10 +88,35 @@ class MainWindow(QMainWindow):
         self.sidebar.set_active_page(page_name)
 
     def show_artist_detail(self, artist_id: int):
+        current_page_name = self._get_current_page_name()
+
+        if (
+            current_page_name is not None
+            and current_page_name != "artist_detail"
+        ):
+            self.previous_page = current_page_name
+
         detail_page = self.pages["artist_detail"]
         detail_page.set_artist(artist_id)
 
         self.show_page("artist_detail")
+
+    def go_back_from_artist_detail(self):
+        target_page = self.previous_page
+
+        if target_page == "artist_detail":
+            target_page = "artists"
+
+        self.show_page(target_page)
+
+    def _get_current_page_name(self):
+        current_widget = self.page_stack.currentWidget()
+
+        for page_name, page in self.pages.items():
+            if page is current_widget:
+                return page_name
+
+        return None
 
     def _handle_artist_updated(self, artist_id: int):
         artists_page = self.pages["artists"]

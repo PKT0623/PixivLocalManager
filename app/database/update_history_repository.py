@@ -132,6 +132,84 @@ class ArtistUpdateHistoryRepository:
 
             return [dict(row) for row in rows]
 
+    def get_today_histories(self) -> list[dict]:
+        today = datetime.now().date().isoformat()
+
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT *
+                FROM artist_update_history
+                WHERE date(checked_at) = ?
+                ORDER BY checked_at DESC, id DESC
+                """,
+                (today,),
+            )
+
+            rows = cursor.fetchall()
+
+            return [dict(row) for row in rows]
+
+    def get_recent_error_histories(
+        self,
+        limit: int = 20,
+    ) -> list[dict]:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT *
+                FROM artist_update_history
+                WHERE result_status = 'error'
+                   OR result_label = '확인 실패'
+                   OR action = 'error'
+                ORDER BY checked_at DESC, id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            )
+
+            rows = cursor.fetchall()
+
+            return [dict(row) for row in rows]
+
+    def get_latest_history_per_artist(self) -> list[dict]:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT history.*
+                FROM artist_update_history AS history
+                INNER JOIN (
+                    SELECT artist_id, MAX(checked_at) AS latest_checked_at
+                    FROM artist_update_history
+                    GROUP BY artist_id
+                ) AS latest
+                    ON history.artist_id = latest.artist_id
+                   AND history.checked_at = latest.latest_checked_at
+                ORDER BY history.checked_at DESC, history.id DESC
+                """
+            )
+
+            rows = cursor.fetchall()
+
+            latest_by_artist = {}
+
+            for row in rows:
+                history = dict(row)
+                artist_id = history.get("artist_id")
+
+                if artist_id in latest_by_artist:
+                    continue
+
+                latest_by_artist[artist_id] = history
+
+            return list(latest_by_artist.values())
+
     def get_latest_by_artist_id(
         self,
         artist_id: int,

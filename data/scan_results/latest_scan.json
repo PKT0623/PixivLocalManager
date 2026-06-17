@@ -1,34 +1,73 @@
 {
   "summary": {
     "created": 0,
-    "duration_seconds": 12,
-    "duration_text": "12초",
+    "duration_seconds": 15,
+    "duration_text": "15초",
     "extension_counts": {
       "gif": 54,
-      "jpg": 56355,
+      "jpg": 56593,
       "png": 42266
     },
     "failed": 0,
-    "finished_at": "2026-06-15T17:06:38.742886",
-    "finished_at_text": "2026-06-15 17:06:38",
+    "finished_at": "2026-06-17T20:58:16.097939",
+    "finished_at_text": "2026-06-17 20:58:16",
     "root_folder_path": "C:/Users/Owner/Downloads/pixiv",
-    "started_at": "2026-06-15T17:06:26.531395",
-    "started_at_text": "2026-06-15 17:06:26",
+    "started_at": "2026-06-17T20:58:01.052142",
+    "started_at_text": "2026-06-17 20:58:01",
     "total": 35,
-    "total_artwork_count": 7776,
-    "total_file_count": 98675,
-    "unchanged": 35,
-    "updated": 0
+    "total_artwork_count": 7782,
+    "total_file_count": 98913,
+    "unchanged": 31,
+    "updated": 4
   },
   "rows": [
     {
-      "time": "17:06:26",
+      "time": "20:58:01",
       "progress": "-",
       "result": "정보",
       "artist_name": "스캔 시작: C:/Users/Owner/Downloads/pixiv",
       "pixiv_id": "-",
       "artwork_count": "-",
       "file_count": "-",
+      "update_status": "-"
+    },
+    {
+      "artist_id": null,
+      "artist_name": "(꼴)",
+      "artwork_count": "-",
+      "error_message": "이미지 파일이 없습니다. 스캔에서 제외합니다.",
+      "file_count": "-",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(꼴)",
+      "pixiv_id": "-",
+      "progress": "1/38",
+      "result": "오류",
+      "time": "20:58:06",
+      "update_status": "-"
+    },
+    {
+      "artist_id": null,
+      "artist_name": "(애매)",
+      "artwork_count": "-",
+      "error_message": "이미지 파일이 없습니다. 스캔에서 제외합니다.",
+      "file_count": "-",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(애매)",
+      "pixiv_id": "-",
+      "progress": "2/38",
+      "result": "오류",
+      "time": "20:58:06",
+      "update_status": "-"
+    },
+    {
+      "artist_id": null,
+      "artist_name": "(임시)",
+      "artwork_count": "-",
+      "error_message": "Pixiv ID가 없습니다. 스캔에서 제외합니다.",
+      "file_count": "-",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)",
+      "pixiv_id": "-",
+      "progress": "3/38",
+      "result": "오류",
+      "time": "20:58:06",
       "update_status": "-"
     },
     {
@@ -41,11 +80,11 @@
       "pixiv_id": "-",
       "progress": "-",
       "result": "경고",
-      "time": "17:06:26",
+      "time": "20:58:06",
       "update_status": "-"
     },
     {
-      "time": "17:06:26",
+      "time": "20:58:06",
       "progress": "-",
       "result": "정보",
       "artist_name": "스캔 대상 작가 폴더: 35개",
@@ -64,7 +103,20 @@
       "pixiv_id": "119340610",
       "progress": "1/35",
       "result": "변경 없음",
-      "time": "17:06:26",
+      "time": "20:58:06",
+      "update_status": "need_update"
+    },
+    {
+      "artist_id": 33,
+      "artist_name": "04",
+      "artwork_count": "508",
+      "error_message": "-",
+      "file_count": "10982",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\04-115273840",
+      "pixiv_id": "115273840",
+      "progress": "2/35",
+      "result": "업데이트",
+      "time": "20:58:07",
       "update_status": "need_update"
     },
     {
@@ -75,9 +127,9 @@
       "file_count": "2771",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\5p2-6447236",
       "pixiv_id": "6447236",
-      "progress": "2/35",
+      "progress": "3/35",
       "result": "변경 없음",
-      "time": "17:06:27",
+      "time": "20:58:07",
       "update_status": "need_update"
     },
     {
@@ -88,9 +140,22 @@
       "file_count": "607",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\ASNMN-108328712",
       "pixiv_id": "108328712",
-      "progress": "3/35",
+      "progress": "4/35",
       "result": "변경 없음",
-      "time": "17:06:27",
+      "time": "20:58:07",
+      "update_status": "up_to_date"
+    },
+    {
+      "artist_id": 36,
+      "artist_name": "Asukaaa",
+      "artwork_count": "830",
+      "error_message": "-",
+      "file_count": "10006",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Asukaaa-103556073",
+      "pixiv_id": "103556073",
+      "progress": "5/35",
+      "result": "업데이트",
+      "time": "20:58:08",
       "update_status": "up_to_date"
     },
     {
@@ -101,9 +166,9 @@
       "file_count": "2494",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\daifukumaru-120682291",
       "pixiv_id": "120682291",
-      "progress": "4/35",
+      "progress": "6/35",
       "result": "변경 없음",
-      "time": "17:06:27",
+      "time": "20:58:08",
       "update_status": "up_to_date"
     },
     {
@@ -114,9 +179,9 @@
       "file_count": "280",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\EDF战斗员-116223287",
       "pixiv_id": "116223287",
-      "progress": "5/35",
+      "progress": "7/35",
       "result": "변경 없음",
-      "time": "17:06:27",
+      "time": "20:58:08",
       "update_status": "up_to_date"
     },
     {
@@ -127,10 +192,10 @@
       "file_count": "2633",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\FA-117026932",
       "pixiv_id": "117026932",
-      "progress": "6/35",
+      "progress": "8/35",
       "result": "변경 없음",
-      "time": "17:06:27",
-      "update_status": "up_to_date"
+      "time": "20:58:09",
+      "update_status": "need_update"
     },
     {
       "artist_id": 7,
@@ -140,10 +205,23 @@
       "file_count": "831",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\huyyq232-118185024",
       "pixiv_id": "118185024",
-      "progress": "7/35",
+      "progress": "9/35",
       "result": "변경 없음",
-      "time": "17:06:27",
+      "time": "20:58:09",
       "update_status": "up_to_date"
+    },
+    {
+      "artist_id": 37,
+      "artist_name": "Latte",
+      "artwork_count": "240",
+      "error_message": "-",
+      "file_count": "8472",
+      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Latte-14911546",
+      "pixiv_id": "14911546",
+      "progress": "10/35",
+      "result": "업데이트",
+      "time": "20:58:10",
+      "update_status": "need_update"
     },
     {
       "artist_id": 8,
@@ -153,10 +231,10 @@
       "file_count": "4087",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\LC666-23687911",
       "pixiv_id": "23687911",
-      "progress": "8/35",
+      "progress": "11/35",
       "result": "변경 없음",
-      "time": "17:06:28",
-      "update_status": "up_to_date"
+      "time": "20:58:10",
+      "update_status": "need_update"
     },
     {
       "artist_id": 9,
@@ -166,9 +244,9 @@
       "file_count": "234",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\LITTESSL-122061878",
       "pixiv_id": "122061878",
-      "progress": "9/35",
+      "progress": "12/35",
       "result": "변경 없음",
-      "time": "17:06:28",
+      "time": "20:58:10",
       "update_status": "up_to_date"
     },
     {
@@ -179,10 +257,10 @@
       "file_count": "4387",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Luka45-115577578",
       "pixiv_id": "115577578",
-      "progress": "10/35",
+      "progress": "13/35",
       "result": "변경 없음",
-      "time": "17:06:28",
-      "update_status": "up_to_date"
+      "time": "20:58:10",
+      "update_status": "need_update"
     },
     {
       "artist_id": 11,
@@ -192,9 +270,9 @@
       "file_count": "1516",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\M-75260943",
       "pixiv_id": "75260943",
-      "progress": "11/35",
+      "progress": "14/35",
       "result": "변경 없음",
-      "time": "17:06:29",
+      "time": "20:58:11",
       "update_status": "up_to_date"
     },
     {
@@ -205,9 +283,9 @@
       "file_count": "386",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\mP2o-46445858",
       "pixiv_id": "46445858",
-      "progress": "12/35",
+      "progress": "15/35",
       "result": "변경 없음",
-      "time": "17:06:29",
+      "time": "20:58:11",
       "update_status": "up_to_date"
     },
     {
@@ -218,9 +296,9 @@
       "file_count": "490",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\MSK@水曜日東B05ab-2864095",
       "pixiv_id": "2864095",
-      "progress": "13/35",
+      "progress": "16/35",
       "result": "변경 없음",
-      "time": "17:06:29",
+      "time": "20:58:11",
       "update_status": "up_to_date"
     },
     {
@@ -231,10 +309,10 @@
       "file_count": "14597",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Oki Senpai-113289403",
       "pixiv_id": "113289403",
-      "progress": "14/35",
+      "progress": "17/35",
       "result": "변경 없음",
-      "time": "17:06:31",
-      "update_status": "up_to_date"
+      "time": "20:58:12",
+      "update_status": "need_update"
     },
     {
       "artist_id": 15,
@@ -244,9 +322,9 @@
       "file_count": "909",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\orimineko-111449970",
       "pixiv_id": "111449970",
-      "progress": "15/35",
+      "progress": "18/35",
       "result": "변경 없음",
-      "time": "17:06:31",
+      "time": "20:58:12",
       "update_status": "need_update"
     },
     {
@@ -257,10 +335,10 @@
       "file_count": "4607",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Raimy AI-113024421",
       "pixiv_id": "113024421",
-      "progress": "16/35",
+      "progress": "19/35",
       "result": "변경 없음",
-      "time": "17:06:31",
-      "update_status": "up_to_date"
+      "time": "20:58:13",
+      "update_status": "need_update"
     },
     {
       "artist_id": 17,
@@ -270,9 +348,9 @@
       "file_count": "1161",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\rororo-64101854",
       "pixiv_id": "64101854",
-      "progress": "17/35",
+      "progress": "20/35",
       "result": "변경 없음",
-      "time": "17:06:31",
+      "time": "20:58:13",
       "update_status": "need_update"
     },
     {
@@ -283,9 +361,9 @@
       "file_count": "1817",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\S.A.M12138-124420679",
       "pixiv_id": "124420679",
-      "progress": "18/35",
+      "progress": "21/35",
       "result": "변경 없음",
-      "time": "17:06:32",
+      "time": "20:58:13",
       "update_status": "up_to_date"
     },
     {
@@ -296,9 +374,9 @@
       "file_count": "224",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\Strelitzia-69261024",
       "pixiv_id": "69261024",
-      "progress": "19/35",
+      "progress": "22/35",
       "result": "변경 없음",
-      "time": "17:06:32",
+      "time": "20:58:13",
       "update_status": "up_to_date"
     },
     {
@@ -309,9 +387,9 @@
       "file_count": "523",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\suinetoria-120988648",
       "pixiv_id": "120988648",
-      "progress": "20/35",
+      "progress": "23/35",
       "result": "변경 없음",
-      "time": "17:06:32",
+      "time": "20:58:13",
       "update_status": "need_update"
     },
     {
@@ -322,9 +400,9 @@
       "file_count": "2674",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\World All Waifu-104930031",
       "pixiv_id": "104930031",
-      "progress": "21/35",
+      "progress": "24/35",
       "result": "변경 없음",
-      "time": "17:06:32",
+      "time": "20:58:13",
       "update_status": "up_to_date"
     },
     {
@@ -335,10 +413,10 @@
       "file_count": "695",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\wsosw-126286403",
       "pixiv_id": "126286403",
-      "progress": "22/35",
+      "progress": "25/35",
       "result": "변경 없음",
-      "time": "17:06:32",
-      "update_status": "up_to_date"
+      "time": "20:58:13",
+      "update_status": "need_update"
     },
     {
       "artist_id": 23,
@@ -348,10 +426,10 @@
       "file_count": "2745",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\りぃのあ-79664500",
       "pixiv_id": "79664500",
-      "progress": "23/35",
+      "progress": "26/35",
       "result": "변경 없음",
-      "time": "17:06:32",
-      "update_status": "up_to_date"
+      "time": "20:58:14",
+      "update_status": "need_update"
     },
     {
       "artist_id": 24,
@@ -361,10 +439,10 @@
       "file_count": "2265",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\ダブルスラッシュ-117396740",
       "pixiv_id": "117396740",
-      "progress": "24/35",
+      "progress": "27/35",
       "result": "변경 없음",
-      "time": "17:06:33",
-      "update_status": "up_to_date"
+      "time": "20:58:14",
+      "update_status": "need_update"
     },
     {
       "artist_id": 25,
@@ -374,9 +452,9 @@
       "file_count": "887",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\レツ-12940810",
       "pixiv_id": "12940810",
-      "progress": "25/35",
+      "progress": "28/35",
       "result": "변경 없음",
-      "time": "17:06:33",
+      "time": "20:58:14",
       "update_status": "need_update"
     },
     {
@@ -387,23 +465,23 @@
       "file_count": "401",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\午后不知道-68856046",
       "pixiv_id": "68856046",
-      "progress": "26/35",
+      "progress": "29/35",
       "result": "변경 없음",
-      "time": "17:06:33",
+      "time": "20:58:14",
       "update_status": "need_update"
     },
     {
       "artist_id": 27,
       "artist_name": "夜间无梦时",
-      "artwork_count": "70",
+      "artwork_count": "76",
       "error_message": "-",
-      "file_count": "529",
+      "file_count": "767",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\夜间无梦时-118852059",
       "pixiv_id": "118852059",
-      "progress": "27/35",
-      "result": "변경 없음",
-      "time": "17:06:33",
-      "update_status": "need_update"
+      "progress": "30/35",
+      "result": "업데이트",
+      "time": "20:58:14",
+      "update_status": "up_to_date"
     },
     {
       "artist_id": 28,
@@ -413,9 +491,9 @@
       "file_count": "855",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\小白船-17254840",
       "pixiv_id": "17254840",
-      "progress": "28/35",
+      "progress": "31/35",
       "result": "변경 없음",
-      "time": "17:06:33",
+      "time": "20:58:14",
       "update_status": "up_to_date"
     },
     {
@@ -426,9 +504,9 @@
       "file_count": "1316",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\成田大进-53214500",
       "pixiv_id": "53214500",
-      "progress": "29/35",
+      "progress": "32/35",
       "result": "변경 없음",
-      "time": "17:06:33",
+      "time": "20:58:14",
       "update_status": "need_update"
     },
     {
@@ -439,9 +517,9 @@
       "file_count": "2452",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\新天天可爱-103431467",
       "pixiv_id": "103431467",
-      "progress": "30/35",
+      "progress": "33/35",
       "result": "변경 없음",
-      "time": "17:06:34",
+      "time": "20:58:15",
       "update_status": "up_to_date"
     },
     {
@@ -452,9 +530,9 @@
       "file_count": "6120",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\猫庵-124119090",
       "pixiv_id": "124119090",
-      "progress": "31/35",
+      "progress": "34/35",
       "result": "변경 없음",
-      "time": "17:06:34",
+      "time": "20:58:15",
       "update_status": "need_update"
     },
     {
@@ -465,48 +543,9 @@
       "file_count": "3306",
       "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\(임시)\\百破领域大神-87526958",
       "pixiv_id": "87526958",
-      "progress": "32/35",
-      "result": "변경 없음",
-      "time": "17:06:35",
-      "update_status": "need_update"
-    },
-    {
-      "artist_id": 33,
-      "artist_name": "04",
-      "artwork_count": "508",
-      "error_message": "-",
-      "file_count": "10982",
-      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\04-115273840",
-      "pixiv_id": "115273840",
-      "progress": "33/35",
-      "result": "변경 없음",
-      "time": "17:06:36",
-      "update_status": "need_update"
-    },
-    {
-      "artist_id": 36,
-      "artist_name": "Asukaaa",
-      "artwork_count": "830",
-      "error_message": "-",
-      "file_count": "10006",
-      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\Asukaaa-103556073",
-      "pixiv_id": "103556073",
-      "progress": "34/35",
-      "result": "변경 없음",
-      "time": "17:06:37",
-      "update_status": "up_to_date"
-    },
-    {
-      "artist_id": 37,
-      "artist_name": "Latte",
-      "artwork_count": "240",
-      "error_message": "-",
-      "file_count": "8472",
-      "folder_path": "C:\\Users\\Owner\\Downloads\\pixiv\\Latte-14911546",
-      "pixiv_id": "14911546",
       "progress": "35/35",
       "result": "변경 없음",
-      "time": "17:06:38",
+      "time": "20:58:16",
       "update_status": "need_update"
     }
   ]

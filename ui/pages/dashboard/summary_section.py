@@ -1,22 +1,39 @@
-from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QVBoxLayout
+from PySide6.QtWidgets import QGridLayout
+
+from .summary_card import SummaryCard
 
 
 class SummarySection(QGridLayout):
+    SUMMARY_ITEMS = [
+        ("total_artists", "전체 작가", "0", 0, 0),
+        ("favorite_artists", "즐겨찾기", "0", 0, 1),
+        ("need_update_count", "업데이트 필요", "0", 0, 2),
+        ("error_count", "오류 작가", "0", 0, 3),
+        ("total_artworks", "전체 작품 수", "0", 1, 0),
+        ("total_files", "전체 파일 수", "0", 1, 1),
+        ("total_folder_size", "전체 폴더 용량", "0 B", 1, 2),
+        ("recent_scan", "최근 스캔", "-", 1, 3),
+    ]
+
     def __init__(self):
         super().__init__()
 
-        self.setSpacing(16)
+        self.setSpacing(10)
         self.summary_labels = {}
 
         self._setup_ui()
 
     def _setup_ui(self):
-        self._add_summary_card(0, 0, "total_artists", "전체 작가", "0")
-        self._add_summary_card(0, 1, "total_artworks", "총 작품 수", "0")
-        self._add_summary_card(0, 2, "average_rating", "평균 평점", "-")
-        self._add_summary_card(1, 0, "unknown_count", "미확인", "0")
-        self._add_summary_card(1, 1, "latest_count", "최신", "0")
-        self._add_summary_card(1, 2, "need_update_count", "업데이트 필요", "0")
+        for item in self.SUMMARY_ITEMS:
+            key, title, default_value, row, column = item
+
+            self._add_summary_card(
+                row=row,
+                column=column,
+                key=key,
+                title=title,
+                value=default_value,
+            )
 
     def _add_summary_card(
         self,
@@ -26,31 +43,14 @@ class SummarySection(QGridLayout):
         title: str,
         value: str,
     ):
-        card = QFrame()
-        card.setObjectName("summaryCard")
+        card = SummaryCard(
+            title=title,
+            value=value,
+        )
 
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 18, 20, 18)
-        layout.setSpacing(8)
-
-        title_label = QLabel(title)
-        title_label.setObjectName("cardTitle")
-
-        value_label = QLabel(value)
-        value_label.setObjectName("cardValue")
-
-        layout.addWidget(title_label)
-        layout.addWidget(value_label)
-
-        self.summary_labels[key] = value_label
+        self.summary_labels[key] = card
         self.addWidget(card, row, column)
 
     def update_summary(self, summary: dict):
-        self.summary_labels["total_artists"].setText(str(summary["total_artists"]))
-        self.summary_labels["total_artworks"].setText(str(summary["total_artworks"]))
-        self.summary_labels["average_rating"].setText(summary["average_rating"])
-        self.summary_labels["unknown_count"].setText(str(summary["unknown_count"]))
-        self.summary_labels["latest_count"].setText(str(summary["latest_count"]))
-        self.summary_labels["need_update_count"].setText(
-            str(summary["need_update_count"])
-        )
+        for key, card in self.summary_labels.items():
+            card.set_value(summary.get(key, "-"))

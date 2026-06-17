@@ -51,7 +51,7 @@ class ArtistDetailPage(QWidget):
         self.save_button = QPushButton("저장")
         self.save_button.setObjectName("saveButton")
 
-        self.back_button = QPushButton("← 작가 목록")
+        self.back_button = QPushButton("← 돌아가기")
         self.back_button.setObjectName("backButton")
 
         header_layout.addWidget(self.title_label)

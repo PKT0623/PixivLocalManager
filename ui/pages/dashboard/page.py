@@ -1,3 +1,4 @@
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -11,13 +12,17 @@ from app.services.artist import ArtistService
 from .actions import DashboardActions
 from .dashboard_styles import DASHBOARD_PAGE_STYLE
 from .random_artist_section import RandomArtistSection
-from .recent_artists_section import RecentArtistsSection
-from .recent_scan_section import RecentScanSection
+from .recent_activity_section import RecentActivitySection
 from .recommendation_section import RecommendationSection
+from .scan_statistics_section import ScanStatisticsSection
 from .summary_section import SummarySection
+from .top_ranking_section import TopRankingSection
+from .update_status_section import UpdateStatusSection
 
 
 class DashboardPage(QWidget):
+    artist_detail_requested = Signal(int)
+
     def __init__(self):
         super().__init__()
 
@@ -26,65 +31,77 @@ class DashboardPage(QWidget):
         self.actions = DashboardActions(self)
 
         self._setup_ui()
+        self._connect_signals()
         self.actions.load_dashboard()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(32, 32, 32, 32)
-        layout.setSpacing(20)
+        layout.setContentsMargins(32, 28, 32, 24)
+        layout.setSpacing(14)
 
         header_layout = QHBoxLayout()
 
-        title_box = QVBoxLayout()
-        title_box.setSpacing(4)
-
         title_label = QLabel("대시보드")
         title_label.setObjectName("pageTitle")
-
-        description_label = QLabel(
-            "전체 작가 상태와 수집 현황을 요약해서 보여주는 화면입니다."
-        )
-        description_label.setObjectName("pageDescription")
-
-        title_box.addWidget(title_label)
-        title_box.addWidget(description_label)
 
         self.refresh_button = QPushButton("새로고침")
         self.refresh_button.setObjectName("refreshButton")
         self.refresh_button.clicked.connect(self.actions.load_dashboard)
 
-        header_layout.addLayout(title_box, 1)
+        header_layout.addWidget(title_label, 1)
         header_layout.addWidget(self.refresh_button)
 
         self.summary_section = SummarySection()
-        self.recent_artists_section = RecentArtistsSection()
-        self.recent_scan_section = RecentScanSection()
+        self.update_status_section = UpdateStatusSection()
+        self.scan_statistics_section = ScanStatisticsSection()
+        self.recent_activity_section = RecentActivitySection()
+        self.top_ranking_section = TopRankingSection()
         self.recommendation_section = RecommendationSection()
         self.random_artist_section = RandomArtistSection()
 
-        detail_layout = QHBoxLayout()
-        detail_layout.setSpacing(16)
+        upper_layout = QHBoxLayout()
+        upper_layout.setSpacing(14)
 
         left_layout = QVBoxLayout()
-        left_layout.setSpacing(16)
+        left_layout.setSpacing(14)
 
         right_layout = QVBoxLayout()
-        right_layout.setSpacing(16)
+        right_layout.setSpacing(14)
 
-        left_layout.addWidget(self.recent_artists_section, 1)
-        left_layout.addWidget(self.recommendation_section, 1)
+        left_layout.addLayout(self.summary_section, 1)
+        left_layout.addWidget(self.recent_activity_section, 4)
 
-        right_layout.addWidget(self.recent_scan_section)
-        right_layout.addWidget(self.random_artist_section, 1)
+        top_right_layout = QHBoxLayout()
+        top_right_layout.setSpacing(14)
 
-        detail_layout.addLayout(left_layout, 2)
-        detail_layout.addLayout(right_layout, 1)
+        top_right_layout.addWidget(self.update_status_section, 1)
+        top_right_layout.addWidget(self.scan_statistics_section, 1)
+
+        right_layout.addLayout(top_right_layout, 1)
+        right_layout.addWidget(self.top_ranking_section, 4)
+
+        upper_layout.addLayout(left_layout, 5)
+        upper_layout.addLayout(right_layout, 5)
+
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setSpacing(14)
+
+        bottom_layout.addWidget(self.recommendation_section, 3)
+        bottom_layout.addWidget(self.random_artist_section, 1)
 
         layout.addLayout(header_layout)
-        layout.addLayout(self.summary_section)
-        layout.addLayout(detail_layout, 1)
+        layout.addLayout(upper_layout, 6)
+        layout.addLayout(bottom_layout, 4)
 
         self.setStyleSheet(DASHBOARD_PAGE_STYLE)
+
+    def _connect_signals(self):
+        self.recent_activity_section.artist_detail_requested.connect(
+            self.artist_detail_requested.emit
+        )
+        self.top_ranking_section.artist_detail_requested.connect(
+            self.artist_detail_requested.emit
+        )
 
     def load_dashboard(self):
         self.actions.load_dashboard()

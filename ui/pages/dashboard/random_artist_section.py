@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
@@ -23,8 +24,8 @@ class RandomArtistSection(QFrame):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 18, 20, 18)
-        layout.setSpacing(12)
+        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setSpacing(10)
 
         header_layout = QHBoxLayout()
 
@@ -42,8 +43,8 @@ class RandomArtistSection(QFrame):
         random_card.setObjectName("randomCard")
 
         card_layout = QVBoxLayout(random_card)
-        card_layout.setContentsMargins(20, 20, 20, 20)
-        card_layout.setSpacing(12)
+        card_layout.setContentsMargins(16, 16, 16, 16)
+        card_layout.setSpacing(10)
 
         hidden_label = QLabel("???")
         hidden_label.setObjectName("randomHiddenText")
@@ -91,13 +92,16 @@ class RandomArtistSection(QFrame):
             return
 
         self.random_artist = random.choice(self.current_artists)
+        folder_exists = self._artist_folder_exists(self.random_artist)
+        pixiv_exists = bool(
+            str(self.random_artist.get("pixiv_id", "") or "").strip()
+        )
+
         self.random_status_label.setText(
             "랜덤 작가가 선택되었습니다.\n정체를 확인하려면 열어보세요."
         )
-        self.random_folder_button.setEnabled(True)
-        self.random_pixiv_button.setEnabled(
-            bool(str(self.random_artist.get("pixiv_id", "") or "").strip())
-        )
+        self.random_folder_button.setEnabled(folder_exists)
+        self.random_pixiv_button.setEnabled(pixiv_exists)
 
     def clear_random_artist(self):
         self.random_artist = None
@@ -117,13 +121,30 @@ class RandomArtistSection(QFrame):
 
         self._open_artist_pixiv(self.random_artist)
 
+    def _artist_folder_exists(
+        self,
+        artist: dict,
+    ) -> bool:
+        folder_path = str(artist.get("folder_path", "") or "").strip()
+
+        if not folder_path:
+            return False
+
+        return Path(folder_path).exists()
+
     def _open_artist_folder(self, artist: dict):
         folder_path = str(artist.get("folder_path", "") or "").strip()
 
         if not folder_path:
             return
 
-        QDesktopServices.openUrl(QUrl.fromLocalFile(folder_path))
+        folder = Path(folder_path)
+
+        if not folder.exists():
+            self.random_folder_button.setEnabled(False)
+            return
+
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
 
     def _open_artist_pixiv(self, artist: dict):
         pixiv_id = str(artist.get("pixiv_id", "") or "").strip()

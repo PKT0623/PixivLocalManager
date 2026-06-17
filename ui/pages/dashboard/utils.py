@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"}
 
 
 def count_status(artists: list[dict], statuses: set[str]) -> int:
@@ -71,6 +71,82 @@ def format_datetime_short(value) -> str:
         return dt.strftime("%Y-%m-%d %H:%M")
     except ValueError:
         return text
+
+
+def format_bytes(value) -> str:
+    size = to_int(value, maximum=10**18)
+
+    if size <= 0:
+        return "0 B"
+
+    units = ["B", "KB", "MB", "GB", "TB"]
+    unit_index = 0
+    display_size = float(size)
+
+    while display_size >= 1024 and unit_index < len(units) - 1:
+        display_size /= 1024
+        unit_index += 1
+
+    if unit_index == 0:
+        return f"{int(display_size)} {units[unit_index]}"
+
+    return f"{display_size:.1f} {units[unit_index]}"
+
+
+def format_count(value) -> str:
+    return f"{to_int(value):,}"
+
+
+def format_signed_number(value) -> str:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return "-"
+
+    if number > 0:
+        return f"+{number}"
+
+    return str(number)
+
+
+def format_missing_ids(values, limit: int = 3) -> str:
+    ids = parse_ids(values)
+
+    if not ids:
+        return "-"
+
+    if len(ids) <= limit:
+        return ", ".join(ids)
+
+    return f"{', '.join(ids[:limit])} 외 {len(ids) - limit}개"
+
+
+def is_today(value) -> bool:
+    if value is None or value == "":
+        return False
+
+    try:
+        dt = datetime.fromisoformat(str(value))
+    except ValueError:
+        return False
+
+    return dt.date() == datetime.now().date()
+
+
+def parse_ids(values) -> list[str]:
+    if not values:
+        return []
+
+    if isinstance(values, str):
+        raw_values = values.split(",")
+    else:
+        raw_values = values
+
+    return [
+        str(value).strip()
+        for value in raw_values
+        if str(value).strip()
+    ]
 
 
 def to_int(value, minimum: int = 0, maximum: int = 999999) -> int:
