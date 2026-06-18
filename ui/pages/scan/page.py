@@ -42,12 +42,6 @@ class ScanPage(QWidget):
         title_label = QLabel("폴더 스캔")
         title_label.setObjectName("pageTitle")
 
-        description_label = QLabel(
-            "Pixiv 이미지 폴더를 선택하고 최대 3단계 하위 폴더까지 "
-            "분석해 DB에 등록합니다."
-        )
-        description_label.setObjectName("pageDescription")
-
         self.folder_section = ScanFolderSection()
         self.progress_section = ScanProgressSection()
         self.folder_section.layout().addWidget(self.progress_section)
@@ -59,7 +53,6 @@ class ScanPage(QWidget):
         self.log_table = ScanLogTable()
 
         layout.addWidget(title_label)
-        layout.addWidget(description_label)
         layout.addWidget(self.folder_section)
         layout.addLayout(self.preview_header_layout)
         layout.addWidget(self.preview_table, 1)

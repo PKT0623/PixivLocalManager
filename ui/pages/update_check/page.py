@@ -1,9 +1,12 @@
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (
     QCheckBox,
     QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QProgressBar,
     QPushButton,
     QVBoxLayout,
@@ -11,12 +14,18 @@ from PySide6.QtWidgets import (
 )
 
 from app.services.artist import ArtistService
+from app.services.settings_service import SettingsService
 
 from .actions import UpdateCheckActions
 from .artist_table import UpdateArtistTable
 from .log_table import UpdateLogTable
 from .selection_actions import UpdateSelectionActions
 from .styles import UPDATE_CHECK_PAGE_STYLES
+from .worker_config import (
+    DEFAULT_UPDATE_CHECK_BATCH_REST_MS,
+    DEFAULT_UPDATE_CHECK_BATCH_SIZE,
+    DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+)
 
 
 class UpdateCheckPage(QWidget):
@@ -31,11 +40,13 @@ class UpdateCheckPage(QWidget):
         self.worker = None
 
         self.artist_service = ArtistService()
+        self.settings_service = SettingsService()
         self.actions = UpdateCheckActions(self)
         self.selection_actions = UpdateSelectionActions(self)
 
         self._setup_ui()
         self._connect_signals()
+        self.load_request_settings()
         self.load_artists()
         self.reset_summary()
 
@@ -47,13 +58,6 @@ class UpdateCheckPage(QWidget):
         title_label = QLabel("업데이트 확인")
         title_label.setObjectName("pageTitle")
 
-        description_label = QLabel(
-            "선택한 작가의 Pixiv 최신 작품 목록을 확인하고 "
-            "로컬 작품 ID와 비교합니다."
-        )
-        description_label.setObjectName("pageDescription")
-        description_label.setWordWrap(True)
-
         self.option_frame = self._create_option_frame()
         self.summary_frame = self._create_summary_frame()
         self.progress_frame = self._create_progress_frame()
@@ -64,12 +68,11 @@ class UpdateCheckPage(QWidget):
         self.status_label.setObjectName("statusLabel")
 
         layout.addWidget(title_label)
-        layout.addWidget(description_label)
         layout.addWidget(self.option_frame)
         layout.addWidget(self.summary_frame)
         layout.addWidget(self.progress_frame)
-        layout.addWidget(self.table_frame, 3)
-        layout.addWidget(self.log_frame, 4)
+        layout.addWidget(self.table_frame, 5)
+        layout.addWidget(self.log_frame, 2)
         layout.addWidget(self.status_label)
 
         self.setStyleSheet(UPDATE_CHECK_PAGE_STYLES)
@@ -78,9 +81,12 @@ class UpdateCheckPage(QWidget):
         option_frame = QFrame()
         option_frame.setObjectName("optionFrame")
 
-        option_layout = QHBoxLayout(option_frame)
+        option_layout = QVBoxLayout(option_frame)
         option_layout.setContentsMargins(14, 14, 14, 14)
         option_layout.setSpacing(10)
+
+        selection_layout = QHBoxLayout()
+        selection_layout.setSpacing(10)
 
         self.target_count_label = QLabel("확인 대상: 0명")
         self.target_count_label.setObjectName("targetCountLabel")
@@ -97,18 +103,51 @@ class UpdateCheckPage(QWidget):
         )
         self.skip_recent_checkbox.setChecked(False)
 
-        option_layout.addWidget(self.target_count_label)
-        option_layout.addSpacing(8)
-        option_layout.addWidget(self.select_all_button)
-        option_layout.addWidget(self.clear_selection_button)
-        option_layout.addWidget(self.select_unknown_button)
-        option_layout.addWidget(self.select_need_update_button)
-        option_layout.addWidget(self.select_failed_button)
-        option_layout.addStretch()
-        option_layout.addWidget(self.skip_recent_checkbox)
-        option_layout.addWidget(self.test_phpsessid_button)
+        selection_layout.addWidget(self.target_count_label)
+        selection_layout.addSpacing(8)
+        selection_layout.addWidget(self.select_all_button)
+        selection_layout.addWidget(self.clear_selection_button)
+        selection_layout.addWidget(self.select_unknown_button)
+        selection_layout.addWidget(self.select_need_update_button)
+        selection_layout.addWidget(self.select_failed_button)
+        selection_layout.addStretch()
+        selection_layout.addWidget(self.skip_recent_checkbox)
+        selection_layout.addWidget(self.test_phpsessid_button)
+
+        request_layout = QGridLayout()
+        request_layout.setHorizontalSpacing(10)
+        request_layout.setVerticalSpacing(8)
+
+        self.request_interval_ms_input = self._create_int_input(
+            str(DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS)
+        )
+        self.batch_size_input = self._create_int_input(
+            str(DEFAULT_UPDATE_CHECK_BATCH_SIZE)
+        )
+        self.batch_rest_ms_input = self._create_int_input(
+            str(DEFAULT_UPDATE_CHECK_BATCH_REST_MS)
+        )
+
+        request_layout.addWidget(QLabel("요청 간격(ms)"), 0, 0)
+        request_layout.addWidget(self.request_interval_ms_input, 0, 1)
+        request_layout.addWidget(QLabel("배치 작가 수"), 0, 2)
+        request_layout.addWidget(self.batch_size_input, 0, 3)
+        request_layout.addWidget(QLabel("배치 휴식(ms)"), 0, 4)
+        request_layout.addWidget(self.batch_rest_ms_input, 0, 5)
+        request_layout.setColumnStretch(6, 1)
+
+        option_layout.addLayout(selection_layout)
+        option_layout.addLayout(request_layout)
 
         return option_frame
+
+    def _create_int_input(self, placeholder: str) -> QLineEdit:
+        input_widget = QLineEdit()
+        input_widget.setPlaceholderText(placeholder)
+        input_widget.setValidator(QIntValidator(0, 999999))
+        input_widget.setFixedWidth(100)
+
+        return input_widget
 
     def _create_summary_frame(self) -> QFrame:
         summary_frame = QFrame()
@@ -301,6 +340,60 @@ class UpdateCheckPage(QWidget):
         self.artist_table.selection_changed.connect(
             self.update_target_count
         )
+
+    def load_request_settings(self):
+        self.request_interval_ms_input.setText(
+            str(
+                self.settings_service.get_int_setting(
+                    "update_check_request_interval_ms",
+                    DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+                )
+            )
+        )
+        self.batch_size_input.setText(
+            str(
+                self.settings_service.get_int_setting(
+                    "update_check_batch_size",
+                    DEFAULT_UPDATE_CHECK_BATCH_SIZE,
+                )
+            )
+        )
+        self.batch_rest_ms_input.setText(
+            str(
+                self.settings_service.get_int_setting(
+                    "update_check_batch_rest_ms",
+                    DEFAULT_UPDATE_CHECK_BATCH_REST_MS,
+                )
+            )
+        )
+
+    def get_request_interval_ms(self) -> int:
+        return self._read_int(
+            self.request_interval_ms_input.text(),
+            DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+        )
+
+    def get_batch_size(self) -> int:
+        return self._read_int(
+            self.batch_size_input.text(),
+            DEFAULT_UPDATE_CHECK_BATCH_SIZE,
+        )
+
+    def get_batch_rest_ms(self) -> int:
+        return self._read_int(
+            self.batch_rest_ms_input.text(),
+            DEFAULT_UPDATE_CHECK_BATCH_REST_MS,
+        )
+
+    def _read_int(
+        self,
+        value: str,
+        default: int,
+    ) -> int:
+        try:
+            return max(0, int(value))
+        except (TypeError, ValueError):
+            return default
 
     def load_artists(self):
         self.artists = self.artist_service.get_all_artists()

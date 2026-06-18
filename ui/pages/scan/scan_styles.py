@@ -4,11 +4,6 @@ QLabel#pageTitle {
     font-weight: 700;
 }
 
-QLabel#pageDescription {
-    font-size: 15px;
-    color: #666666;
-}
-
 QLabel#sectionTitle {
     font-size: 18px;
     font-weight: 700;

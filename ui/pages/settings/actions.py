@@ -11,6 +11,7 @@ from app.services.database_integrity_service import DatabaseIntegrityService
 from app.services.database_maintenance_service import (
     DatabaseMaintenanceService,
 )
+from app.services.pixiv import PixivSessionService
 from app.services.pixiv_update_service import PixivUpdateService
 from app.services.settings_backup_service import SettingsBackupService
 
@@ -28,6 +29,7 @@ class SettingsActions:
         self.database_integrity_service = DatabaseIntegrityService()
         self.database_maintenance_service = DatabaseMaintenanceService()
         self.settings_backup_service = SettingsBackupService()
+        self.pixiv_session_service = PixivSessionService()
 
     def load_settings(self):
         self._clear_setting_inputs()
@@ -48,8 +50,12 @@ class SettingsActions:
             self.page.pixiv_section.phpsessid_status_label.setText(
                 f"저장됨: {self.mask_secret(phpsessid)}"
             )
+            self.page.pixiv_section.session_status_label.setText(
+                "세션 상태: 미확인"
+            )
 
         self._load_pixiv_request_settings()
+        self._load_update_check_request_settings()
         self._load_backup_settings()
         self.refresh_database_info()
         self.refresh_backup_list()
@@ -61,23 +67,34 @@ class SettingsActions:
         self.page.pixiv_section.phpsessid_status_label.setText(
             "저장된 PHPSESSID 없음"
         )
+        self.page.pixiv_section.session_status_label.setText(
+            "세션 상태: 미확인"
+        )
 
     def _load_pixiv_request_settings(self):
-        section = self.page.pixiv_section
+        section = self.page.pixiv_manager_request_section
 
-        section.request_interval_min_input.setText(
+        section.request_interval_ms_input.setText(
             str(
                 self.page.settings_service.get_int_setting(
-                    "pixiv_request_interval_min",
-                    3,
+                    "pixiv_request_interval_ms",
+                    2000,
                 )
             )
         )
-        section.request_interval_max_input.setText(
+        section.batch_size_input.setText(
             str(
                 self.page.settings_service.get_int_setting(
-                    "pixiv_request_interval_max",
-                    6,
+                    "pixiv_batch_size",
+                    1000,
+                )
+            )
+        )
+        section.batch_rest_ms_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "pixiv_batch_rest_ms",
+                    300000,
                 )
             )
         )
@@ -85,15 +102,35 @@ class SettingsActions:
             str(
                 self.page.settings_service.get_int_setting(
                     "pixiv_retry_count",
-                    2,
+                    3,
                 )
             )
         )
-        section.retry_interval_input.setText(
+
+    def _load_update_check_request_settings(self):
+        section = self.page.update_check_request_section
+
+        section.request_interval_ms_input.setText(
             str(
                 self.page.settings_service.get_int_setting(
-                    "pixiv_retry_interval",
-                    5,
+                    "update_check_request_interval_ms",
+                    1000,
+                )
+            )
+        )
+        section.batch_size_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "update_check_batch_size",
+                    20,
+                )
+            )
+        )
+        section.batch_rest_ms_input.setText(
+            str(
+                self.page.settings_service.get_int_setting(
+                    "update_check_batch_rest_ms",
+                    180000,
                 )
             )
         )
@@ -328,6 +365,9 @@ class SettingsActions:
         self.page.pixiv_section.phpsessid_status_label.setText(
             f"저장됨: {self.mask_secret(phpsessid)}"
         )
+        self.page.pixiv_section.session_status_label.setText(
+            "세션 상태: 미확인"
+        )
         self.set_status("Pixiv PHPSESSID가 저장되었습니다.")
 
     def test_phpsessid(self):
@@ -339,6 +379,9 @@ class SettingsActions:
             )
 
         if not phpsessid:
+            self.page.pixiv_section.session_status_label.setText(
+                "세션 상태: 만료"
+            )
             self.set_status("테스트할 PHPSESSID가 없습니다.", error=True)
             return
 
@@ -351,11 +394,21 @@ class SettingsActions:
             )
             result = pixiv_service.test_phpsessid(phpsessid)
         except Exception as error:
+            self.page.pixiv_section.session_status_label.setText(
+                "세션 상태: 오류"
+            )
             self.set_status(f"PHPSESSID 테스트 실패: {error}", error=True)
             self.page.pixiv_section.test_phpsessid_button.setEnabled(True)
             return
 
         self.page.pixiv_section.test_phpsessid_button.setEnabled(True)
+
+        session_status = self.pixiv_session_service.get_status_from_test_result(
+            result
+        )
+        self.page.pixiv_section.session_status_label.setText(
+            f"세션 상태: {session_status}"
+        )
 
         if result.get("success"):
             self.set_status("PHPSESSID가 유효합니다.")
@@ -367,51 +420,93 @@ class SettingsActions:
         )
 
     def save_pixiv_request_settings(self):
-        section = self.page.pixiv_section
+        section = self.page.pixiv_manager_request_section
 
-        min_interval = self._read_int(
-            section.request_interval_min_input.text(),
-            3,
+        request_interval_ms = self._read_int(
+            section.request_interval_ms_input.text(),
+            2000,
         )
-        max_interval = self._read_int(
-            section.request_interval_max_input.text(),
-            6,
+        batch_size = self._read_int(
+            section.batch_size_input.text(),
+            1000,
+        )
+        batch_rest_ms = self._read_int(
+            section.batch_rest_ms_input.text(),
+            300000,
         )
         retry_count = self._read_int(
             section.retry_count_input.text(),
-            2,
-        )
-        retry_interval = self._read_int(
-            section.retry_interval_input.text(),
-            5,
+            3,
         )
 
-        if max_interval < min_interval:
-            max_interval = min_interval
+        request_interval_ms = max(2000, request_interval_ms)
+        batch_size = max(1, batch_size)
+        batch_rest_ms = max(0, batch_rest_ms)
+        retry_count = max(0, retry_count)
 
         try:
             self.page.settings_service.set_setting(
-                "pixiv_request_interval_min",
-                min_interval,
+                "pixiv_request_interval_ms",
+                request_interval_ms,
             )
             self.page.settings_service.set_setting(
-                "pixiv_request_interval_max",
-                max_interval,
+                "pixiv_batch_size",
+                batch_size,
+            )
+            self.page.settings_service.set_setting(
+                "pixiv_batch_rest_ms",
+                batch_rest_ms,
             )
             self.page.settings_service.set_setting(
                 "pixiv_retry_count",
                 retry_count,
             )
-            self.page.settings_service.set_setting(
-                "pixiv_retry_interval",
-                retry_interval,
-            )
         except Exception as error:
-            self.set_status(f"요청 설정 저장 실패: {error}", error=True)
+            self.set_status(f"Pixiv 관리 요청 저장 실패: {error}", error=True)
             return
 
         self._load_pixiv_request_settings()
-        self.set_status("Pixiv 요청 설정이 저장되었습니다.")
+        self.set_status("Pixiv 관리 요청 설정이 저장되었습니다.")
+
+    def save_update_check_request_settings(self):
+        section = self.page.update_check_request_section
+
+        request_interval_ms = self._read_int(
+            section.request_interval_ms_input.text(),
+            1000,
+        )
+        batch_size = self._read_int(
+            section.batch_size_input.text(),
+            20,
+        )
+        batch_rest_ms = self._read_int(
+            section.batch_rest_ms_input.text(),
+            180000,
+        )
+
+        request_interval_ms = max(0, request_interval_ms)
+        batch_size = max(1, batch_size)
+        batch_rest_ms = max(0, batch_rest_ms)
+
+        try:
+            self.page.settings_service.set_setting(
+                "update_check_request_interval_ms",
+                request_interval_ms,
+            )
+            self.page.settings_service.set_setting(
+                "update_check_batch_size",
+                batch_size,
+            )
+            self.page.settings_service.set_setting(
+                "update_check_batch_rest_ms",
+                batch_rest_ms,
+            )
+        except Exception as error:
+            self.set_status(f"업데이트 확인 요청 저장 실패: {error}", error=True)
+            return
+
+        self._load_update_check_request_settings()
+        self.set_status("업데이트 확인 요청 설정이 저장되었습니다.")
 
     def save_backup_settings(self):
         section = self.page.database_section

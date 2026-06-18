@@ -14,7 +14,6 @@ from .columns import (
     COLUMN_FILE_COUNT,
     COLUMN_HEADERS,
     COLUMN_LAST_VIEWED_AT,
-    COLUMN_MEMO,
     COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
@@ -78,6 +77,7 @@ class ArtistTable(QTableWidget):
         fixed_columns = (
             COLUMN_NO,
             COLUMN_FAVORITE,
+            COLUMN_ARTIST_NAME,
             COLUMN_PIXIV_ID,
             COLUMN_ARTWORK_COUNT,
             COLUMN_FILE_COUNT,
@@ -89,9 +89,7 @@ class ArtistTable(QTableWidget):
         )
 
         stretch_columns = (
-            COLUMN_ARTIST_NAME,
             COLUMN_TAGS,
-            COLUMN_MEMO,
         )
 
         for column in COLUMNS:
@@ -121,6 +119,11 @@ class ArtistTable(QTableWidget):
                     column.index,
                     column.width,
                 )
+
+        self.setColumnWidth(
+            COLUMN_ARTIST_NAME,
+            150,
+        )
 
     def set_artists(self, artists: list[dict]):
         self.artists = artists

@@ -1,12 +1,9 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QCheckBox,
-    QHBoxLayout,
     QHeaderView,
     QTableWidget,
     QTableWidgetItem,
-    QWidget,
 )
 
 from .utils import format_datetime
@@ -18,15 +15,14 @@ class UpdateArtistTable(QTableWidget):
     def __init__(self):
         super().__init__()
 
-        self.artist_checkboxes = {}
+        self.artists = []
 
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setColumnCount(5)
+        self.setColumnCount(4)
         self.setHorizontalHeaderLabels(
             [
-                "선택",
                 "작가명",
                 "Pixiv ID",
                 "상태",
@@ -34,7 +30,8 @@ class UpdateArtistTable(QTableWidget):
             ]
         )
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.verticalHeader().setVisible(False)
         self.setSortingEnabled(False)
         self.setAlternatingRowColors(True)
@@ -42,54 +39,39 @@ class UpdateArtistTable(QTableWidget):
         header = self.horizontalHeader()
         header.setStretchLastSection(False)
 
-        header.setSectionResizeMode(0, QHeaderView.Fixed)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Fixed)
         header.setSectionResizeMode(2, QHeaderView.Fixed)
         header.setSectionResizeMode(3, QHeaderView.Fixed)
-        header.setSectionResizeMode(4, QHeaderView.Fixed)
 
-        self.setColumnWidth(0, 60)
-        self.setColumnWidth(2, 100)
-        self.setColumnWidth(3, 120)
-        self.setColumnWidth(4, 140)
+        self.setColumnWidth(1, 100)
+        self.setColumnWidth(2, 120)
+        self.setColumnWidth(3, 140)
+
+        self.itemSelectionChanged.connect(
+            self.selection_changed.emit
+        )
 
     def load_artists(self, artists: list[dict]):
         self.setRowCount(0)
-        self.artist_checkboxes = {}
+        self.artists = artists
 
         for artist in artists:
             self._add_artist_row(artist)
 
+        self.clearSelection()
         self.selection_changed.emit()
 
     def _add_artist_row(self, artist: dict):
         row = self.rowCount()
         self.insertRow(row)
 
-        checkbox = QCheckBox()
-        checkbox.setChecked(False)
-        checkbox.stateChanged.connect(
-            lambda state, cb=checkbox: self.selection_changed.emit()
-        )
-
-        checkbox_widget = QWidget()
-        checkbox_layout = QHBoxLayout(checkbox_widget)
-        checkbox_layout.setContentsMargins(0, 0, 0, 0)
-        checkbox_layout.setAlignment(Qt.AlignCenter)
-        checkbox_layout.addWidget(checkbox)
-
-        self.artist_checkboxes[row] = {
-            "checkbox": checkbox,
-            "artist": artist,
-        }
-
-        self.setCellWidget(row, 0, checkbox_widget)
-        self._set_table_item(row, 1, artist.get("artist_name", "-"), True)
-        self._set_table_item(row, 2, artist.get("pixiv_id", "-"))
-        self._set_table_item(row, 3, artist.get("update_status", "-"))
+        self._set_table_item(row, 0, artist.get("artist_name", "-"), True)
+        self._set_table_item(row, 1, artist.get("pixiv_id", "-"))
+        self._set_table_item(row, 2, artist.get("update_status", "-"))
         self._set_table_item(
             row,
-            4,
+            3,
             format_datetime(artist.get("last_checked_at")),
         )
 
@@ -101,6 +83,10 @@ class UpdateArtistTable(QTableWidget):
         left: bool = False,
     ):
         item = QTableWidgetItem(str(value))
+        item.setData(
+            Qt.UserRole,
+            self.artists[row].get("id"),
+        )
 
         if left:
             item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -108,3 +94,55 @@ class UpdateArtistTable(QTableWidget):
             item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
         self.setItem(row, column, item)
+
+    def get_selected_artist_ids(self) -> list[int]:
+        selected_rows = {
+            index.row()
+            for index in self.selectionModel().selectedRows()
+        }
+
+        artist_ids = []
+
+        for row in sorted(selected_rows):
+            if row < 0 or row >= len(self.artists):
+                continue
+
+            artist_id = self.artists[row].get("id")
+
+            if artist_id is None:
+                continue
+
+            artist_ids.append(int(artist_id))
+
+        return artist_ids
+
+    def select_artist_ids(
+        self,
+        artist_ids: list[int],
+    ):
+        target_ids = {
+            int(artist_id)
+            for artist_id in artist_ids
+        }
+
+        self.clearSelection()
+        selection_model = self.selectionModel()
+
+        for row, artist in enumerate(self.artists):
+            artist_id = artist.get("id")
+
+            if artist_id is None:
+                continue
+
+            if int(artist_id) not in target_ids:
+                continue
+
+            index = self.model().index(row, 0)
+
+            selection_model.select(
+                index,
+                selection_model.SelectionFlag.Select
+                | selection_model.SelectionFlag.Rows,
+            )
+
+        self.selection_changed.emit()

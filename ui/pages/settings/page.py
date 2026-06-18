@@ -12,7 +12,11 @@ from .actions import SettingsActions
 from .app_info_section import AppInfoSection
 from .database_section import DatabaseSection
 from .folder_section import FolderSection
-from .pixiv_section import PixivSection
+from .pixiv_section import (
+    PixivManagerRequestSection,
+    PixivSection,
+    UpdateCheckRequestSection,
+)
 from .settings_management_section import SettingsManagementSection
 from .settings_styles import SETTINGS_PAGE_STYLE
 
@@ -37,16 +41,13 @@ class SettingsPage(QWidget):
         title_label = QLabel("설정")
         title_label.setObjectName("pageTitle")
 
-        description_label = QLabel(
-            "프로그램 설정, 데이터 관리, 백업 상태를 관리하는 화면입니다."
-        )
-        description_label.setObjectName("pageDescription")
-
         self.tab_widget = QTabWidget()
         self.tab_widget.setObjectName("settingsTabWidget")
 
         self.folder_section = FolderSection()
         self.pixiv_section = PixivSection()
+        self.update_check_request_section = UpdateCheckRequestSection()
+        self.pixiv_manager_request_section = PixivManagerRequestSection()
         self.database_section = DatabaseSection()
         self.settings_management_section = SettingsManagementSection()
         self.app_info_section = AppInfoSection()
@@ -65,7 +66,6 @@ class SettingsPage(QWidget):
         self.status_label.setObjectName("statusLabel")
 
         root_layout.addWidget(title_label)
-        root_layout.addWidget(description_label)
         root_layout.addWidget(self.tab_widget, 1)
         root_layout.addWidget(self.status_label)
 
@@ -79,6 +79,8 @@ class SettingsPage(QWidget):
 
         layout.addWidget(self.folder_section)
         layout.addWidget(self.pixiv_section)
+        layout.addWidget(self.update_check_request_section)
+        layout.addWidget(self.pixiv_manager_request_section)
         layout.addStretch()
 
         return tab
@@ -127,7 +129,10 @@ class SettingsPage(QWidget):
         self.pixiv_section.test_phpsessid_button.clicked.connect(
             self.actions.test_phpsessid
         )
-        self.pixiv_section.save_request_settings_button.clicked.connect(
+        self.update_check_request_section.save_request_settings_button.clicked.connect(
+            self.actions.save_update_check_request_settings
+        )
+        self.pixiv_manager_request_section.save_request_settings_button.clicked.connect(
             self.actions.save_pixiv_request_settings
         )
         self.database_section.open_db_folder_button.clicked.connect(

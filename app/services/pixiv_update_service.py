@@ -1,10 +1,11 @@
 import json
-import random
 import time
 from dataclasses import dataclass
 from typing import Optional
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+
+from app.services.pixiv import PixivClient, PixivRateLimitService
 
 
 @dataclass
@@ -67,67 +68,109 @@ class PixivUpdateService:
     )
     PIXIV_ACCOUNT_URL = "https://www.pixiv.net/ajax/user/extra"
 
-    DEFAULT_MIN_REQUEST_INTERVAL_SECONDS = 3
-    DEFAULT_MAX_REQUEST_INTERVAL_SECONDS = 6
-    DEFAULT_RETRY_COUNT = 2
-    DEFAULT_RETRY_INTERVAL_SECONDS = 5
+    DEFAULT_REQUEST_INTERVAL_MS = 2000
+    DEFAULT_BATCH_SIZE = 1000
+    DEFAULT_BATCH_REST_MS = 300000
+    DEFAULT_RETRY_COUNT = 3
     REQUEST_TIMEOUT_SECONDS = 15
 
     def __init__(
         self,
-        min_request_interval_seconds: int | None = None,
-        max_request_interval_seconds: int | None = None,
+        request_interval_ms: int | None = None,
+        batch_size: int | None = None,
+        batch_rest_ms: int | None = None,
         retry_count: int | None = None,
-        retry_interval_seconds: int | None = None,
     ):
-        self.min_request_interval_seconds = (
-            min_request_interval_seconds
-            if min_request_interval_seconds is not None
-            else self.DEFAULT_MIN_REQUEST_INTERVAL_SECONDS
+        self.request_interval_ms = (
+            request_interval_ms
+            if request_interval_ms is not None
+            else self.DEFAULT_REQUEST_INTERVAL_MS
         )
-        self.max_request_interval_seconds = (
-            max_request_interval_seconds
-            if max_request_interval_seconds is not None
-            else self.DEFAULT_MAX_REQUEST_INTERVAL_SECONDS
+        self.batch_size = (
+            batch_size
+            if batch_size is not None
+            else self.DEFAULT_BATCH_SIZE
+        )
+        self.batch_rest_ms = (
+            batch_rest_ms
+            if batch_rest_ms is not None
+            else self.DEFAULT_BATCH_REST_MS
         )
         self.retry_count = (
             retry_count
             if retry_count is not None
             else self.DEFAULT_RETRY_COUNT
         )
-        self.retry_interval_seconds = (
-            retry_interval_seconds
-            if retry_interval_seconds is not None
-            else self.DEFAULT_RETRY_INTERVAL_SECONDS
-        )
-        self.last_request_time = 0.0
 
         self._normalize_request_settings()
 
+        self.rate_limit_service = PixivRateLimitService(
+            request_interval_ms=self.request_interval_ms,
+            batch_size=self.batch_size,
+            batch_rest_ms=self.batch_rest_ms,
+        )
+        self.client = PixivClient(self.rate_limit_service)
+
     @classmethod
     def from_settings(cls, settings_service):
-        min_interval = settings_service.get_int_setting(
-            "pixiv_request_interval_min",
-            cls.DEFAULT_MIN_REQUEST_INTERVAL_SECONDS,
+        request_interval_ms = cls._get_request_interval_ms_from_settings(
+            settings_service
         )
-        max_interval = settings_service.get_int_setting(
-            "pixiv_request_interval_max",
-            cls.DEFAULT_MAX_REQUEST_INTERVAL_SECONDS,
+        batch_size = settings_service.get_int_setting(
+            "pixiv_batch_size",
+            cls.DEFAULT_BATCH_SIZE,
+        )
+        batch_rest_ms = settings_service.get_int_setting(
+            "pixiv_batch_rest_ms",
+            cls.DEFAULT_BATCH_REST_MS,
         )
         retry_count = settings_service.get_int_setting(
             "pixiv_retry_count",
             cls.DEFAULT_RETRY_COUNT,
         )
-        retry_interval = settings_service.get_int_setting(
-            "pixiv_retry_interval",
-            cls.DEFAULT_RETRY_INTERVAL_SECONDS,
-        )
 
         return cls(
-            min_request_interval_seconds=min_interval,
-            max_request_interval_seconds=max_interval,
+            request_interval_ms=request_interval_ms,
+            batch_size=batch_size,
+            batch_rest_ms=batch_rest_ms,
             retry_count=retry_count,
-            retry_interval_seconds=retry_interval,
+        )
+
+    @classmethod
+    def _get_request_interval_ms_from_settings(
+        cls,
+        settings_service,
+    ) -> int:
+        new_value = settings_service.get_setting(
+            "pixiv_request_interval_ms"
+        )
+
+        if new_value not in (None, ""):
+            try:
+                return int(new_value)
+            except (TypeError, ValueError):
+                return cls.DEFAULT_REQUEST_INTERVAL_MS
+
+        legacy_min_seconds = settings_service.get_setting(
+            "pixiv_request_interval_min"
+        )
+
+        if legacy_min_seconds not in (None, ""):
+            try:
+                return int(legacy_min_seconds) * 1000
+            except (TypeError, ValueError):
+                return cls.DEFAULT_REQUEST_INTERVAL_MS
+
+        return cls.DEFAULT_REQUEST_INTERVAL_MS
+
+    def set_request_callbacks(
+        self,
+        log_callback=None,
+        status_callback=None,
+    ):
+        self.client.set_callbacks(
+            log_callback=log_callback,
+            status_callback=status_callback,
         )
 
     def fetch_artist_artwork_ids(
@@ -216,18 +259,21 @@ class PixivUpdateService:
         }
 
     def _normalize_request_settings(self):
-        self.min_request_interval_seconds = max(
-            0,
-            int(self.min_request_interval_seconds),
+        self.request_interval_ms = max(
+            2000,
+            int(self.request_interval_ms),
         )
-        self.max_request_interval_seconds = max(
-            self.min_request_interval_seconds,
-            int(self.max_request_interval_seconds),
+        self.batch_size = max(
+            1,
+            int(self.batch_size),
         )
-        self.retry_count = max(0, int(self.retry_count))
-        self.retry_interval_seconds = max(
+        self.batch_rest_ms = max(
             0,
-            int(self.retry_interval_seconds),
+            int(self.batch_rest_ms),
+        )
+        self.retry_count = max(
+            0,
+            int(self.retry_count),
         )
 
     def _request_with_retry(
@@ -240,14 +286,12 @@ class PixivUpdateService:
         last_error = None
 
         for attempt in range(self.retry_count + 1):
-            if wait_before_request:
-                self._wait_before_request()
-
             try:
                 return self._request_json(
                     url=url,
                     phpsessid=phpsessid,
                     referer=referer,
+                    wait_before_request=wait_before_request,
                 )
             except PixivRequestError as error:
                 last_error = error
@@ -258,7 +302,8 @@ class PixivUpdateService:
                 if attempt >= self.retry_count:
                     raise
 
-                time.sleep(self.retry_interval_seconds)
+                self._emit_retry_log(attempt + 1)
+                self._wait_before_retry()
 
         if last_error is not None:
             raise last_error
@@ -269,44 +314,40 @@ class PixivUpdateService:
             retryable=False,
         )
 
-    def _wait_before_request(self):
-        now = time.time()
-        elapsed = now - self.last_request_time
-
-        wait_seconds = random.uniform(
-            self.min_request_interval_seconds,
-            self.max_request_interval_seconds,
+    def _emit_retry_log(
+        self,
+        attempt: int,
+    ):
+        self.rate_limit_service._emit_log(
+            "재시도",
+            f"Pixiv 요청 실패 후 재시도 중: {attempt}/{self.retry_count}",
         )
 
-        remaining = wait_seconds - elapsed
-
-        if remaining > 0:
-            time.sleep(remaining)
-
-        self.last_request_time = time.time()
+    def _wait_before_retry(self):
+        time.sleep(self.request_interval_ms / 1000)
 
     def _request_json(
         self,
         url: str,
         phpsessid: str,
         referer: str,
+        wait_before_request: bool = True,
     ) -> dict:
-        request = Request(
-            url,
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/120.0.0.0 Safari/537.36"
-                ),
-                "Accept": "application/json",
-                "Referer": referer,
-                "Cookie": f"PHPSESSID={phpsessid}",
-            },
-        )
+        if wait_before_request:
+            request = self.client.build_request(
+                url=url,
+                phpsessid=phpsessid,
+                referer=referer,
+            )
+        else:
+            request = self._build_request_without_wait(
+                url=url,
+                phpsessid=phpsessid,
+                referer=referer,
+            )
 
         try:
-            with urlopen(
+            with self.client.open(
                 request,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
             ) as response:
@@ -340,6 +381,18 @@ class PixivUpdateService:
                 message="Pixiv 응답을 JSON으로 해석하지 못했습니다.",
                 retryable=False,
             ) from error
+
+    def _build_request_without_wait(
+        self,
+        url: str,
+        phpsessid: str,
+        referer: str,
+    ) -> Request:
+        return self.client.build_request_without_wait(
+            url=url,
+            phpsessid=phpsessid,
+            referer=referer,
+        )
 
     def _build_http_error(
         self,

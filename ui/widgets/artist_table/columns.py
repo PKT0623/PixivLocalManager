@@ -21,8 +21,7 @@ COLUMNS = [
     ArtistTableColumn(8, "태그"),
     ArtistTableColumn(9, "최근 열람", "last_viewed_at", 120),
     ArtistTableColumn(10, "등록일", "created_at", 120),
-    ArtistTableColumn(11, "메모"),
-    ArtistTableColumn(12, "바로가기", None, 200),
+    ArtistTableColumn(11, "바로가기", None, 200),
 ]
 
 COLUMN_HEADERS = [
@@ -47,5 +46,4 @@ COLUMN_RATING = 7
 COLUMN_TAGS = 8
 COLUMN_LAST_VIEWED_AT = 9
 COLUMN_CREATED_AT = 10
-COLUMN_MEMO = 11
-COLUMN_SHORTCUTS = 12
+COLUMN_SHORTCUTS = 11

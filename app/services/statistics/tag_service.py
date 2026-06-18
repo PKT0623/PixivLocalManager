@@ -1,3 +1,4 @@
+import json
 from collections import Counter
 
 
@@ -76,25 +77,71 @@ class StatisticsTagService:
         if raw_tags is None:
             return []
 
+        if isinstance(raw_tags, list):
+            return self._parse_tag_list(raw_tags)
+
         raw_text = str(raw_tags).strip()
 
         if raw_text.lower() in self.EMPTY_TAG_VALUES:
             return []
 
-        if isinstance(raw_tags, list):
-            values = raw_tags
-        else:
-            values = raw_text.replace("\n", ",").split(",")
+        try:
+            parsed = json.loads(raw_text)
+        except json.JSONDecodeError:
+            return self._parse_legacy_text(raw_text)
 
+        if not isinstance(parsed, list):
+            return []
+
+        return self._parse_tag_list(parsed)
+
+    def _parse_tag_list(
+        self,
+        values: list,
+    ) -> list[str]:
         tags = []
 
         for value in values:
-            tag = str(value).strip()
+            if isinstance(value, str):
+                tag = value.strip()
 
-            if tag.lower() in self.EMPTY_TAG_VALUES:
+                if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
+                    tags.append(tag)
+
                 continue
 
-            tags.append(tag)
+            if not isinstance(value, dict):
+                continue
+
+            translated = str(
+                value.get("translated")
+                or value.get("translated_name")
+                or ""
+            ).strip()
+            original = str(
+                value.get("original")
+                or value.get("name")
+                or ""
+            ).strip()
+
+            tag = translated or original
+
+            if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
+                tags.append(tag)
+
+        return tags
+
+    def _parse_legacy_text(
+        self,
+        raw_text: str,
+    ) -> list[str]:
+        tags = []
+
+        for value in raw_text.replace("\n", ",").split(","):
+            tag = value.strip()
+
+            if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
+                tags.append(tag)
 
         return tags
 

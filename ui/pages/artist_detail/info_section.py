@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -221,9 +222,9 @@ class ArtistInfoSection(QFrame):
         tag_header_layout.addWidget(self.remove_tag_button)
 
         self.tag_table = QTableWidget()
-        self.tag_table.setColumnCount(4)
+        self.tag_table.setColumnCount(3)
         self.tag_table.setHorizontalHeaderLabels(
-            ["태그 원문", "한글 번역", "작품 수", "파일 수"]
+            ["태그 원문", "한글 번역", "작품 수"]
         )
         self.tag_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tag_table.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -232,10 +233,9 @@ class ArtistInfoSection(QFrame):
         self.tag_table.verticalHeader().setDefaultSectionSize(30)
         self.tag_table.setFixedHeight(330)
 
-        self.tag_table.setColumnWidth(0, 130)
-        self.tag_table.setColumnWidth(1, 130)
-        self.tag_table.setColumnWidth(2, 60)
-        self.tag_table.setColumnWidth(3, 60)
+        self.tag_table.setColumnWidth(0, 150)
+        self.tag_table.setColumnWidth(1, 150)
+        self.tag_table.setColumnWidth(2, 70)
 
         tag_layout.addLayout(tag_header_layout)
         tag_layout.addWidget(self.tag_table)
@@ -362,7 +362,12 @@ class ArtistInfoSection(QFrame):
         row = self.tag_table.rowCount()
         self.tag_table.insertRow(row)
 
-        self.tag_table.setItem(row, 0, QTableWidgetItem(""))
+        original_item = QTableWidgetItem("")
+        original_item.setFlags(
+            original_item.flags()
+            & ~Qt.ItemIsEditable
+        )
+
+        self.tag_table.setItem(row, 0, original_item)
         self.tag_table.setItem(row, 1, QTableWidgetItem(""))
         self.tag_table.setItem(row, 2, QTableWidgetItem("0"))
-        self.tag_table.setItem(row, 3, QTableWidgetItem("0"))

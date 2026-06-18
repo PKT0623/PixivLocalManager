@@ -4,12 +4,6 @@ QLabel#pageTitle {
     font-weight: 700;
 }
 
-QLabel#pageDescription,
-QLabel#statusLabel {
-    font-size: 14px;
-    color: #555555;
-}
-
 QLabel#targetCountLabel {
     padding: 7px 14px;
     border-radius: 8px;

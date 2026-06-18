@@ -96,20 +96,23 @@ def format_artist_tags(value) -> str:
         return "-"
 
     tags.sort(
-        key=lambda item: item.get("artwork_count", 0),
+        key=lambda item: (
+            item.get("artwork_count", 0),
+            item.get("original", ""),
+        ),
         reverse=True,
     )
 
     display_names = []
 
-    for tag in tags[:3]:
-        translated_name = str(tag.get("translated_name", "")).strip()
-        original_name = str(tag.get("name", "")).strip()
+    for tag in tags:
+        translated = str(tag.get("translated", "") or "").strip()
+        original = str(tag.get("original", "") or "").strip()
 
-        if translated_name:
-            display_names.append(translated_name)
-        elif original_name:
-            display_names.append(original_name)
+        if translated:
+            display_names.append(translated)
+        elif original:
+            display_names.append(original)
 
     if not display_names:
         return "-"
@@ -123,7 +126,7 @@ def parse_artist_tags(value) -> list[dict]:
 
     if isinstance(value, list):
         return [
-            tag
+            normalize_tag_dict(tag)
             for tag in value
             if isinstance(tag, dict)
         ]
@@ -142,28 +145,40 @@ def parse_artist_tags(value) -> list[dict]:
         if not isinstance(item, dict):
             continue
 
-        try:
-            artwork_count = int(item.get("artwork_count", 0) or 0)
-        except (TypeError, ValueError):
-            artwork_count = 0
-
         result.append(
-            {
-                "name": str(item.get("name", "")).strip(),
-                "translated_name": str(
-                    item.get("translated_name", "")
-                ).strip(),
-                "artwork_count": max(0, artwork_count),
-            }
+            normalize_tag_dict(item)
         )
 
     return result
 
 
+def normalize_tag_dict(item: dict) -> dict:
+    return {
+        "original": str(
+            item.get("original")
+            or item.get("name")
+            or item.get("tag")
+            or ""
+        ).strip(),
+        "translated": str(
+            item.get("translated")
+            or item.get("translated_name")
+            or item.get("tag_translation")
+            or ""
+        ).strip(),
+        "artwork_count": to_non_negative_int(
+            item.get("artwork_count")
+            or item.get("count")
+            or item.get("cnt")
+            or 0
+        ),
+    }
+
+
 def parse_legacy_tags(value: str) -> list[dict]:
     result = []
 
-    for tag_name in value.split(","):
+    for tag_name in value.replace("\n", ",").split(","):
         tag_name = tag_name.strip()
 
         if not tag_name:
@@ -171,13 +186,20 @@ def parse_legacy_tags(value: str) -> list[dict]:
 
         result.append(
             {
-                "name": tag_name,
-                "translated_name": "",
+                "original": tag_name,
+                "translated": "",
                 "artwork_count": 0,
             }
         )
 
     return result
+
+
+def to_non_negative_int(value) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
 
 
 def format_datetime(value) -> str:

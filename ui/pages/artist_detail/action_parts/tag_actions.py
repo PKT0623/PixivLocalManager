@@ -1,5 +1,6 @@
 import json
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTableWidgetItem
 
 from ..utils import (
@@ -21,25 +22,34 @@ class ArtistTagActions:
             row = section.tag_table.rowCount()
             section.tag_table.insertRow(row)
 
+            original_item = QTableWidgetItem(
+                str(tag.get("original", ""))
+            )
+            original_item.setFlags(
+                original_item.flags()
+                & ~Qt.ItemIsEditable
+            )
+
             section.tag_table.setItem(
                 row,
                 0,
-                QTableWidgetItem(str(tag.get("name", ""))),
+                original_item,
             )
+
             section.tag_table.setItem(
                 row,
                 1,
-                QTableWidgetItem(str(tag.get("translated_name", ""))),
+                QTableWidgetItem(
+                    str(tag.get("translated", ""))
+                ),
             )
+
             section.tag_table.setItem(
                 row,
                 2,
-                QTableWidgetItem(str(tag.get("artwork_count", 0))),
-            )
-            section.tag_table.setItem(
-                row,
-                3,
-                QTableWidgetItem(str(tag.get("file_count", 0))),
+                QTableWidgetItem(
+                    str(tag.get("artwork_count", 0))
+                ),
             )
 
     def parse_artist_tags(self, artist_tags) -> list[dict]:
@@ -47,12 +57,14 @@ class ArtistTagActions:
             return []
 
         if isinstance(artist_tags, list):
-            return artist_tags
-
-        try:
-            parsed = json.loads(str(artist_tags))
-        except json.JSONDecodeError:
-            return self.parse_legacy_tags(str(artist_tags))
+            parsed = artist_tags
+        else:
+            try:
+                parsed = json.loads(str(artist_tags))
+            except json.JSONDecodeError:
+                return self.parse_legacy_tags(
+                    str(artist_tags)
+                )
 
         if not isinstance(parsed, list):
             return []
@@ -65,27 +77,40 @@ class ArtistTagActions:
 
             result.append(
                 {
-                    "name": str(item.get("name", "")).strip(),
-                    "translated_name": str(
-                        item.get("translated_name", "")
+                    "original": str(
+                        item.get("original")
+                        or item.get("name")
+                        or ""
+                    ).strip(),
+                    "translated": str(
+                        item.get("translated")
+                        or item.get("translated_name")
+                        or ""
                     ).strip(),
                     "artwork_count": to_int(
-                        item.get("artwork_count", 0),
+                        item.get("artwork_count")
+                        or item.get("count")
+                        or 0,
                         minimum=0,
                     ),
-                    "file_count": to_int(
-                        item.get("file_count", 0),
-                        minimum=0,
+                    "custom_translation": bool(
+                        item.get(
+                            "custom_translation",
+                            False,
+                        )
                     ),
                 }
             )
 
         return result
 
-    def parse_legacy_tags(self, artist_tags: str) -> list[dict]:
+    def parse_legacy_tags(
+        self,
+        artist_tags: str,
+    ) -> list[dict]:
         result = []
 
-        for tag_name in artist_tags.split(","):
+        for tag_name in artist_tags.replace("\n", ",").split(","):
             tag_name = tag_name.strip()
 
             if not tag_name:
@@ -93,10 +118,10 @@ class ArtistTagActions:
 
             result.append(
                 {
-                    "name": tag_name,
-                    "translated_name": "",
+                    "original": tag_name,
+                    "translated": "",
                     "artwork_count": 0,
-                    "file_count": 0,
+                    "custom_translation": False,
                 }
             )
 
@@ -107,29 +132,26 @@ class ArtistTagActions:
         tags = []
 
         for row in range(section.tag_table.rowCount()):
-            name_item = section.tag_table.item(row, 0)
+            original_item = section.tag_table.item(row, 0)
             translated_item = section.tag_table.item(row, 1)
             artwork_count_item = section.tag_table.item(row, 2)
-            file_count_item = section.tag_table.item(row, 3)
 
-            name = ""
-            translated_name = ""
+            original = ""
+            translated = ""
             artwork_count_text = "0"
-            file_count_text = "0"
 
-            if name_item is not None:
-                name = name_item.text().strip()
+            if original_item is not None:
+                original = original_item.text().strip()
 
             if translated_item is not None:
-                translated_name = translated_item.text().strip()
+                translated = translated_item.text().strip()
 
             if artwork_count_item is not None:
-                artwork_count_text = artwork_count_item.text().strip()
+                artwork_count_text = (
+                    artwork_count_item.text().strip()
+                )
 
-            if file_count_item is not None:
-                file_count_text = file_count_item.text().strip()
-
-            if not name:
+            if not original:
                 continue
 
             try:
@@ -137,73 +159,85 @@ class ArtistTagActions:
                     artwork_count_text or "0",
                     "태그 작품 수",
                 )
-                file_count = parse_non_negative_int(
-                    file_count_text or "0",
-                    "태그 파일 수",
-                )
             except ValueError:
                 raise ValueError(
-                    f"{row + 1}번째 태그의 수치가 올바르지 않습니다."
+                    f"{row + 1}번째 태그의 수치가 "
+                    "올바르지 않습니다."
                 )
 
             tags.append(
                 {
-                    "name": name,
-                    "translated_name": translated_name,
+                    "original": original,
+                    "translated": translated,
                     "artwork_count": artwork_count,
-                    "file_count": file_count,
+                    "custom_translation": bool(
+                        translated
+                    ),
                 }
             )
 
         return tags
 
-    def normalize_tags(self, tags: list[dict]) -> list[dict]:
+    def normalize_tags(
+        self,
+        tags: list[dict],
+    ) -> list[dict]:
         normalized_map = {}
 
         for tag in tags:
-            name = str(tag.get("name", "") or "").strip()
-            translated_name = str(
-                tag.get("translated_name", "") or ""
+            original = str(
+                tag.get("original", "")
+                or ""
             ).strip()
 
-            if not name:
+            translated = str(
+                tag.get("translated", "")
+                or ""
+            ).strip()
+
+            if not original:
                 continue
 
-            key = name.casefold()
+            key = original.casefold()
 
             artwork_count = to_int(
                 tag.get("artwork_count", 0),
                 minimum=0,
             )
-            file_count = to_int(
-                tag.get("file_count", 0),
-                minimum=0,
+
+            custom_translation = bool(
+                tag.get(
+                    "custom_translation",
+                    False,
+                )
             )
 
             if key not in normalized_map:
                 normalized_map[key] = {
-                    "name": name,
-                    "translated_name": translated_name,
+                    "original": original,
+                    "translated": translated,
                     "artwork_count": artwork_count,
-                    "file_count": file_count,
+                    "custom_translation": custom_translation,
                 }
                 continue
 
-            existing_tag = normalized_map[key]
+            existing = normalized_map[key]
 
-            if not existing_tag["translated_name"] and translated_name:
-                existing_tag["translated_name"] = translated_name
+            if not existing["translated"] and translated:
+                existing["translated"] = translated
 
-            existing_tag["artwork_count"] += artwork_count
-            existing_tag["file_count"] += file_count
+            existing["artwork_count"] += artwork_count
+            existing["custom_translation"] = (
+                existing["custom_translation"]
+                or custom_translation
+            )
 
         tags = list(normalized_map.values())
 
         tags.sort(
             key=lambda item: (
                 item.get("artwork_count", 0),
-                item.get("file_count", 0),
-                item.get("name", ""),
+                item.get("original", ""),
             ),
             reverse=True,
         )
@@ -247,8 +281,7 @@ class ArtistTagActions:
         tags.sort(
             key=lambda item: (
                 item.get("artwork_count", 0),
-                item.get("file_count", 0),
-                item.get("name", ""),
+                item.get("original", ""),
             ),
             reverse=True,
         )
@@ -260,7 +293,10 @@ class ArtistTagActions:
 
     def remove_selected_tag_row(self):
         table = self.page.info_section.tag_table
-        selected_rows = table.selectionModel().selectedRows()
+        selected_rows = (
+            table.selectionModel()
+            .selectedRows()
+        )
 
         if not selected_rows:
             return
@@ -270,4 +306,6 @@ class ArtistTagActions:
             key=lambda index: index.row(),
             reverse=True,
         ):
-            table.removeRow(model_index.row())
+            table.removeRow(
+                model_index.row()
+            )

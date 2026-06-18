@@ -12,6 +12,22 @@ from .backup import (
     DeletedArtistBackupService,
 )
 
+from .bookmark import (
+    BookmarkArtworkMatcher,
+    BookmarkService,
+)
+
+from .follow import (
+    FollowService,
+    FollowUserMatcher,
+)
+
+from .pixiv import (
+    PixivClient,
+    PixivRateLimitService,
+    PixivSessionService,
+)
+
 from .scan import (
     ArtistRescanService,
     ArtistScanBuilder,
@@ -52,6 +68,16 @@ __all__ = [
     "BackupJsonUtils",
     "BackupService",
     "DeletedArtistBackupService",
+
+    "BookmarkArtworkMatcher",
+    "BookmarkService",
+
+    "FollowService",
+    "FollowUserMatcher",
+
+    "PixivClient",
+    "PixivRateLimitService",
+    "PixivSessionService",
 
     "ArtistRescanService",
     "ArtistScanBuilder",

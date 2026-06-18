@@ -5,7 +5,9 @@ from .artist import (
     ArtistRestoreRepository,
     ArtistUpdateRepository,
 )
+from .bookmark_artwork_repository import BookmarkArtworkRepository
 from .connection import get_connection
+from .follow_user_repository import FollowUserRepository
 from .schema import initialize_database
 from .update_history_repository import ArtistUpdateHistoryRepository
 
@@ -16,6 +18,8 @@ __all__ = [
     "ArtistRestoreRepository",
     "ArtistUpdateRepository",
     "ArtistUpdateHistoryRepository",
+    "BookmarkArtworkRepository",
+    "FollowUserRepository",
     "get_connection",
     "initialize_database",
 ]

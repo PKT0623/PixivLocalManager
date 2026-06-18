@@ -14,7 +14,6 @@ from .columns import (
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
     COLUMN_LAST_VIEWED_AT,
-    COLUMN_MEMO,
     COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
@@ -104,12 +103,6 @@ class ArtistTableRowRenderer:
             row,
             COLUMN_CREATED_AT,
             artist.get("created_at"),
-            is_hidden,
-        )
-        self.set_item(
-            row,
-            COLUMN_MEMO,
-            artist.get("memo"),
             is_hidden,
         )
 

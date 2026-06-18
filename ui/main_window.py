@@ -6,6 +6,7 @@ from ui.pages import (
     ArtistDetailPage,
     ArtistsPage,
     DashboardPage,
+    PixivManagerPage,
     ScanPage,
     SettingsPage,
     StatisticsPage,
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
             "dashboard": DashboardPage(),
             "scan": ScanPage(),
             "update_check": UpdateCheckPage(),
+            "pixiv_manager": PixivManagerPage(),
             "artists": ArtistsPage(),
             "statistics": StatisticsPage(),
             "artist_detail": ArtistDetailPage(),
@@ -177,6 +179,9 @@ class MainWindow(QMainWindow):
 
         if page_name == "update_check":
             page.load_artists()
+
+        if page_name == "pixiv_manager":
+            page.load_data()
 
         if page_name == "statistics":
             page.load_statistics()

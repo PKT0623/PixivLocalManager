@@ -9,6 +9,11 @@ from app.services.pixiv_update_service import PixivUpdateService
 from app.services.settings_service import SettingsService
 
 from .worker import UpdateCheckWorker
+from .worker_config import (
+    MIN_UPDATE_CHECK_BATCH_REST_MS,
+    MIN_UPDATE_CHECK_BATCH_SIZE,
+    MIN_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+)
 
 
 class UpdateCheckActions(QObject):
@@ -119,6 +124,19 @@ class UpdateCheckActions(QObject):
                 f"업데이트 확인 재개: {progress_offset} / {total_count}"
             )
 
+        request_interval_ms = max(
+            MIN_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+            self.page.get_request_interval_ms(),
+        )
+        batch_size = max(
+            MIN_UPDATE_CHECK_BATCH_SIZE,
+            self.page.get_batch_size(),
+        )
+        batch_rest_ms = max(
+            MIN_UPDATE_CHECK_BATCH_REST_MS,
+            self.page.get_batch_rest_ms(),
+        )
+
         worker_thread = QThread()
         worker = UpdateCheckWorker(
             artist_ids=artist_ids,
@@ -128,6 +146,9 @@ class UpdateCheckActions(QObject):
             progress_offset=progress_offset,
             total_count=total_count,
             summary=self.current_summary,
+            request_interval_ms=request_interval_ms,
+            batch_size=batch_size,
+            batch_rest_ms=batch_rest_ms,
         )
 
         self.page.worker_thread = worker_thread
@@ -388,6 +409,9 @@ class UpdateCheckActions(QObject):
         self.page.export_csv_button.setEnabled(
             not is_running and self.page.log_table.rowCount() > 0
         )
+        self.page.request_interval_ms_input.setEnabled(not is_running)
+        self.page.batch_size_input.setEnabled(not is_running)
+        self.page.batch_rest_ms_input.setEnabled(not is_running)
         self.page.artist_table.setEnabled(not is_running)
 
     def set_paused_state(self):
@@ -406,6 +430,9 @@ class UpdateCheckActions(QObject):
         self.page.export_csv_button.setEnabled(
             self.page.log_table.rowCount() > 0
         )
+        self.page.request_interval_ms_input.setEnabled(False)
+        self.page.batch_size_input.setEnabled(False)
+        self.page.batch_rest_ms_input.setEnabled(False)
         self.page.artist_table.setEnabled(False)
 
     def _is_worker_running(self) -> bool:

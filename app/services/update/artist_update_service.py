@@ -2,8 +2,10 @@ from datetime import datetime
 
 from app.database.artist import ArtistRepository
 from app.services.artwork_status_service import ArtworkStatusService
+from app.services.pixiv.metadata_service import PixivMetadataService
 from app.services.pixiv_update_service import PixivUpdateService
 from app.services.settings_service import SettingsService
+from app.services.tag import TagService
 
 from .bulk_update_service import ArtistBulkUpdateService
 from .update_utils import ArtistUpdateUtils
@@ -20,6 +22,10 @@ class ArtistUpdateService:
         self.pixiv_update_service = PixivUpdateService.from_settings(
             self.settings_service
         )
+        self.pixiv_metadata_service = PixivMetadataService(
+            pixiv_update_service=self.pixiv_update_service,
+        )
+        self.tag_service = TagService()
         self.update_utils = ArtistUpdateUtils()
         self.bulk_update_service = ArtistBulkUpdateService(self)
 
@@ -40,6 +46,13 @@ class ArtistUpdateService:
             phpsessid=phpsessid,
         )
 
+        pixiv_tags = (
+            self.pixiv_metadata_service.fetch_user_illust_tag_statistics(
+                pixiv_user_id=pixiv_id,
+                phpsessid=phpsessid,
+            )
+        )
+
         status_result = self.status_service.calculate_status(
             artist.get("local_latest_artwork_ids", ""),
             fetch_result.artwork_ids_text,
@@ -53,6 +66,12 @@ class ArtistUpdateService:
         )
         update_data["update_status"] = status_result.status
         update_data["last_checked_at"] = checked_at
+
+        if self._has_pixiv_tags(pixiv_tags):
+            update_data["artist_tags"] = self._merge_artist_tags(
+                existing_tags=artist.get("artist_tags", ""),
+                pixiv_tags=pixiv_tags,
+            )
 
         self.repo.update_artist(
             artist_id,
@@ -88,6 +107,7 @@ class ArtistUpdateService:
             "missing_count": status_result.missing_count,
             "missing_ids": status_result.missing_ids,
             "download_candidate_ids": download_candidate_ids,
+            "tag_synced": self._has_pixiv_tags(pixiv_tags),
         }
 
     def check_all_artist_updates(
@@ -105,6 +125,32 @@ class ArtistUpdateService:
         artist: dict,
     ) -> None:
         self.update_utils.save_skipped_recent_history(artist)
+
+    def _merge_artist_tags(
+        self,
+        existing_tags,
+        pixiv_tags,
+    ) -> str:
+        merged_tags = self.tag_service.merge_tags(
+            existing_tags,
+            pixiv_tags,
+        )
+
+        return self.tag_service.serialize_tags(merged_tags)
+
+    def _has_pixiv_tags(
+        self,
+        pixiv_tags,
+    ) -> bool:
+        text = str(pixiv_tags or "").strip().lower()
+
+        return text not in (
+            "",
+            "[]",
+            "{}",
+            "null",
+            "none",
+        )
 
     def _get_artist_pixiv_id(
         self,

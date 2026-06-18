@@ -1,4 +1,3 @@
-import random
 import time
 from datetime import datetime
 from threading import Event
@@ -10,9 +9,9 @@ from app.services.artist import ArtistService
 from app.services.pixiv_update_service import PixivRequestError
 
 from .worker_config import (
-    BATCH_SIZE,
-    MAX_BATCH_REST_SECONDS,
-    MIN_BATCH_REST_SECONDS,
+    DEFAULT_UPDATE_CHECK_BATCH_REST_MS,
+    DEFAULT_UPDATE_CHECK_BATCH_SIZE,
+    DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS,
 )
 
 
@@ -34,6 +33,9 @@ class UpdateCheckWorker(QObject):
         progress_offset: int = 0,
         total_count: int | None = None,
         summary: dict | None = None,
+        request_interval_ms: int = DEFAULT_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+        batch_size: int = DEFAULT_UPDATE_CHECK_BATCH_SIZE,
+        batch_rest_ms: int = DEFAULT_UPDATE_CHECK_BATCH_REST_MS,
     ):
         super().__init__()
 
@@ -43,6 +45,9 @@ class UpdateCheckWorker(QObject):
         self.skip_recent = skip_recent
         self.progress_offset = progress_offset
         self.total_count = total_count or len(artist_ids)
+        self.request_interval_ms = max(0, int(request_interval_ms))
+        self.batch_size = max(1, int(batch_size))
+        self.batch_rest_ms = max(0, int(batch_rest_ms))
         self.artist_service = None
         self.history_repo = ArtistUpdateHistoryRepository()
         self.has_finished = False
@@ -90,7 +95,16 @@ class UpdateCheckWorker(QObject):
                 if self._should_pause(current):
                     return
 
-                if offset % BATCH_SIZE == 0 and current < self.total_count:
+                if offset < len(self.artist_ids):
+                    self._rest_between_requests(current)
+
+                    if self._should_cancel(current):
+                        return
+
+                    if self._should_pause(current):
+                        return
+
+                if offset % self.batch_size == 0 and current < self.total_count:
                     self._rest_between_batches(
                         current,
                         self.total_count,
@@ -306,22 +320,30 @@ class UpdateCheckWorker(QObject):
 
         self.summary_updated.emit(self.summary.copy())
 
+    def _rest_between_requests(
+        self,
+        index: int,
+    ):
+        if self.request_interval_ms <= 0:
+            return
+
+        self._safe_sleep(self.request_interval_ms / 1000)
+
     def _rest_between_batches(
         self,
         index: int,
         total: int,
     ):
-        rest_seconds = random.uniform(
-            MIN_BATCH_REST_SECONDS,
-            MAX_BATCH_REST_SECONDS,
-        )
+        if self.batch_rest_ms <= 0:
+            return
+
         self._emit_info(
             index,
             total,
             "휴식",
-            f"{BATCH_SIZE}명 처리 완료. 잠시 대기합니다.",
+            f"{self.batch_size}명 처리 완료. 잠시 대기합니다.",
         )
-        self._safe_sleep(rest_seconds)
+        self._safe_sleep(self.batch_rest_ms / 1000)
 
     def _safe_sleep(self, seconds: float):
         end_time = time.time() + seconds

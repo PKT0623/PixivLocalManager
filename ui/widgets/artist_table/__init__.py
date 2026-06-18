@@ -5,18 +5,32 @@ from .columns import (
     COLUMN_CREATED_AT,
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
+    COLUMN_HEADERS,
     COLUMN_LAST_VIEWED_AT,
-    COLUMN_MEMO,
     COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
     COLUMN_SHORTCUTS,
+    COLUMN_SORT_FIELDS,
     COLUMN_STATUS,
     COLUMN_TAGS,
+    COLUMNS,
 )
+from .formatters import (
+    format_artist_tags,
+    format_cell_value,
+    format_datetime,
+    format_rating,
+    format_status,
+)
+from .row_renderer import ArtistTableRowRenderer
 
 __all__ = [
     "ArtistTable",
+    "ArtistTableRowRenderer",
+    "COLUMNS",
+    "COLUMN_HEADERS",
+    "COLUMN_SORT_FIELDS",
     "COLUMN_NO",
     "COLUMN_FAVORITE",
     "COLUMN_ARTIST_NAME",
@@ -28,6 +42,10 @@ __all__ = [
     "COLUMN_TAGS",
     "COLUMN_LAST_VIEWED_AT",
     "COLUMN_CREATED_AT",
-    "COLUMN_MEMO",
     "COLUMN_SHORTCUTS",
+    "format_cell_value",
+    "format_status",
+    "format_rating",
+    "format_artist_tags",
+    "format_datetime",
 ]
