@@ -875,7 +875,7 @@ feat: add update history comparison
 
 기존
 
-```text id="igp56g"
+```text 
 통계 카드
 최근 등록 작가
 추천 작가
@@ -883,7 +883,7 @@ feat: add update history comparison
 
 변경 후
 
-```text id="h56ff7"
+```text 
 통계 카드
 업데이트 현황
 최근 활동
@@ -907,7 +907,7 @@ TOP 랭킹
 
 ### 완료 커밋
 
-```text id="lfqg8h"
+```text 
 feat: improve dashboard statistics and recommendations
 ```
 
@@ -1006,7 +1006,7 @@ feat: improve dashboard statistics and recommendations
 
 * 설정 탭 구조 적용
 
-```text id="f0r3oq"
+```text 
 기본 설정
 데이터 관리
 환경 설정
@@ -1048,7 +1048,7 @@ feat: improve dashboard statistics and recommendations
 
 ### 완료 커밋
 
-```text id="2nq2qh"
+```text 
 feat: improve settings and database management
 ```
 
@@ -1145,57 +1145,102 @@ feat: add statistics analysis page
 
 ---
 
-# 향후 예정
+# v0.15.0
 
----
+## Pixiv 관리 / 연동
 
-## v0.15.0
+### 목표
 
-### Pixiv 팔로우 / 북마크 관리
+* Pixiv 계정 데이터 연동
+* 팔로우 유저 관리 기능 추가
+* 북마크 작품 관리 기능 추가
+* Pixiv 메타데이터 수집 기능 추가
+* 태그 동기화 시스템 구축
 
-목표
+### 추가
 
-* Pixiv 계정 데이터 관리 기능 추가
-* 팔로우 유저 및 북마크 작품 수집 기능 추가
-* 로컬 작가 데이터와 연동 기능 추가
+#### 데이터베이스
 
-예정 기능
+* follow_users 테이블 추가
+* bookmark_artworks 테이블 추가
+* FollowUser 모델 추가
+* BookmarkArtwork 모델 추가
+
+#### Pixiv 서비스
+
+* Pixiv Client 추가
+* Pixiv Metadata Service 추가
+* Pixiv Session Service 추가
+* Pixiv Sync Service 추가
+* Pixiv Rate Limit 관리 추가
+
+#### 태그 시스템
+
+* TagService 추가
+* TagParser 추가
+* TagData 모델 추가
+* 태그 병합 기능 추가
+* 사용자 번역 보존 기능 추가
 
 #### 팔로우 유저 관리
 
-* 현재 계정 팔로우 유저 가져오기
-* 팔로우 유저 목록 저장
-* 팔로우 유저 검색
-* 팔로우 유저 바로가기
+* txt 가져오기
+* csv 가져오기
+* 팔로우 유저 저장
 * 로컬 작가 자동 매칭
+* Pixiv 프로필 바로가기
 
 #### 북마크 작품 관리
 
-* 현재 계정 북마크 작품 가져오기
-* 북마크 작품 목록 저장
-* 북마크 작품 검색
-* 북마크 작품 바로가기
-* 등록 작가 자동 매칭
+* txt 가져오기
+* csv 가져오기
+* 북마크 작품 저장
+* 로컬 작가 자동 매칭
+* Pixiv 작품 바로가기
 
-#### ID 가져오기
+#### Pixiv 메타데이터
 
-* txt 파일 가져오기
-* csv 파일 가져오기
-* Pixiv ID 자동 인식
-* 중복 ID 자동 제거
-
-#### 통계
-
-* 팔로우 유저 통계
-* 북마크 작품 통계
-* 등록 작가 매칭 통계
+* 작가명 수집
+* 작품 수 수집
+* 태그 통계 수집
+* 태그 번역 수집
+* AI 여부 수집
+* 태그 자동 동기화
 
 #### UI
 
-* 팔로우 / 북마크 관리 페이지 추가
-* 팔로우 탭
-* 북마크 탭
-* 검색 및 필터 기능
+* Pixiv 관리 페이지 추가
+* 팔로우 유저 탭 추가
+* 북마크 작품 탭 추가
+* 통계 카드 추가
+* 검색 기능 추가
+* 필터 기능 추가
+
+#### 설정
+
+* Pixiv 요청 설정 추가
+* 요청 간격 설정 추가
+* 배치 처리 설정 추가
+* 재시도 횟수 설정 추가
+* PHPSESSID 검증 기능 추가
+
+### 개선
+
+* Pixiv 계정 데이터 관리 가능
+* 태그 정보 자동 수집 가능
+* 로컬 작가와 Pixiv 데이터 연결 가능
+* Pixiv 요청 안정성 향상
+* 메타데이터 품질 향상
+
+### 완료 커밋
+
+```text
+feat: add pixiv management system and metadata integration
+```
+
+---
+
+# 향후 예정
 
 ---
 
@@ -1203,15 +1248,15 @@ feat: add statistics analysis page
 
 ### 3차 리팩토링
 
-v0.11.0 ~ v0.15.0 까지 진행하면서 비대해진 파일 리팩토링
+v0.11.0 ~ v0.15.0 진행 과정에서 비대해진 파일 및 폴더 구조 정비
 
 ---
 
 ## v0.17.0
 
-### 누락 기능 및 신규 기능 추가
+### 추가 기능 개발
 
-v0.15.0까지 진행하면서 누락된 기능 또는 새롭게 추가할 기능들을 추가
+v0.15.0까지 진행하면서 보류된 기능과 신규 기능을 추가
 
 ---
 

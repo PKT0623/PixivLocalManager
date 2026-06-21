@@ -49,8 +49,9 @@ MAIN --> STACK[QStackedWidget]
 
 SIDEBAR --> DASHBOARD[Dashboard]
 SIDEBAR --> SCAN[Scan]
-SIDEBAR --> ARTISTS[Artists]
 SIDEBAR --> UPDATE[Update Check]
+SIDEBAR --> ARTISTS[Artists]
+SIDEBAR --> PIXIV_MANAGER[Pixiv Manager]
 SIDEBAR --> STATISTICS[Statistics]
 SIDEBAR --> SETTINGS[Settings]
 
@@ -82,6 +83,11 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
+    <td>Update Check</td>
+    <td>Pixiv 업데이트 확인 및 결과 관리</td>
+</tr>
+
+<tr>
     <td>Artists</td>
     <td>작가 목록 조회, 필터, 정렬, 일괄 관리</td>
 </tr>
@@ -92,8 +98,8 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>Update Check</td>
-    <td>Pixiv 업데이트 확인 및 결과 관리</td>
+    <td>Pixiv Manager</td>
+    <td>Pixiv 팔로우 유저 및 북마크 작품 관리</td>
 </tr>
 
 <tr>
@@ -129,13 +135,18 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>작가 목록</td>
-    <td>작가 관리</td>
+    <td>업데이트 확인</td>
+    <td>Pixiv 업데이트 확인</td>
 </tr>
 
 <tr>
-    <td>업데이트 확인</td>
-    <td>Pixiv 업데이트 확인</td>
+    <td>작가 목록</td>
+    <td>로컬 작가 관리</td>
+</tr>
+
+<tr>
+    <td>Pixiv 관리</td>
+    <td>Pixiv 팔로우 유저 및 북마크 작품 관리</td>
 </tr>
 
 <tr>
@@ -184,7 +195,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>추천 작가</td>
-    <td>고평점 작가 추천</td>
+    <td>고평점 작가 및 즐겨찾기 작가 추천</td>
 </tr>
 
 <tr>
@@ -221,7 +232,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>TOP 랭킹</td>
-    <td>10 / 30 / 50 기준 랭킹 전환</td>
+    <td>작품 수, 파일 수, 폴더 용량 기준 TOP 랭킹 제공</td>
 </tr>
 
 <tr>
@@ -441,7 +452,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>태그</td>
-    <td>상위 태그 표시</td>
+    <td>저장된 작가 태그 전체 표시</td>
 </tr>
 
 <tr>
@@ -450,13 +461,45 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>메모</td>
-    <td>작가 메모</td>
+    <td>등록일</td>
+    <td>작가 등록일</td>
 </tr>
 
 <tr>
     <td>바로가기</td>
     <td>폴더 열기 / Pixiv 페이지 열기</td>
+</tr>
+
+</table>
+
+---
+
+## 컬럼 너비 방향
+
+<table>
+<tr>
+    <th>컬럼</th>
+    <th>방향</th>
+</tr>
+
+<tr>
+    <td>작가명</td>
+    <td>고정 폭으로 표시하여 과도한 공간 점유 방지</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID</td>
+    <td>기존 폭 유지</td>
+</tr>
+
+<tr>
+    <td>태그</td>
+    <td>남는 공간을 우선 할당하여 태그 전체 표시</td>
+</tr>
+
+<tr>
+    <td>메모</td>
+    <td>목록에서는 제거하고 상세 페이지에서 관리</td>
 </tr>
 
 </table>
@@ -569,212 +612,116 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>기본 정보</td>
-    <td>작가명, Pixiv ID, 상태, 최근 확인일, 최근 열람일 표시</td>
+    <td>작가명, Pixiv ID, 상태, 평점 표시</td>
 </tr>
 
 <tr>
-    <td>작품 정보</td>
-    <td>작품 수, 파일 수, 폴더 상태 표시</td>
+    <td>상태 정보</td>
+    <td>최근 확인일, 최근 열람일, 등록일 표시</td>
 </tr>
 
 <tr>
-    <td>평점</td>
-    <td>작가 평점 수정</td>
+    <td>폴더 정보</td>
+    <td>폴더 경로, 파일 수, 작품 수, 용량 표시</td>
 </tr>
 
 <tr>
-    <td>즐겨찾기</td>
-    <td>즐겨찾기 설정 및 해제</td>
+    <td>태그 정보</td>
+    <td>작가 태그 목록 표시</td>
 </tr>
 
 <tr>
-    <td>숨김</td>
-    <td>숨김 설정 및 해제</td>
-</tr>
-
-<tr>
-    <td>폴더 변경</td>
-    <td>작가 저장 위치 변경 및 재스캔</td>
-</tr>
-
-<tr>
-    <td>현재 작가 재스캔</td>
-    <td>현재 작가 폴더 재분석</td>
-</tr>
-
-<tr>
-    <td>현재 작가 업데이트 확인</td>
-    <td>단일 작가 업데이트 확인</td>
-</tr>
-
-<tr>
-    <td>Pixiv ID 복사</td>
-    <td>Pixiv ID 복사</td>
-</tr>
-
-<tr>
-    <td>폴더 경로 복사</td>
-    <td>폴더 경로 복사</td>
-</tr>
-
-<tr>
-    <td>최근 로컬 작품</td>
-    <td>최근 저장 작품 표시</td>
-</tr>
-
-<tr>
-    <td>누락 작품</td>
-    <td>Pixiv 대비 누락 작품 표시</td>
-</tr>
-
-<tr>
-    <td>업데이트 이력</td>
-    <td>업데이트 결과 변화 추적</td>
-</tr>
-
-<tr>
-    <td>태그 관리</td>
-    <td>태그 조회 및 수정</td>
-</tr>
-
-<tr>
-    <td>메모 관리</td>
-    <td>장문 메모 저장</td>
+    <td>메모</td>
+    <td>작가 메모 관리</td>
 </tr>
 
 <tr>
     <td>바로가기</td>
-    <td>Pixiv 및 폴더 이동</td>
+    <td>Pixiv, 폴더, 경로 복사 기능</td>
+</tr>
+
+<tr>
+    <td>관리 기능</td>
+    <td>재스캔, 업데이트 확인, 즐겨찾기, 숨김 처리</td>
+</tr>
+
+<tr>
+    <td>최신 작품</td>
+    <td>최근 작품 ID 목록 표시</td>
+</tr>
+
+<tr>
+    <td>누락 작품</td>
+    <td>로컬에 없는 작품 목록 표시</td>
+</tr>
+
+<tr>
+    <td>업데이트 이력</td>
+    <td>업데이트 확인 기록 표시</td>
+</tr>
+
+</table>
+
+---
+
+## Artist Detail 기능
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
 </tr>
 
 <tr>
     <td>뒤로가기</td>
-    <td>진입 이전 페이지 복귀</td>
-</tr>
-
-</table>
-
----
-
-## Artist Detail 레이아웃
-
-```text id="o7q3q2"
-QScrollArea
- └─ Artist Detail Container
-     ├─ 기본 정보
-     ├─ 작품 정보
-     ├─ 최근 로컬 작품
-     ├─ 누락 작품
-     ├─ 태그 관리
-     ├─ 업데이트 이력
-     ├─ 메모
-     └─ 바로가기
-```
-
----
-
-## 최근 로컬 작품 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
+    <td>이전 화면으로 이동</td>
 </tr>
 
 <tr>
-    <td>작품 ID</td>
-    <td>작품 식별 번호 표시</td>
+    <td>새로고침</td>
+    <td>작가 정보 재조회</td>
+</tr>
+
+<tr>
+    <td>현재 작가 재스캔</td>
+    <td>선택 작가 폴더 재스캔</td>
+</tr>
+
+<tr>
+    <td>현재 작가 업데이트 확인</td>
+    <td>Pixiv 최신 상태 조회</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID 복사</td>
+    <td>Pixiv ID 복사</td>
+</tr>
+
+<tr>
+    <td>폴더 경로 복사</td>
+    <td>폴더 경로 복사</td>
 </tr>
 
 <tr>
     <td>Pixiv 열기</td>
-    <td>Pixiv 작품 페이지 이동</td>
+    <td>Pixiv 프로필 열기</td>
 </tr>
 
 <tr>
-    <td>복사</td>
-    <td>작품 ID 복사</td>
+    <td>폴더 열기</td>
+    <td>작가 폴더 열기</td>
+</tr>
+
+<tr>
+    <td>누락 작품 복사</td>
+    <td>누락 작품 ID 복사</td>
 </tr>
 
 </table>
 
 ---
 
-## 누락 작품 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>작품 ID</td>
-    <td>누락 작품 표시</td>
-</tr>
-
-<tr>
-    <td>Pixiv 열기</td>
-    <td>Pixiv 작품 페이지 이동</td>
-</tr>
-
-<tr>
-    <td>전체 복사</td>
-    <td>누락 작품 ID 전체 복사</td>
-</tr>
-
-</table>
-
----
-
-## 업데이트 이력 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>확인 시각</td>
-    <td>업데이트 확인 시각</td>
-</tr>
-
-<tr>
-    <td>결과</td>
-    <td>최신, 업데이트 필요, 오류 등</td>
-</tr>
-
-<tr>
-    <td>로컬 작품 수</td>
-    <td>확인 시점 로컬 작품 수</td>
-</tr>
-
-<tr>
-    <td>Pixiv 작품 수</td>
-    <td>확인 시점 Pixiv 작품 수</td>
-</tr>
-
-<tr>
-    <td>누락 작품 수</td>
-    <td>누락 작품 수</td>
-</tr>
-
-<tr>
-    <td>변화량</td>
-    <td>직전 결과 대비 변화량</td>
-</tr>
-
-<tr>
-    <td>신규 / 해결</td>
-    <td>신규 누락 및 해결 작품 수</td>
-</tr>
-
-</table>
-
----
-
-# Update Check 페이지
+# Update Check 화면
 
 ## 구성 요소
 
@@ -786,17 +733,17 @@ QScrollArea
 
 <tr>
     <td>작가 목록</td>
-    <td>업데이트 확인 대상 표시</td>
+    <td>확인 대상 선택</td>
 </tr>
 
 <tr>
-    <td>선택 영역</td>
-    <td>전체 선택 및 조건 선택</td>
+    <td>선택 기능</td>
+    <td>전체 선택, 상태별 선택</td>
 </tr>
 
 <tr>
-    <td>실행 옵션</td>
-    <td>최근 확인 제외 조건 설정</td>
+    <td>결과 요약</td>
+    <td>최신, 업데이트 필요, 오류 통계</td>
 </tr>
 
 <tr>
@@ -805,33 +752,13 @@ QScrollArea
 </tr>
 
 <tr>
-    <td>결과 요약</td>
-    <td>결과 집계 표시</td>
+    <td>실행 제어</td>
+    <td>시작, 일시정지, 재개, 중지</td>
 </tr>
 
 <tr>
     <td>결과 로그</td>
-    <td>업데이트 결과 출력</td>
-</tr>
-
-<tr>
-    <td>시작</td>
-    <td>업데이트 확인 시작</td>
-</tr>
-
-<tr>
-    <td>일시정지</td>
-    <td>현재 작업 완료 후 정지</td>
-</tr>
-
-<tr>
-    <td>재개</td>
-    <td>일시정지 위치부터 재개</td>
-</tr>
-
-<tr>
-    <td>중단</td>
-    <td>작업 취소</td>
+    <td>확인 결과 기록</td>
 </tr>
 
 <tr>
@@ -843,21 +770,83 @@ QScrollArea
 
 ---
 
-## 처리 흐름
+## Update Check 기능
 
-```text id="4gt5w5"
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>전체 선택</td>
+    <td>모든 작가 선택</td>
+</tr>
+
+<tr>
+    <td>전체 해제</td>
+    <td>선택 해제</td>
+</tr>
+
+<tr>
+    <td>미확인 선택</td>
+    <td>업데이트 미확인 작가 선택</td>
+</tr>
+
+<tr>
+    <td>업데이트 필요 선택</td>
+    <td>업데이트 필요 작가 선택</td>
+</tr>
+
+<tr>
+    <td>실패 작가 선택</td>
+    <td>오류 작가 선택</td>
+</tr>
+
+<tr>
+    <td>PHPSESSID 테스트</td>
+    <td>세션 유효성 확인</td>
+</tr>
+
+<tr>
+    <td>최근 확인 제외</td>
+    <td>최근 확인 작가 자동 제외</td>
+</tr>
+
+<tr>
+    <td>일시정지</td>
+    <td>현재 작가 완료 후 정지</td>
+</tr>
+
+<tr>
+    <td>재개</td>
+    <td>정지 위치부터 재개</td>
+</tr>
+
+<tr>
+    <td>중지</td>
+    <td>작업 종료</td>
+</tr>
+
+</table>
+
+---
+
+## Update Check 실행 흐름
+
+```text
 작가 선택
-→ 업데이트 확인
-→ 결과 저장
-→ 결과 비교
-→ 로그 출력
-→ CSV 저장
-→ 이력 조회
+→ 업데이트 확인 시작
+→ Pixiv 조회
+→ 상태 계산
+→ 태그 동기화
+→ 이력 저장
+→ 결과 로그 기록
 ```
 
 ---
 
-# Statistics 페이지
+# Pixiv Manager 화면
 
 ## 구성 요소
 
@@ -868,13 +857,197 @@ QScrollArea
 </tr>
 
 <tr>
-    <td>기초 통계</td>
-    <td>전체 작가 수, 작품 수, 파일 수, 저장 용량, 평균 정보 표시</td>
+    <td>통계 카드</td>
+    <td>팔로우 수, 북마크 수, 로컬 매칭 통계 표시</td>
 </tr>
 
 <tr>
-    <td>데이터 품질 분석</td>
-    <td>태그, 메모, 평점, 폴더 상태 분석</td>
+    <td>팔로우 유저 탭</td>
+    <td>팔로우 작가 목록 관리</td>
+</tr>
+
+<tr>
+    <td>북마크 작품 탭</td>
+    <td>북마크 작품 목록 관리</td>
+</tr>
+
+<tr>
+    <td>가져오기</td>
+    <td>txt, csv 데이터 가져오기</td>
+</tr>
+
+<tr>
+    <td>저장</td>
+    <td>DB 저장</td>
+</tr>
+
+<tr>
+    <td>로그</td>
+    <td>가져오기 결과 표시</td>
+</tr>
+
+</table>
+
+---
+
+# 팔로우 유저 탭
+
+## 컬럼 구조
+
+<table>
+<tr>
+    <th>컬럼</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>No</td>
+    <td>순번</td>
+</tr>
+
+<tr>
+    <td>유저명</td>
+    <td>Pixiv 유저명</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID</td>
+    <td>Pixiv 사용자 ID</td>
+</tr>
+
+<tr>
+    <td>로컬 등록 여부</td>
+    <td>로컬 DB 등록 상태</td>
+</tr>
+
+<tr>
+    <td>즐겨찾기</td>
+    <td>즐겨찾기 상태</td>
+</tr>
+
+<tr>
+    <td>태그</td>
+    <td>작가 태그 전체 표시</td>
+</tr>
+
+<tr>
+    <td>바로가기</td>
+    <td>Pixiv 열기</td>
+</tr>
+
+</table>
+
+---
+
+## 팔로우 유저 기능
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>TXT 가져오기</td>
+    <td>팔로우 ID 목록 불러오기</td>
+</tr>
+
+<tr>
+    <td>CSV 가져오기</td>
+    <td>CSV 데이터 불러오기</td>
+</tr>
+
+<tr>
+    <td>중복 제거</td>
+    <td>기존 데이터 자동 제외</td>
+</tr>
+
+<tr>
+    <td>로컬 매칭</td>
+    <td>등록 작가 자동 연결</td>
+</tr>
+
+<tr>
+    <td>Pixiv 열기</td>
+    <td>프로필 열기</td>
+</tr>
+
+<tr>
+    <td>저장</td>
+    <td>DB 저장</td>
+</tr>
+
+</table>
+
+---
+
+# 북마크 작품 탭
+
+## 컬럼 구조
+
+<table>
+<tr>
+    <th>컬럼</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>No</td>
+    <td>순번</td>
+</tr>
+
+<tr>
+    <td>작품명</td>
+    <td>작품 제목</td>
+</tr>
+
+<tr>
+    <td>작가명</td>
+    <td>작가명</td>
+</tr>
+
+<tr>
+    <td>작품 ID</td>
+    <td>Pixiv 작품 ID</td>
+</tr>
+
+<tr>
+    <td>북마크 수</td>
+    <td>Pixiv 북마크 수</td>
+</tr>
+
+<tr>
+    <td>태그</td>
+    <td>작품 태그 전체 표시</td>
+</tr>
+
+<tr>
+    <td>AI 여부</td>
+    <td>AI 생성 여부</td>
+</tr>
+
+<tr>
+    <td>바로가기</td>
+    <td>Pixiv 작품 열기</td>
+</tr>
+
+</table>
+
+---
+
+# Statistics 화면
+
+## 구성 요소
+
+<table>
+<tr>
+    <th>구성</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>요약 카드</td>
+    <td>전체 통계 표시</td>
 </tr>
 
 <tr>
@@ -884,36 +1057,29 @@ QScrollArea
 
 <tr>
     <td>평점 분포</td>
-    <td>평점 구간별 분포 표시</td>
-</tr>
-
-<tr>
-    <td>작품 수 TOP</td>
-    <td>작품 수 기준 상위 작가 표시</td>
-</tr>
-
-<tr>
-    <td>파일 수 TOP</td>
-    <td>파일 수 기준 상위 작가 표시</td>
-</tr>
-
-<tr>
-    <td>저장 용량 TOP</td>
-    <td>저장 용량 기준 상위 작가 표시</td>
+    <td>평점 통계 표시</td>
 </tr>
 
 <tr>
     <td>태그 분석</td>
-    <td>상위 태그 사용 통계 표시</td>
+    <td>태그 사용 현황 분석</td>
+</tr>
+
+<tr>
+    <td>TOP 랭킹</td>
+    <td>작품 수, 파일 수, 용량 기준 랭킹</td>
+</tr>
+
+<tr>
+    <td>품질 분석</td>
+    <td>누락 데이터 및 오류 분석</td>
 </tr>
 
 </table>
 
-
-
 ---
 
-## 기초 통계
+## 요약 카드
 
 <table>
 <tr>
@@ -923,22 +1089,22 @@ QScrollArea
 
 <tr>
     <td>전체 작가 수</td>
-    <td>등록된 전체 작가 수</td>
+    <td>등록된 작가 수</td>
 </tr>
 
 <tr>
     <td>전체 작품 수</td>
-    <td>등록된 전체 작품 수</td>
+    <td>등록된 작품 수</td>
 </tr>
 
 <tr>
     <td>전체 파일 수</td>
-    <td>등록된 전체 파일 수</td>
+    <td>저장된 파일 수</td>
 </tr>
 
 <tr>
-    <td>전체 저장 용량</td>
-    <td>전체 폴더 용량 합계</td>
+    <td>총 저장 용량</td>
+    <td>전체 폴더 용량</td>
 </tr>
 
 <tr>
@@ -958,415 +1124,371 @@ QScrollArea
 
 <tr>
     <td>평균 저장 용량</td>
-    <td>작가당 평균 저장 용량</td>
-</tr>
-
-<tr>
-    <td>즐겨찾기 작가 수</td>
-    <td>즐겨찾기 등록 작가 수</td>
-</tr>
-
-<tr>
-    <td>즐겨찾기 평균 평점</td>
-    <td>즐겨찾기 작가 평균 평점</td>
+    <td>작가당 평균 용량</td>
 </tr>
 
 </table>
 
 ---
 
-## 데이터 품질 분석
+## TOP 랭킹
 
 <table>
 <tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>태그 보유 비율</td>
-    <td>태그가 등록된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>메모 작성 비율</td>
-    <td>메모가 작성된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>평점 설정 비율</td>
-    <td>평점이 설정된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>폴더 오류 비율</td>
-    <td>존재하지 않는 폴더 비율</td>
-</tr>
-
-</table>
-
----
-
-## Artist Detail 레이아웃
-
-```text id="o7q3q2"
-QScrollArea
- └─ Artist Detail Container
-     ├─ 기본 정보
-     ├─ 작품 정보
-     ├─ 최근 로컬 작품
-     ├─ 누락 작품
-     ├─ 태그 관리
-     ├─ 업데이트 이력
-     ├─ 메모
-     └─ 바로가기
-```
-
----
-
-## 최근 로컬 작품 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>작품 ID</td>
-    <td>작품 식별 번호 표시</td>
-</tr>
-
-<tr>
-    <td>Pixiv 열기</td>
-    <td>Pixiv 작품 페이지 이동</td>
-</tr>
-
-<tr>
-    <td>복사</td>
-    <td>작품 ID 복사</td>
-</tr>
-
-</table>
-
----
-
-## 누락 작품 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>작품 ID</td>
-    <td>누락 작품 표시</td>
-</tr>
-
-<tr>
-    <td>Pixiv 열기</td>
-    <td>Pixiv 작품 페이지 이동</td>
-</tr>
-
-<tr>
-    <td>전체 복사</td>
-    <td>누락 작품 ID 전체 복사</td>
-</tr>
-
-</table>
-
----
-
-## 업데이트 이력 영역
-
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>확인 시각</td>
-    <td>업데이트 확인 시각</td>
-</tr>
-
-<tr>
-    <td>결과</td>
-    <td>최신, 업데이트 필요, 오류 등</td>
-</tr>
-
-<tr>
-    <td>로컬 작품 수</td>
-    <td>확인 시점 로컬 작품 수</td>
-</tr>
-
-<tr>
-    <td>Pixiv 작품 수</td>
-    <td>확인 시점 Pixiv 작품 수</td>
-</tr>
-
-<tr>
-    <td>누락 작품 수</td>
-    <td>누락 작품 수</td>
-</tr>
-
-<tr>
-    <td>변화량</td>
-    <td>직전 결과 대비 변화량</td>
-</tr>
-
-<tr>
-    <td>신규 / 해결</td>
-    <td>신규 누락 및 해결 작품 수</td>
-</tr>
-
-</table>
-
----
-
-# Update Check 페이지
-
-## 구성 요소
-
-<table>
-<tr>
-    <th>구성</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>작가 목록</td>
-    <td>업데이트 확인 대상 표시</td>
-</tr>
-
-<tr>
-    <td>선택 영역</td>
-    <td>전체 선택 및 조건 선택</td>
-</tr>
-
-<tr>
-    <td>실행 옵션</td>
-    <td>최근 확인 제외 조건 설정</td>
-</tr>
-
-<tr>
-    <td>진행률</td>
-    <td>현재 진행 상태 표시</td>
-</tr>
-
-<tr>
-    <td>결과 요약</td>
-    <td>결과 집계 표시</td>
-</tr>
-
-<tr>
-    <td>결과 로그</td>
-    <td>업데이트 결과 출력</td>
-</tr>
-
-<tr>
-    <td>시작</td>
-    <td>업데이트 확인 시작</td>
-</tr>
-
-<tr>
-    <td>일시정지</td>
-    <td>현재 작업 완료 후 정지</td>
-</tr>
-
-<tr>
-    <td>재개</td>
-    <td>일시정지 위치부터 재개</td>
-</tr>
-
-<tr>
-    <td>중단</td>
-    <td>작업 취소</td>
-</tr>
-
-<tr>
-    <td>CSV 저장</td>
-    <td>결과 내보내기</td>
-</tr>
-
-</table>
-
----
-
-## 처리 흐름
-
-```text id="4gt5w5"
-작가 선택
-→ 업데이트 확인
-→ 결과 저장
-→ 결과 비교
-→ 로그 출력
-→ CSV 저장
-→ 이력 조회
-```
-
----
-
-# Statistics 페이지
-
-## 구성 요소
-
-<table>
-<tr>
-    <th>구성</th>
-    <th>설명</th>
-</tr>
-
-<tr>
-    <td>기초 통계</td>
-    <td>전체 작가 수, 작품 수, 파일 수, 저장 용량, 평균 정보 표시</td>
-</tr>
-
-<tr>
-    <td>데이터 품질 분석</td>
-    <td>태그, 메모, 평점, 폴더 상태 분석</td>
-</tr>
-
-<tr>
-    <td>상태 분포</td>
-    <td>업데이트 상태 분포 표시</td>
-</tr>
-
-<tr>
-    <td>평점 분포</td>
-    <td>평점 구간별 분포 표시</td>
+    <th>랭킹</th>
+    <th>기준</th>
 </tr>
 
 <tr>
     <td>작품 수 TOP</td>
-    <td>작품 수 기준 상위 작가 표시</td>
+    <td>작품 수 기준 상위 작가</td>
 </tr>
 
 <tr>
     <td>파일 수 TOP</td>
-    <td>파일 수 기준 상위 작가 표시</td>
+    <td>파일 수 기준 상위 작가</td>
 </tr>
 
 <tr>
-    <td>저장 용량 TOP</td>
-    <td>저장 용량 기준 상위 작가 표시</td>
+    <td>폴더 용량 TOP</td>
+    <td>용량 기준 상위 작가</td>
 </tr>
 
 <tr>
-    <td>태그 분석</td>
-    <td>상위 태그 사용 통계 표시</td>
+    <td>태그 TOP</td>
+    <td>사용 빈도 기준 태그</td>
 </tr>
 
 </table>
 
 ---
 
-## Statistics 레이아웃
+## 품질 분석
 
-```text id="nghlg4"
-┌─────────────────────────────┬─────────────┐
-│                             │ 데이터 품질 │
-│     기초 통계 (5 × 2)        ├─────────────┤
-│                             │ 상태 분포   │
-├───────────────┬─────────────┼─────────────┤
-│               │             │ 평점 분포   │
-│ 작품/파일/용량 │ 태그 분석   │             │
-│ TOP 랭킹      │             │             │
-│               │             │             │
-└───────────────┴─────────────┴─────────────┘
+<table>
+<tr>
+    <th>분석</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>업데이트 필요 작가</td>
+    <td>업데이트 필요 상태 목록</td>
+</tr>
+
+<tr>
+    <td>오류 작가</td>
+    <td>확인 실패 상태 목록</td>
+</tr>
+
+<tr>
+    <td>평점 미설정</td>
+    <td>평점 없는 작가 목록</td>
+</tr>
+
+<tr>
+    <td>태그 없음</td>
+    <td>태그가 없는 작가 목록</td>
+</tr>
+
+<tr>
+    <td>Pixiv ID 없음</td>
+    <td>ID 누락 데이터</td>
+</tr>
+
+</table>
+
+---
+
+# Settings 화면
+
+## 기본 설정
+
+<table>
+<tr>
+    <th>영역</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>기본 폴더</td>
+    <td>Pixiv 루트 폴더 설정</td>
+</tr>
+
+<tr>
+    <td>Pixiv 연동</td>
+    <td>PHPSESSID 관리 및 테스트</td>
+</tr>
+
+<tr>
+    <td>업데이트 확인 요청</td>
+    <td>업데이트 확인 속도 및 휴식 설정</td>
+</tr>
+
+<tr>
+    <td>Pixiv 관리 요청</td>
+    <td>Pixiv 메타데이터 수집 설정</td>
+</tr>
+
+</table>
+
+---
+
+## Pixiv 연동
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>PHPSESSID</td>
+    <td>Pixiv 로그인 세션 저장</td>
+</tr>
+
+<tr>
+    <td>세션 테스트</td>
+    <td>유효성 검사</td>
+</tr>
+
+<tr>
+    <td>세션 상태</td>
+    <td>정상 / 만료 / 오류 표시</td>
+</tr>
+
+</table>
+
+---
+
+## 업데이트 확인 요청
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>요청 간격(ms)</td>
+    <td>작가 조회 간 대기 시간</td>
+</tr>
+
+<tr>
+    <td>배치 크기</td>
+    <td>몇 명 확인 후 휴식할지 설정</td>
+</tr>
+
+<tr>
+    <td>배치 휴식(ms)</td>
+    <td>배치 종료 후 대기 시간</td>
+</tr>
+
+<tr>
+    <td>재시도 횟수</td>
+    <td>실패 시 재시도 횟수</td>
+</tr>
+
+</table>
+
+---
+
+## Pixiv 관리 요청
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>요청 간격(ms)</td>
+    <td>메타데이터 조회 간격</td>
+</tr>
+
+<tr>
+    <td>배치 크기</td>
+    <td>몇 건 처리 후 휴식할지 설정</td>
+</tr>
+
+<tr>
+    <td>배치 휴식(ms)</td>
+    <td>배치 종료 후 대기 시간</td>
+</tr>
+
+<tr>
+    <td>재시도 횟수</td>
+    <td>실패 시 재시도 횟수</td>
+</tr>
+
+</table>
+
+---
+
+# 데이터 관리
+
+<table>
+<tr>
+    <th>기능</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>DB 백업</td>
+    <td>수동 백업</td>
+</tr>
+
+<tr>
+    <td>DB 복원</td>
+    <td>백업 복원</td>
+</tr>
+
+<tr>
+    <td>백업 자동 관리</td>
+    <td>자동 백업 설정</td>
+</tr>
+
+<tr>
+    <td>CSV 내보내기</td>
+    <td>작가 목록 저장</td>
+</tr>
+
+<tr>
+    <td>무결성 검사</td>
+    <td>데이터 검증</td>
+</tr>
+
+<tr>
+    <td>DB 최적화</td>
+    <td>VACUUM 실행</td>
+</tr>
+
+</table>
+
+---
+
+# 프로그램 정보
+
+<table>
+<tr>
+    <th>항목</th>
+    <th>설명</th>
+</tr>
+
+<tr>
+    <td>버전</td>
+    <td>프로그램 버전</td>
+</tr>
+
+<tr>
+    <td>Python 버전</td>
+    <td>실행 환경 정보</td>
+</tr>
+
+<tr>
+    <td>DB 정보</td>
+    <td>DB 크기 및 상태</td>
+</tr>
+
+<tr>
+    <td>빌드 정보</td>
+    <td>배포 정보</td>
+</tr>
+
+</table>
+
+---
+
+# 페이지 연동 흐름
+
+```text
+Dashboard
+→ Artist Detail
+
+Artists
+→ Artist Detail
+
+Scan
+→ Artist Detail
+
+Update Check
+→ Artist Detail
+
+Statistics
+→ Artist Detail
 ```
 
 ---
 
-## 기초 통계
+# UI 공통 규칙
 
 <table>
 <tr>
     <th>항목</th>
-    <th>설명</th>
+    <th>규칙</th>
 </tr>
 
 <tr>
-    <td>전체 작가 수</td>
-    <td>등록된 전체 작가 수</td>
+    <td>행 높이</td>
+    <td>42px 기준</td>
 </tr>
 
 <tr>
-    <td>전체 작품 수</td>
-    <td>등록된 전체 작품 수</td>
+    <td>상태 표시</td>
+    <td>Status Badge 사용</td>
 </tr>
 
 <tr>
-    <td>전체 파일 수</td>
-    <td>등록된 전체 파일 수</td>
+    <td>정렬</td>
+    <td>다중 정렬 지원</td>
 </tr>
 
 <tr>
-    <td>전체 저장 용량</td>
-    <td>전체 폴더 용량 합계</td>
+    <td>선택</td>
+    <td>Ctrl / Shift 다중 선택 지원</td>
 </tr>
 
 <tr>
-    <td>평균 평점</td>
-    <td>등록 작가 평균 평점</td>
+    <td>로그</td>
+    <td>CSV 저장 가능</td>
 </tr>
 
 <tr>
-    <td>평균 작품 수</td>
-    <td>작가당 평균 작품 수</td>
+    <td>바로가기</td>
+    <td>Pixiv 및 폴더 열기 지원</td>
 </tr>
 
 <tr>
-    <td>평균 파일 수</td>
-    <td>작가당 평균 파일 수</td>
+    <td>태그</td>
+    <td>가능한 경우 전체 태그 표시</td>
 </tr>
 
 <tr>
-    <td>평균 저장 용량</td>
-    <td>작가당 평균 저장 용량</td>
-</tr>
-
-<tr>
-    <td>즐겨찾기 작가 수</td>
-    <td>즐겨찾기 등록 작가 수</td>
-</tr>
-
-<tr>
-    <td>즐겨찾기 평균 평점</td>
-    <td>즐겨찾기 작가 평균 평점</td>
+    <td>상세 페이지</td>
+    <td>세로 스크롤 지원</td>
 </tr>
 
 </table>
 
 ---
 
-## 데이터 품질 분석
+# 현재 구현 완료
 
-<table>
-<tr>
-    <th>항목</th>
-    <th>설명</th>
-</tr>
+```text
+Dashboard
+Scan
+Update Check
+Artists
+Artist Detail
+Pixiv Manager
+Statistics
+Settings
 
-<tr>
-    <td>태그 보유 비율</td>
-    <td>태그가 등록된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>메모 작성 비율</td>
-    <td>메모가 작성된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>평점 설정 비율</td>
-    <td>평점이 설정된 작가 비율</td>
-</tr>
-
-<tr>
-    <td>폴더 오류 비율</td>
-    <td>존재하지 않는 폴더 비율</td>
-</tr>
-
-</table>
+DB Backup / Restore
+CSV Export
+Tag Sync
+Pixiv Metadata Sync
+Update History
+Follow User Management
+Bookmark Artwork Management
+```

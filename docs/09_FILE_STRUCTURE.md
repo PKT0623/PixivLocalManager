@@ -7,8 +7,8 @@ Pixiv Local Manager는 기능 단위 모듈 구조를 사용한다.
 초기에는 단일 파일 중심 구조였으나, 기능 증가와 리팩토링을 거치면서
 Page, Widget, Service, Repository 단위로 분리하였다.
 
-현재 구조는 V2 개발 및 v0.14.0 통계 분석 시스템 완료 기준 구조이며,
-향후 V3 작품 관리 및 뷰어 기능 확장을 고려하여 설계되었다.
+현재 구조는 V2 개발 및 v0.15.0 Pixiv 관리 / Pixiv 연동 완료 기준 구조이며,
+향후 3차 리팩토링, 추가 기능 개발, 4차 리팩토링, v1.0.0 릴리즈를 고려하여 설계되었다.
 
 ---
 
@@ -64,13 +64,14 @@ database
 │
 ├─ artist
 │  ├─ repository.py
-│  ├─ update_repository.py
-│  ├─ restore_repository.py
 │  ├─ columns.py
 │  └─ __init__.py
 │
 ├─ app_setting_repository.py
 ├─ update_history_repository.py
+├─ follow_user_repository.py
+├─ bookmark_artwork_repository.py
+│
 ├─ connection.py
 ├─ migrations.py
 ├─ schema.py
@@ -117,18 +118,18 @@ database
 </tr>
 
 <tr>
+    <td>follow_user_repository.py</td>
+    <td>Pixiv 팔로우 유저 저장 및 조회</td>
+</tr>
+
+<tr>
+    <td>bookmark_artwork_repository.py</td>
+    <td>Pixiv 북마크 작품 저장 및 조회</td>
+</tr>
+
+<tr>
     <td>artist/repository.py</td>
     <td>작가 CRUD</td>
-</tr>
-
-<tr>
-    <td>artist/update_repository.py</td>
-    <td>작가 정보 갱신</td>
-</tr>
-
-<tr>
-    <td>artist/restore_repository.py</td>
-    <td>삭제 작가 복구</td>
 </tr>
 
 <tr>
@@ -149,6 +150,8 @@ models
 │
 ├─ artist.py
 ├─ app_setting.py
+├─ follow_user.py
+├─ bookmark_artwork.py
 └─ __init__.py
 ```
 
@@ -170,6 +173,16 @@ models
     <td>AppSetting 데이터 모델</td>
 </tr>
 
+<tr>
+    <td>follow_user.py</td>
+    <td>Pixiv 팔로우 유저 데이터 모델</td>
+</tr>
+
+<tr>
+    <td>bookmark_artwork.py</td>
+    <td>Pixiv 북마크 작품 데이터 모델</td>
+</tr>
+
 </table>
 
 ---
@@ -185,9 +198,17 @@ services
 │
 ├─ backup
 │
+├─ bookmark
+│
+├─ follow
+│
+├─ pixiv
+│
 ├─ scan
 │
 ├─ statistics
+│
+├─ tag
 │
 ├─ update
 │
@@ -442,7 +463,7 @@ update
 
 <tr>
     <td>artist_update_service.py</td>
-    <td>작가 업데이트 저장</td>
+    <td>작가 업데이트 확인 및 결과 저장</td>
 </tr>
 
 <tr>
@@ -452,7 +473,179 @@ update
 
 <tr>
     <td>update_utils.py</td>
-    <td>업데이트 공통 유틸</td>
+    <td>업데이트 공통 유틸 및 이력 저장 보조</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/follow
+
+Pixiv 팔로우 유저 관리 서비스.
+
+```text
+follow
+│
+├─ service.py
+├─ importer.py
+├─ matcher.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>service.py</td>
+    <td>팔로우 유저 저장, 조회, 통계 처리</td>
+</tr>
+
+<tr>
+    <td>importer.py</td>
+    <td>TXT / CSV 팔로우 유저 ID 파싱</td>
+</tr>
+
+<tr>
+    <td>matcher.py</td>
+    <td>로컬 작가 자동 매칭</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/bookmark
+
+Pixiv 북마크 작품 관리 서비스.
+
+```text
+bookmark
+│
+├─ service.py
+├─ importer.py
+├─ matcher.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>service.py</td>
+    <td>북마크 작품 저장, 조회, 통계 처리</td>
+</tr>
+
+<tr>
+    <td>importer.py</td>
+    <td>TXT / CSV 북마크 작품 ID 파싱</td>
+</tr>
+
+<tr>
+    <td>matcher.py</td>
+    <td>작품의 작가 ID 기준 로컬 작가 자동 매칭</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/pixiv
+
+Pixiv 연동 서비스.
+
+```text
+pixiv
+│
+├─ client.py
+├─ metadata_service.py
+├─ rate_limit.py
+├─ session_service.py
+├─ sync_service.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>client.py</td>
+    <td>Pixiv 요청 클라이언트</td>
+</tr>
+
+<tr>
+    <td>metadata_service.py</td>
+    <td>Pixiv 유저 / 작품 메타데이터 및 태그 통계 수집</td>
+</tr>
+
+<tr>
+    <td>rate_limit.py</td>
+    <td>요청 간격, 배치 휴식, 재시도 제어</td>
+</tr>
+
+<tr>
+    <td>session_service.py</td>
+    <td>PHPSESSID 세션 검증</td>
+</tr>
+
+<tr>
+    <td>sync_service.py</td>
+    <td>팔로우 유저 / 북마크 작품 동기화 처리</td>
+</tr>
+
+</table>
+
+---
+
+# app/services/tag
+
+태그 처리 서비스.
+
+```text
+tag
+│
+├─ service.py
+├─ parser.py
+├─ models.py
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>서비스</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>service.py</td>
+    <td>태그 병합, 정규화, 직렬화</td>
+</tr>
+
+<tr>
+    <td>parser.py</td>
+    <td>태그 문자열 / JSON 파싱</td>
+</tr>
+
+<tr>
+    <td>models.py</td>
+    <td>태그 데이터 모델</td>
 </tr>
 
 </table>
@@ -469,7 +662,7 @@ update
 
 <tr>
     <td>pixiv_update_service.py</td>
-    <td>Pixiv 최신 작품 조회</td>
+    <td>Pixiv 최신 작품 조회 및 공통 Pixiv 요청 처리</td>
 </tr>
 
 <tr>
@@ -531,7 +724,7 @@ ui
 
 프로그램 메인 페이지.
 
-```text id="6jxv4h"
+```text
 pages
 │
 ├─ dashboard
@@ -539,6 +732,7 @@ pages
 ├─ artists
 ├─ artist_detail
 ├─ update_check
+├─ pixiv_manager
 ├─ statistics
 ├─ settings
 └─ __init__.py
@@ -550,7 +744,7 @@ pages
 
 대시보드 페이지.
 
-```text id="7r2c5o"
+```text
 dashboard
 │
 ├─ page.py
@@ -657,7 +851,7 @@ dashboard
 
 스캔 페이지.
 
-```text id="jntx7h"
+```text
 scan
 │
 ├─ action_parts
@@ -683,7 +877,7 @@ scan
 └─ __init__.py
 ```
 
-## 구조 설명
+## 역할
 
 <table>
 <tr>
@@ -739,7 +933,7 @@ scan
 
 작가 목록 페이지.
 
-```text id="c6k8jo"
+```text
 artists
 │
 ├─ action_parts
@@ -793,7 +987,7 @@ artists
 
 작가 상세 페이지.
 
-```text id="7miyuq"
+```text
 artist_detail
 │
 ├─ action_parts
@@ -854,7 +1048,7 @@ artist_detail
 
 업데이트 확인 페이지.
 
-```text id="4uc4xg"
+```text
 update_check
 │
 ├─ page.py
@@ -920,11 +1114,83 @@ update_check
 
 ---
 
+# pixiv_manager
+
+Pixiv 관리 페이지.
+
+```text
+pixiv_manager
+│
+├─ page.py
+├─ actions.py
+├─ worker.py
+├─ styles.py
+│
+├─ follow_table.py
+├─ bookmark_table.py
+├─ log_table.py
+├─ summary_section.py
+│
+└─ __init__.py
+```
+
+## 역할
+
+<table>
+<tr>
+    <th>파일</th>
+    <th>역할</th>
+</tr>
+
+<tr>
+    <td>page.py</td>
+    <td>Pixiv 관리 페이지</td>
+</tr>
+
+<tr>
+    <td>actions.py</td>
+    <td>팔로우 유저 / 북마크 작품 가져오기 및 저장 처리</td>
+</tr>
+
+<tr>
+    <td>worker.py</td>
+    <td>Pixiv 메타데이터 수집 워커</td>
+</tr>
+
+<tr>
+    <td>styles.py</td>
+    <td>Pixiv 관리 페이지 스타일</td>
+</tr>
+
+<tr>
+    <td>follow_table.py</td>
+    <td>팔로우 유저 테이블</td>
+</tr>
+
+<tr>
+    <td>bookmark_table.py</td>
+    <td>북마크 작품 테이블</td>
+</tr>
+
+<tr>
+    <td>log_table.py</td>
+    <td>가져오기 및 동기화 로그</td>
+</tr>
+
+<tr>
+    <td>summary_section.py</td>
+    <td>팔로우 / 북마크 요약 카드</td>
+</tr>
+
+</table>
+
+---
+
 # statistics
 
 통계 분석 페이지.
 
-```text id="8fmkvu"
+```text
 statistics
 │
 ├─ page.py
@@ -1009,7 +1275,7 @@ statistics
 
 설정 페이지.
 
-```text id="54sw00"
+```text
 settings
 │
 ├─ page.py
@@ -1018,6 +1284,8 @@ settings
 ├─ folder_section.py
 ├─ database_section.py
 ├─ pixiv_section.py
+├─ update_request_section.py
+├─ pixiv_request_section.py
 ├─ settings_management_section.py
 ├─ app_info_section.py
 │
@@ -1057,7 +1325,17 @@ settings
 
 <tr>
     <td>pixiv_section.py</td>
-    <td>Pixiv 설정</td>
+    <td>Pixiv PHPSESSID 설정</td>
+</tr>
+
+<tr>
+    <td>update_request_section.py</td>
+    <td>업데이트 확인 요청 설정</td>
+</tr>
+
+<tr>
+    <td>pixiv_request_section.py</td>
+    <td>Pixiv 관리 요청 설정</td>
 </tr>
 
 <tr>
@@ -1088,7 +1366,7 @@ settings
 
 공용 위젯.
 
-```text id="j0jge2"
+```text
 widgets
 │
 ├─ artist_table
@@ -1105,7 +1383,7 @@ widgets
 
 작가 목록 테이블 구성 요소.
 
-```text id="x0m4ut"
+```text
 artist_table
 │
 ├─ actions.py
@@ -1164,7 +1442,7 @@ artist_table
 
 프로그램 데이터 저장 폴더.
 
-```text id="8yfr3m"
+```text
 data
 │
 ├─ pixiv_manager.db
@@ -1181,7 +1459,7 @@ data
 
 백업 데이터 저장 폴더.
 
-```text id="ujn7pz"
+```text
 backups
 │
 ├─ database
@@ -1194,8 +1472,11 @@ backups
 
 내보내기 데이터 저장 폴더.
 
-```text id="9ojfqr"
+```text
 exports
+│
+├─ update_logs
+└─ artists.csv
 ```
 
 ---
@@ -1204,7 +1485,7 @@ exports
 
 썸네일 캐시 저장 폴더.
 
-```text id="77o1gq"
+```text
 thumbnails
 ```
 
@@ -1214,7 +1495,7 @@ thumbnails
 
 프로젝트 문서.
 
-```text id="c0ndh1"
+```text
 docs
 │
 ├─ 01_PROJECT_OVERVIEW.md
@@ -1235,7 +1516,7 @@ docs
 
 테스트 코드.
 
-```text id="38rdah"
+```text
 tests
 │
 ├─ test_database.py
@@ -1249,7 +1530,7 @@ tests
 
 ## 1. Page 중심 구조
 
-```text id="99axd9"
+```text
 Page
  ├─ Actions
  ├─ Sections
@@ -1261,7 +1542,7 @@ Page
 
 ## 2. 기능별 분리
 
-```text id="a5xqrg"
+```text
 actions.py
  ↓
 
@@ -1275,7 +1556,7 @@ action_parts
 
 ## 3. Worker 분리
 
-```text id="097oa6"
+```text
 worker.py
  ↓
 
@@ -1291,7 +1572,7 @@ worker_parts
 
 ## 4. Style 분리
 
-```text id="u3cncu"
+```text
 page.py
  ↓
 
@@ -1300,7 +1581,7 @@ styles.py
 
 또는
 
-```text id="kqg340"
+```text
 dashboard_styles.py
 settings_styles.py
 scan_styles.py
@@ -1310,7 +1591,7 @@ scan_styles.py
 
 ## 5. Import 단순화
 
-```python id="rpz1c5"
+```python
 from ui.pages.scan import ScanPage
 from app.services.artist import ArtistService
 ```
@@ -1319,7 +1600,7 @@ from app.services.artist import ArtistService
 
 # 향후 확장 구조
 
-```text id="uahqxu"
+```text
 ui
 │
 ├─ pages
@@ -1337,7 +1618,7 @@ ui
    └─ artwork_viewer
 ```
 
-```text id="i2eilw"
+```text
 app
 │
 ├─ services
@@ -1355,4 +1636,4 @@ app
 
 # 버전 기준
 
-본 문서는 v0.14.0 (통계 분석 시스템 완료) 기준으로 작성되었다.
+본 문서는 v0.15.0 (Pixiv 관리 시스템 및 Pixiv 메타데이터 연동 완료) 기준으로 작성되었다.
