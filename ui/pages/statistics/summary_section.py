@@ -1,5 +1,11 @@
 from PySide6.QtWidgets import QGridLayout
 
+from .formatters import (
+    format_bytes,
+    format_count,
+    format_number,
+    format_rating,
+)
 from .summary_card import StatisticsSummaryCard
 
 
@@ -47,89 +53,34 @@ class StatisticsSummarySection(QGridLayout):
         favorite = favorite or {}
 
         self.cards["total_artists"].set_value(
-            self._format_count(summary.get("total_artists", 0))
+            format_count(summary.get("total_artists", 0))
         )
         self.cards["total_artworks"].set_value(
-            self._format_count(summary.get("total_artworks", 0))
+            format_count(summary.get("total_artworks", 0))
         )
         self.cards["total_files"].set_value(
-            self._format_count(summary.get("total_files", 0))
+            format_count(summary.get("total_files", 0))
         )
         self.cards["total_folder_size"].set_value(
-            self._format_bytes(summary.get("total_folder_size", 0))
+            format_bytes(summary.get("total_folder_size", 0))
         )
         self.cards["favorite_count"].set_value(
-            f"{self._to_int(favorite.get('favorite_count', 0)):,}"
+            format_count(favorite.get("favorite_count", 0))
         )
         self.cards["average_rating"].set_value(
-            self._format_rating(summary.get("average_rating", 0))
+            format_rating(summary.get("average_rating", 0))
         )
         self.cards["average_artworks"].set_value(
-            self._format_number(summary.get("average_artworks", 0))
+            format_number(summary.get("average_artworks", 0))
         )
         self.cards["average_files"].set_value(
-            self._format_number(summary.get("average_files", 0))
+            format_number(summary.get("average_files", 0))
         )
         self.cards["average_folder_size"].set_value(
-            self._format_bytes(summary.get("average_folder_size", 0))
+            format_bytes(summary.get("average_folder_size", 0))
         )
         self.cards["favorite_average_rating"].set_value(
-            self._format_rating(
+            format_rating(
                 favorite.get("favorite_average_rating", 0)
             )
         )
-
-    def _format_count(self, value) -> str:
-        return f"{self._to_int(value):,}"
-
-    def _format_number(self, value) -> str:
-        try:
-            number = float(value)
-        except (TypeError, ValueError):
-            return "0"
-
-        if number.is_integer():
-            return f"{int(number):,}"
-
-        return f"{number:,.1f}"
-
-    def _format_rating(self, value) -> str:
-        number = self._to_float(value)
-
-        if number <= 0:
-            return "-"
-
-        return f"{number:.1f}"
-
-    def _format_bytes(self, value) -> str:
-        try:
-            size = float(value)
-        except (TypeError, ValueError):
-            size = 0
-
-        if size <= 0:
-            return "0 B"
-
-        units = ["B", "KB", "MB", "GB", "TB"]
-        unit_index = 0
-
-        while size >= 1024 and unit_index < len(units) - 1:
-            size /= 1024
-            unit_index += 1
-
-        if unit_index == 0:
-            return f"{int(size)} {units[unit_index]}"
-
-        return f"{size:.1f} {units[unit_index]}"
-
-    def _to_int(self, value) -> int:
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return 0
-
-    def _to_float(self, value) -> float:
-        try:
-            return float(value)
-        except (TypeError, ValueError):
-            return 0.0

@@ -1,33 +1,18 @@
 import json
-from dataclasses import dataclass
 from datetime import datetime
 
+from app.services.pixiv.metadata_parts import (
+    PixivArtworkMetadata,
+    PixivMetadataResponseParser,
+    PixivMetadataTagParser,
+    PixivUserMetadata,
+)
 from app.services.pixiv_update_service import (
     PixivRequestError,
     PixivRequestReason,
     PixivUpdateService,
 )
 from app.services.tag import TagService
-
-
-@dataclass
-class PixivUserMetadata:
-    pixiv_user_id: str
-    user_name: str
-    artwork_count: int
-    pixiv_tags: str
-
-
-@dataclass
-class PixivArtworkMetadata:
-    artwork_id: str
-    title: str
-    artist_id: str
-    artist_name: str
-    page_count: int
-    ai_type: int
-    is_ai_generated: bool
-    pixiv_tags: str
 
 
 class PixivMetadataService:
@@ -47,6 +32,10 @@ class PixivMetadataService:
             or PixivUpdateService()
         )
         self.tag_service = TagService()
+        self.tag_parser = PixivMetadataTagParser()
+        self.response_parser = PixivMetadataResponseParser(
+            self.pixiv_update_service
+        )
 
     def fetch_user_metadata(
         self,
@@ -100,49 +89,17 @@ class PixivMetadataService:
                     pixiv_user_id=pixiv_user_id,
                 ),
                 phpsessid=phpsessid,
-                referer=f"https://www.pixiv.net/users/{pixiv_user_id}/illustrations",
+                referer=(
+                    "https://www.pixiv.net/users/"
+                    f"{pixiv_user_id}/illustrations"
+                ),
             )
         except Exception:
             return "[]"
 
-        body = response_data.get("body")
-
-        if not isinstance(body, list):
-            return "[]"
-
-        tags = []
-
-        for item in body:
-            if not isinstance(item, dict):
-                continue
-
-            original = str(item.get("tag", "") or "").strip()
-
-            if not original:
-                continue
-
-            translated = str(
-                item.get("tag_translation", "")
-                or item.get("translated", "")
-                or item.get("translated_name", "")
-                or ""
-            ).strip()
-
-            count = self._to_non_negative_int(
-                item.get("cnt")
-                or item.get("count")
-                or item.get("artwork_count")
-                or 0
-            )
-
-            tags.append(
-                {
-                    "original": original,
-                    "translated": translated,
-                    "artwork_count": count,
-                    "custom_translation": False,
-                }
-            )
+        tags = self.tag_parser.extract_user_illust_tag_statistics(
+            response_data.get("body")
+        )
 
         return self.tag_service.serialize_tags(tags)
 
@@ -216,249 +173,57 @@ class PixivMetadataService:
         self,
         response_data: dict,
     ) -> dict:
-        if response_data.get("error"):
-            message = response_data.get("message") or "Pixiv 응답 오류"
-            reason = self.pixiv_update_service._classify_pixiv_error_message(
-                message
-            )
-
-            raise PixivRequestError(
-                reason=reason,
-                message=message,
-                should_stop=False,
-                retryable=False,
-            )
-
-        body = response_data.get("body")
-
-        if not isinstance(body, dict):
-            raise PixivRequestError(
-                reason=PixivRequestReason.PARSE_ERROR,
-                message="Pixiv 응답에 body 정보가 없습니다.",
-                retryable=False,
-            )
-
-        return body
+        return self.response_parser.get_body(response_data)
 
     def _extract_user_name(
         self,
         body: dict,
     ) -> str:
-        for key in (
-            "name",
-            "userName",
-            "user_name",
-        ):
-            value = str(body.get(key, "") or "").strip()
-
-            if value:
-                return value
-
-        return ""
+        return self.response_parser.extract_user_name(body)
 
     def _extract_user_tags_json(
         self,
         body: dict,
     ) -> str:
-        tags = []
-
-        for key in (
-            "tags",
-            "tag",
-            "popularTags",
-            "workspaceTags",
-        ):
-            value = body.get(key)
-
-            if isinstance(value, list):
-                tags.extend(self._normalize_tag_list(value))
-            elif isinstance(value, dict):
-                tags.extend(self._normalize_tag_dict(value))
-
+        tags = self.tag_parser.extract_user_tags(body)
         return self.tag_service.serialize_tags(tags)
 
     def _extract_artwork_tags_json(
         self,
         body: dict,
     ) -> str:
-        tag_container = body.get("tags", {})
-        raw_tags = []
-
-        if isinstance(tag_container, dict):
-            raw_tags = tag_container.get("tags", [])
-
-        if not isinstance(raw_tags, list):
-            raw_tags = []
-
-        tags = []
-
-        for item in raw_tags:
-            if not isinstance(item, dict):
-                continue
-
-            original = str(item.get("tag", "") or "").strip()
-
-            if not original:
-                continue
-
-            translated = self._extract_translated_tag(item)
-
-            tags.append(
-                {
-                    "original": original,
-                    "translated": translated,
-                    "artwork_count": 0,
-                    "custom_translation": False,
-                }
-            )
-
+        tags = self.tag_parser.extract_artwork_tags(body)
         return self.tag_service.serialize_tags(tags)
 
     def _normalize_tag_list(
         self,
         values: list,
     ) -> list[dict]:
-        tags = []
-
-        for item in values:
-            if isinstance(item, str):
-                original = item.strip()
-
-                if original:
-                    tags.append(
-                        {
-                            "original": original,
-                            "translated": "",
-                            "artwork_count": 0,
-                            "custom_translation": False,
-                        }
-                    )
-
-                continue
-
-            if not isinstance(item, dict):
-                continue
-
-            original = str(
-                item.get("tag")
-                or item.get("name")
-                or item.get("original")
-                or ""
-            ).strip()
-
-            if not original:
-                continue
-
-            translated = self._extract_translated_tag(item)
-            count = self._to_non_negative_int(
-                item.get("cnt")
-                or item.get("count")
-                or item.get("total")
-                or item.get("artwork_count")
-                or 0
-            )
-
-            tags.append(
-                {
-                    "original": original,
-                    "translated": translated,
-                    "artwork_count": count,
-                    "custom_translation": False,
-                }
-            )
-
-        return tags
+        return self.tag_parser.normalize_tag_list(values)
 
     def _normalize_tag_dict(
         self,
         values: dict,
     ) -> list[dict]:
-        tags = []
-
-        for original, raw_value in values.items():
-            original = str(original or "").strip()
-
-            if not original:
-                continue
-
-            count = 0
-            translated = ""
-
-            if isinstance(raw_value, dict):
-                translated = self._extract_translated_tag(raw_value)
-                count = self._to_non_negative_int(
-                    raw_value.get("cnt")
-                    or raw_value.get("count")
-                    or raw_value.get("total")
-                    or raw_value.get("artwork_count")
-                    or 0
-                )
-            elif isinstance(raw_value, int):
-                count = raw_value
-
-            tags.append(
-                {
-                    "original": original,
-                    "translated": translated,
-                    "artwork_count": count,
-                    "custom_translation": False,
-                }
-            )
-
-        return tags
+        return self.tag_parser.normalize_tag_dict(values)
 
     def _extract_translated_tag(
         self,
         item: dict,
     ) -> str:
-        translation = item.get("translation")
-
-        if isinstance(translation, dict):
-            for value in translation.values():
-                text = str(value or "").strip()
-
-                if text:
-                    return text
-
-        for key in (
-            "tag_translation",
-            "translated",
-            "translated_name",
-            "romaji",
-        ):
-            text = str(item.get(key, "") or "").strip()
-
-            if text:
-                return text
-
-        return ""
+        return self.tag_parser.extract_translated_tag(item)
 
     def _deduplicate_tags(
         self,
         tags: list[dict],
     ) -> list[dict]:
-        result = []
-        seen = set()
-
-        for tag in tags:
-            original = str(tag.get("original", "") or "").strip()
-
-            if not original or original in seen:
-                continue
-
-            seen.add(original)
-            result.append(tag)
-
-        return result
+        return self.tag_parser.deduplicate_tags(tags)
 
     def _to_non_negative_int(
         self,
         value,
     ) -> int:
-        try:
-            return max(0, int(value))
-        except (TypeError, ValueError):
-            return 0
+        return self.tag_parser.to_non_negative_int(value)
 
     def to_json(
         self,

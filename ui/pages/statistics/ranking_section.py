@@ -10,6 +10,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .formatters import format_bytes, format_count
+
 
 class StatisticsRankingSection(QWidget):
     RANKING_TABS = {
@@ -149,9 +151,9 @@ class StatisticsRankingSection(QWidget):
 
     def _format_value(self, value, formatter: str) -> str:
         if formatter == "bytes":
-            return self._format_bytes(value)
+            return format_bytes(value)
 
-        return self._format_count(value)
+        return format_count(value)
 
     def _create_text_item(self, text: str) -> QTableWidgetItem:
         item = QTableWidgetItem(str(text or "-"))
@@ -170,30 +172,3 @@ class StatisticsRankingSection(QWidget):
         item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         return item
-
-    def _format_count(self, value) -> str:
-        try:
-            return f"{int(value):,}"
-        except (TypeError, ValueError):
-            return "0"
-
-    def _format_bytes(self, value) -> str:
-        try:
-            size = float(value)
-        except (TypeError, ValueError):
-            size = 0
-
-        if size <= 0:
-            return "0 B"
-
-        units = ["B", "KB", "MB", "GB", "TB"]
-        unit_index = 0
-
-        while size >= 1024 and unit_index < len(units) - 1:
-            size /= 1024
-            unit_index += 1
-
-        if unit_index == 0:
-            return f"{int(size)} {units[unit_index]}"
-
-        return f"{size:.1f} {units[unit_index]}"
