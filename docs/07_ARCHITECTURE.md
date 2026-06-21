@@ -54,33 +54,29 @@ UI --> SERVICE
 
 subgraph Service Layer
 
-ARTIST_SERVICE[Artist Service]
+ARTIST_SERVICE[Artist Service Group]
 
-SCAN_SERVICE[Scan Service]
-UPDATE_SERVICE[Update Service]
+SCAN_SERVICE[Scan Service Group]
+UPDATE_SERVICE[Update Service Group]
 
-FOLLOW_SERVICE[Follow Service]
-BOOKMARK_SERVICE[Bookmark Service]
+FOLLOW_SERVICE[Follow Service Group]
+BOOKMARK_SERVICE[Bookmark Service Group]
 
-PIXIV_METADATA[Pixiv Metadata Service]
-PIXIV_SYNC[Pixiv Sync Service]
-PIXIV_SESSION[Pixiv Session Service]
+PIXIV_SERVICE[Pixiv Service Group]
 
-TAG_SERVICE[Tag Service]
+TAG_SERVICE[Tag Service Group]
 
-STATISTICS_SERVICE[Statistics Service]
+STATISTICS_SERVICE[Statistics Service Group]
 
-BACKUP_SERVICE[Backup Service]
-EXPORT_SERVICE[Export Service]
+BACKUP_SERVICE[Backup Service Group]
+
 SETTINGS_SERVICE[Settings Service]
 
-DATABASE_INFO[Database Info Service]
-DATABASE_INTEGRITY[Database Integrity Service]
-DATABASE_MAINTENANCE[Database Maintenance Service]
+DATABASE_SERVICE[Database Services]
+
+EXPORT_SERVICE[Export Service]
 
 end
-
-UI --> SERVICE
 
 SERVICE --> REPOSITORY
 
@@ -88,8 +84,8 @@ subgraph Repository Layer
 
 ARTIST_REPOSITORY[Artist Repository]
 
-FOLLOW_REPOSITORY[Follow User Repository]
-BOOKMARK_REPOSITORY[Bookmark Artwork Repository]
+FOLLOW_REPOSITORY[Follow Repository]
+BOOKMARK_REPOSITORY[Bookmark Repository]
 
 UPDATE_HISTORY_REPOSITORY[Update History Repository]
 APP_SETTING_REPOSITORY[App Setting Repository]
@@ -113,30 +109,18 @@ end
 
 사용자 인터페이스를 담당한다.
 
-### 구성
-
-```text
-ui/
-│
-├─ dialogs
-├─ pages
-├─ widgets
-├─ main_window.py
-└─ __init__.py
-```
-
 ### 역할
 
 * 사용자 입력 처리
 * 화면 표시
 * 페이지 이동
 * 진행률 표시
-* 결과 출력
+* 로그 출력
 * 스캔 제어
 * 업데이트 확인
 * Pixiv 관리
 * 통계 분석
-* 설정 및 데이터 관리
+* 설정 관리
 
 ### 책임 범위
 
@@ -154,7 +138,7 @@ ui/
 
 - SQL 실행
 - 데이터 영속화
-- Pixiv 통신
+- Pixiv API 통신
 - 비즈니스 규칙 처리
 ```
 
@@ -167,56 +151,38 @@ ui/
 ### 구성
 
 ```text
-app/services/
+artist/
+backup/
+bookmark/
+follow/
+pixiv/
+scan/
+statistics/
+tag/
+update/
 
-├─ artist/
-├─ scan/
-├─ update/
-
-├─ follow/
-├─ bookmark/
-
-├─ pixiv/
-├─ tag/
-
-├─ statistics/
-├─ backup/
-
-├─ artwork_status_service.py
-├─ export_service.py
-├─ settings_service.py
-
-├─ database_info_service.py
-├─ database_integrity_service.py
-├─ database_maintenance_service.py
-
-├─ settings_backup_service.py
-└─ pixiv_update_service.py
+artwork_status_service.py
+database_info_service.py
+database_integrity_service.py
+database_maintenance_service.py
+export_service.py
+pixiv_update_service.py
+settings_backup_service.py
+settings_service.py
 ```
 
 ### 역할
 
-* 작가 등록
-* 작가 수정
-* 작가 삭제
-* 삭제 작가 복구
+* 작가 관리
 * 폴더 스캔
-* 재스캔
 * 업데이트 확인
-* 작품 상태 계산
-* 업데이트 이력 처리
-* 팔로우 유저 관리
-* 북마크 작품 관리
-* Pixiv 메타데이터 수집
+* Pixiv 데이터 수집
 * Pixiv 데이터 동기화
-* Pixiv 세션 검증
-* 태그 병합 및 동기화
+* 태그 처리
 * 통계 분석
-* 데이터 품질 분석
-* CSV 내보내기
+* 백업 및 복구
 * 설정 관리
-* 데이터베이스 관리
-* 백업 관리
+* 데이터베이스 유지보수
 
 ### 책임 범위
 
@@ -228,7 +194,8 @@ app/services/
 - Repository 호출
 - 서비스 간 협력
 - Pixiv API 통신
-- 태그 병합 및 가공
+- 통계 계산
+- 태그 가공
 
 불가능
 
@@ -240,24 +207,22 @@ app/services/
 
 ## Layer 3 - Repository Layer
 
-SQLite 접근을 담당한다.
+데이터 저장 및 조회를 담당한다.
 
 ### 구성
 
 ```text
-app/database/
+artist/
+bookmark/
+follow/
 
-├─ artist_repository.py
+app_setting_repository.py
+update_history_repository.py
 
-├─ follow_user_repository.py
-├─ bookmark_artwork_repository.py
-
-├─ update_history_repository.py
-├─ app_setting_repository.py
-
-├─ connection.py
-├─ schema.py
-└─ __init__.py
+connection.py
+migrations.py
+schema.py
+table_definitions.py
 ```
 
 ### 역할
@@ -285,7 +250,7 @@ app/database/
 불가능
 
 - UI 처리
-- Pixiv 통신
+- Pixiv API 통신
 - 비즈니스 규칙 처리
 ```
 
@@ -373,13 +338,13 @@ ScanPage
 
 ### 설명
 
-* ScanPage는 사용자 입력과 화면 표시를 담당한다.
-* ScanActions는 스캔 시작, 중지, 일시정지, 재개를 제어한다.
-* ScanWorker는 백그라운드에서 스캔을 수행한다.
+* ScanPage는 스캔 화면과 사용자 입력을 담당한다.
+* ScanActions는 스캔 시작, 중지, 일시정지, 재개 요청을 처리한다.
+* ScanWorker는 백그라운드에서 스캔 작업을 실행한다.
 * FolderScanner는 스캔 대상 폴더를 탐색한다.
-* FolderScanService는 폴더 내부 파일과 작품 정보를 분석한다.
-* ArtistService는 분석 결과를 저장 가능한 데이터로 처리한다.
-* ArtistRepository는 SQLite에 저장한다.
+* FolderScanService는 폴더 내부 파일, 작품 수, 파일 수, 용량을 분석한다.
+* ArtistService는 분석 결과를 작가 데이터로 가공한다.
+* ArtistRepository는 작가 정보를 SQLite에 저장한다.
 
 ---
 
@@ -398,12 +363,12 @@ ScanPage
 
 ### 설명
 
-* 스캔 미리보기는 DB 저장 전에 예상 결과를 보여준다.
+* 스캔 미리보기는 DB 저장 전에 예상 결과를 표시한다.
 * ScanActions는 미리보기 실행 요청을 처리한다.
 * ScanWorker는 백그라운드에서 폴더 정보를 분석한다.
 * FolderScanService는 작품 수, 파일 수, 폴더 상태를 계산한다.
 * ArtworkStatusService는 신규 등록, 업데이트, 변경 없음, 오류 예상 상태를 계산한다.
-* ScanPreviewTable은 미리보기 결과, 선택 상태, 제외 상태를 표시한다.
+* ScanPreviewTable은 미리보기 결과와 선택 상태를 표시한다.
 
 ---
 
@@ -421,11 +386,11 @@ ArtistDetailPage
 
 ### 설명
 
-* ArtistDetailPage는 수정할 작가 정보를 화면에 표시한다.
+* ArtistDetailPage는 작가 정보를 화면에 표시한다.
 * ArtistDetailActions는 저장 버튼 클릭과 입력값 검증을 처리한다.
-* ArtistService는 수정 가능한 데이터로 가공한다.
+* ArtistService는 입력 데이터를 저장 가능한 형태로 가공한다.
 * ArtistRepository는 변경된 작가 정보를 SQLite에 저장한다.
-* 저장 후 작가 목록과 상세 화면을 갱신한다.
+* 저장 후 목록과 상세 화면을 갱신한다.
 
 ---
 
@@ -451,7 +416,7 @@ ArtistDetailPage
 * ArtistService는 폴더 변경 처리를 ArtistFolderService에 위임한다.
 * ArtistFolderService는 새 폴더 경로의 유효성을 확인한다.
 * FolderScanService는 새 폴더의 작품 수, 파일 수, 최신 작품 ID를 다시 계산한다.
-* ArtworkStatusService는 로컬 작품 정보와 기존 Pixiv 정보를 비교하여 상태를 갱신한다.
+* ArtworkStatusService는 로컬 작품 정보와 Pixiv 작품 정보를 비교해 상태를 갱신한다.
 * ArtistRepository는 변경된 폴더 정보와 재스캔 결과를 저장한다.
 
 ---
@@ -500,7 +465,7 @@ ArtistsPage
 * ArtistsPage에서 삭제 작가 복구 기능을 실행한다.
 * ArtistsActions는 복구할 백업 파일을 선택한다.
 * ArtistService는 복구 처리를 ArtistDeleteService에 위임한다.
-* ArtistDeleteService는 백업 파일을 읽고 복구 가능한 작가 데이터를 검증한다.
+* ArtistDeleteService는 백업 파일을 읽고 복구 가능한 데이터를 검증한다.
 * BackupService는 백업 데이터 로딩과 복구 결과 생성을 보조한다.
 * ArtistRepository는 중복 Pixiv ID를 제외하고 복구 가능한 작가를 SQLite에 저장한다.
 * 복구 완료 후 목록을 갱신한다.
@@ -535,10 +500,10 @@ UpdateCheckPage
 * ArtistUpdateService는 PixivUpdateService를 통해 최신 작품 ID를 조회한다.
 * PixivMetadataService는 Pixiv 작가 태그 통계를 조회한다.
 * TagService는 기존 태그와 Pixiv 태그를 병합한다.
-* ArtworkStatusService는 로컬 작품 ID와 Pixiv 작품 ID를 비교하여 상태와 누락 작품을 계산한다.
+* ArtworkStatusService는 로컬 작품 ID와 Pixiv 작품 ID를 비교해 상태와 누락 작품을 계산한다.
 * ArtistUpdateHistoryRepository는 확인 결과와 누락 변화 이력을 저장한다.
 * ArtistRepository는 작가의 최신 Pixiv 작품 ID, 업데이트 상태, 태그 정보를 저장한다.
-* 결과는 로그 테이블, 진행률, 요약 카드에 반영된다.
+* 결과는 로그, 진행률, 요약 정보에 반영된다.
 
 ---
 
@@ -563,10 +528,10 @@ PixivManagerPage
 * PixivManagerActions는 txt 또는 csv 파일에서 Pixiv 유저 ID 목록을 읽는다.
 * PixivManagerWorker는 가져오기 작업을 백그라운드에서 수행한다.
 * PixivSyncService는 Pixiv API 요청 흐름과 요청 안정성을 관리한다.
-* PixivMetadataService는 Pixiv 유저명, 작품 수, 태그 통계 등 메타데이터를 수집한다.
-* FollowService는 수집된 팔로우 유저 데이터를 저장 가능한 구조로 변환한다.
-* FollowService는 로컬 작가 DB와 Pixiv ID를 기준으로 자동 매칭한다.
-* FollowUserRepository는 중복 ID를 제외하고 팔로우 유저 정보를 SQLite에 저장한다.
+* PixivMetadataService는 유저명, 작품 수, 태그 통계 등 메타데이터를 수집한다.
+* FollowService는 수집 데이터를 저장 가능한 구조로 변환한다.
+* FollowService는 Pixiv ID 기준으로 로컬 작가와 자동 매칭한다.
+* FollowUserRepository는 중복 ID를 제외하고 팔로우 유저 정보를 저장한다.
 * 처리 결과는 팔로우 유저 테이블과 로그에 반영된다.
 
 ---
@@ -593,9 +558,9 @@ PixivManagerPage
 * PixivManagerWorker는 북마크 작품 정보를 백그라운드에서 수집한다.
 * PixivSyncService는 Pixiv 요청 간격, 배치 휴식, 재시도 정책을 관리한다.
 * PixivMetadataService는 작품명, 작가명, 작가 ID, 북마크 수, 페이지 수, 태그, AI 여부를 수집한다.
-* BookmarkService는 수집된 작품 데이터를 저장 가능한 구조로 변환한다.
+* BookmarkService는 수집 데이터를 저장 가능한 구조로 변환한다.
 * BookmarkService는 작품의 작가 ID를 기준으로 로컬 작가와 자동 매칭한다.
-* BookmarkArtworkRepository는 중복 작품 ID를 제외하고 북마크 작품 정보를 SQLite에 저장한다.
+* BookmarkArtworkRepository는 중복 작품 ID를 제외하고 북마크 작품 정보를 저장한다.
 * 처리 결과는 북마크 작품 테이블과 로그에 반영된다.
 
 ---
@@ -619,7 +584,7 @@ PixivMetadataService
 * TagService는 기존 작가 태그와 새 Pixiv 태그를 원문 기준으로 병합한다.
 * 사용자가 직접 수정한 번역 태그는 가능한 한 보존한다.
 * ArtistService는 병합된 태그 데이터를 작가 정보 갱신에 포함한다.
-* ArtistRepository는 직렬화된 태그 데이터를 artists 테이블에 저장한다.
+* ArtistRepository는 직렬화된 태그 데이터를 저장한다.
 * 갱신된 태그는 작가 목록, 작가 상세, Pixiv 관리 페이지에 표시된다.
 
 ---
@@ -673,7 +638,7 @@ SettingsPage
 
 * SettingsPage는 설정 입력 화면을 제공한다.
 * SettingsActions는 저장 버튼 클릭과 입력값 검증을 처리한다.
-* SettingsService는 설정값을 문자열 기반 저장 형식으로 변환한다.
+* SettingsService는 설정값을 저장 형식으로 변환한다.
 * AppSettingRepository는 설정값을 app_settings 테이블에 저장한다.
 * 저장된 설정은 Pixiv 요청, 업데이트 확인, 백업, 창 크기 복원 등에 사용된다.
 
@@ -720,38 +685,6 @@ MainWindow --> ArtistsPage
 MainWindow --> ArtistDetailPage
 MainWindow --> StatisticsPage
 MainWindow --> SettingsPage
-
-ArtistsPage --> ArtistTable
-
-ArtistDetailPage --> ArtistInfoSection
-
-ScanPage --> ScanFolderSection
-ScanPage --> ScanProgressSection
-ScanPage --> ScanPreviewTable
-ScanPage --> ScanLogTable
-
-UpdateCheckPage --> UpdateArtistTable
-UpdateCheckPage --> UpdateLogTable
-
-PixivManagerPage --> FollowUserTable
-PixivManagerPage --> BookmarkArtworkTable
-PixivManagerPage --> PixivLogTable
-PixivManagerPage --> PixivSummarySection
-
-StatisticsPage --> SummarySection
-StatisticsPage --> QualitySection
-StatisticsPage --> StatusSection
-StatisticsPage --> RatingSection
-StatisticsPage --> RankingSection
-StatisticsPage --> TagSection
-
-SettingsPage --> FolderSection
-SettingsPage --> PixivSection
-SettingsPage --> UpdateRequestSection
-SettingsPage --> PixivRequestSection
-SettingsPage --> DatabaseSection
-SettingsPage --> SettingsManagementSection
-SettingsPage --> AppInfoSection
 ```
 
 ## 설명
@@ -761,74 +694,9 @@ MainWindow는 전체 페이지를 관리한다.
 Sidebar를 통해 페이지를 전환한다.
 
 각 기능은 독립 Page 구조로 분리되어 있으며,
-페이지 내부는 Section 단위로 구성된다.
+페이지별 기능은 Service 계층과 연동하여 동작한다.
 
-ArtistTable, UpdateArtistTable,
-FollowUserTable, BookmarkArtworkTable 등
-대형 테이블은 Widget으로 분리되어 재사용된다.
-
----
-
-# UI 내부 분리 구조
-
-## Page 구조
-
-```text
-page.py
-├─ actions.py
-├─ styles.py
-├─ section files
-└─ utils.py
-```
-
-### 설명
-
-* page.py는 화면 생성과 시그널 연결 담당
-* actions.py는 UI 이벤트 처리 담당
-* styles.py는 스타일 정의 담당
-* section 파일은 UI 영역 분리 담당
-* utils.py는 화면 전용 유틸 담당
-
----
-
-## Action Parts 구조
-
-```text
-actions.py
-│
-└─ action_parts
-   ├─ data_actions.py
-   ├─ dialog_actions.py
-   ├─ shortcut_actions.py
-   └─ update_actions.py
-```
-
-### 설명
-
-* Actions 파일 비대화를 방지하기 위한 구조
-* 기능별 액션을 별도 파일로 분리
-* Page에서는 단일 Actions 객체만 사용
-
----
-
-## Worker Parts 구조
-
-```text
-worker.py
-│
-└─ worker_parts
-   ├─ validation.py
-   ├─ preview_builder.py
-   ├─ result_builder.py
-   ├─ statistics.py
-   └─ runtime_utils.py
-```
-
-### 설명
-
-* Worker는 실행 흐름만 담당
-* 세부 기능은 worker_parts로 분리
-* 테스트와 유지보수를 쉽게 하기 위한 구조
+공통 기능은 Widget으로 분리하여 재사용한다.
 
 ---
 
@@ -837,128 +705,64 @@ worker.py
 ```mermaid
 flowchart TD
 
-ArtistService
+ArtistServiceGroup
+ScanServiceGroup
+UpdateServiceGroup
 
-ArtistService --> ArtistMetadataService
-ArtistService --> ArtistFolderService
-ArtistService --> ArtistDeleteService
-ArtistService --> ArtistValidationService
+FollowServiceGroup
+BookmarkServiceGroup
 
-ArtistService --> ArtistRepository
-ArtistService --> FolderScanService
-ArtistService --> ArtworkStatusService
-ArtistService --> BackupService
+PixivServiceGroup
+TagServiceGroup
 
-ArtistScanService --> ArtistService
-ArtistScanService --> FolderScanService
+StatisticsServiceGroup
 
-RescanService --> ArtistService
-RescanService --> FolderScanService
+BackupServiceGroup
+SettingsService
 
-ArtistUpdateService --> PixivUpdateService
-ArtistUpdateService --> PixivMetadataService
-ArtistUpdateService --> ArtworkStatusService
-ArtistUpdateService --> TagService
-ArtistUpdateService --> ArtistRepository
-ArtistUpdateService --> ArtistUpdateHistoryRepository
+DatabaseServices
+ExportService
 
-ArtistBulkUpdateService --> ArtistUpdateService
+ArtistServiceGroup --> RepositoryLayer
+ScanServiceGroup --> RepositoryLayer
+UpdateServiceGroup --> RepositoryLayer
 
-FollowService --> FollowImporter
-FollowService --> FollowMatcher
-FollowService --> FollowUserRepository
+FollowServiceGroup --> RepositoryLayer
+BookmarkServiceGroup --> RepositoryLayer
 
-BookmarkService --> BookmarkImporter
-BookmarkService --> BookmarkMatcher
-BookmarkService --> BookmarkArtworkRepository
+PixivServiceGroup --> RepositoryLayer
+TagServiceGroup --> RepositoryLayer
 
-PixivSyncService --> FollowService
-PixivSyncService --> BookmarkService
-PixivSyncService --> PixivMetadataService
+StatisticsServiceGroup --> RepositoryLayer
 
-TagService --> TagParser
+BackupServiceGroup --> RepositoryLayer
+SettingsService --> RepositoryLayer
 
-BackupService --> DeletedArtistBackupService
-BackupService --> DatabaseBackupService
-
-ExportService --> ArtistRepository
-
-SettingsService --> AppSettingRepository
-
-DatabaseInfoService --> ArtistRepository
-
-DatabaseIntegrityService --> ArtistRepository
-
-DatabaseMaintenanceService --> SQLite
+DatabaseServices --> RepositoryLayer
+ExportService --> RepositoryLayer
 ```
 
 ## 설명
 
-Service Layer는 실제 비즈니스 로직을 담당한다.
+Service Layer는 프로그램의 핵심 비즈니스 로직을 담당한다.
 
 UI는 직접 Repository를 호출하지 않는다.
 
 모든 데이터 처리는 Service를 통해 수행된다.
 
-기능 규모가 커진 서비스는
-Service Group 형태로 분리한다.
+기능 규모가 커진 영역은 Service Group 구조로 분리하여 관리한다.
 
-Pixiv 관리 기능 추가 이후
+현재 구조는 다음 그룹으로 구성된다.
 
+* Artist Service Group
+* Scan Service Group
+* Update Service Group
 * Follow Service Group
 * Bookmark Service Group
 * Pixiv Service Group
 * Tag Service Group
-
-이 추가되었다.
-
----
-
-# Statistics Service 구조
-
-```text
-StatisticsService
-│
-├─ StatisticsStatusService
-├─ StatisticsRatingService
-├─ StatisticsRankingService
-├─ StatisticsTagService
-├─ StatisticsQualityService
-└─ StatisticsFavoriteService
-```
-
-## 설명
-
-StatisticsService는 통계 계산 진입점이다.
-
-각 하위 서비스는 개별 통계를 담당한다.
-
-### StatisticsStatusService
-
-* 상태 분포 계산
-
-### StatisticsRatingService
-
-* 평점 분포 계산
-
-### StatisticsRankingService
-
-* 작품 수 TOP
-* 파일 수 TOP
-* 저장 용량 TOP
-
-### StatisticsTagService
-
-* 태그 분석
-* 인기 태그 계산
-
-### StatisticsQualityService
-
-* 데이터 품질 분석
-
-### StatisticsFavoriteService
-
-* 즐겨찾기 통계 분석
+* Statistics Service Group
+* Backup Service Group
 
 ---
 
@@ -967,319 +771,46 @@ StatisticsService는 통계 계산 진입점이다.
 ```mermaid
 flowchart TD
 
-ArtistRepository
-FollowUserRepository
-BookmarkArtworkRepository
+RepositoryLayer
 
-ArtistUpdateHistoryRepository
+RepositoryLayer --> ArtistRepositoryGroup
+RepositoryLayer --> FollowRepositoryGroup
+RepositoryLayer --> BookmarkRepositoryGroup
 
-ArtistRepository --> artists
-FollowUserRepository --> follow_users
-BookmarkArtworkRepository --> bookmark_artworks
+RepositoryLayer --> UpdateHistoryRepository
+RepositoryLayer --> AppSettingRepository
 
-ArtistUpdateHistoryRepository --> update_history
+ArtistRepositoryGroup --> artists
+FollowRepositoryGroup --> follow_users
+BookmarkRepositoryGroup --> bookmark_artworks
 
+UpdateHistoryRepository --> update_history
 AppSettingRepository --> app_settings
 
-Schema --> TableDefinitions
-Schema --> Migrations
-
-TableDefinitions --> SQLite
-Migrations --> SQLite
+artists --> SQLite
+follow_users --> SQLite
+bookmark_artworks --> SQLite
+update_history --> SQLite
+app_settings --> SQLite
 ```
 
----
+## 설명
 
-# 주요 모듈 분리
+Repository Layer는 데이터 저장 및 조회를 담당한다.
 
-## Artists Page
+Service는 Repository를 통해 데이터에 접근한다.
 
-```text
-ui/pages/artists/
-│
-├─ action_parts
-│  ├─ bulk_actions.py
-│  ├─ data_actions.py
-│  ├─ dialog_actions.py
-│  └─ __init__.py
-│
-├─ page.py
-├─ actions.py
-├─ filters.py
-├─ toolbar.py
-└─ __init__.py
-```
+Repository는 비즈니스 로직을 처리하지 않으며 데이터 저장 기능만 담당한다.
 
-### 역할
+현재 저장 구조는 다음과 같다.
 
-* 작가 목록 조회
-* 검색 / 필터 / 정렬
-* 다중 선택 작업
-* 삭제 / 복구
-* 업데이트 확인 페이지 이동
+* artists
+* follow_users
+* bookmark_artworks
+* update_history
+* app_settings
 
----
-
-## Artist Detail Page
-
-```text
-ui/pages/artist_detail/
-│
-├─ action_parts
-│  ├─ artwork_actions.py
-│  ├─ data_actions.py
-│  ├─ dialog_actions.py
-│  ├─ tag_actions.py
-│  └─ __init__.py
-│
-├─ page.py
-├─ actions.py
-├─ styles.py
-├─ info_section.py
-├─ utils.py
-└─ __init__.py
-```
-
-### 역할
-
-* 작가 상세 정보 표시
-* 평점 관리
-* 즐겨찾기 / 숨김 설정
-* 태그 관리
-* 장문 메모 관리
-* 참고 링크 관리
-* 다운로드 메모 관리
-* 최근 로컬 작품 표시
-* 누락 작품 표시
-* 업데이트 이력 표시
-* Pixiv 바로가기
-* 폴더 바로가기
-* 폴더 변경 및 재스캔
-
----
-
-## Scan Page
-
-```text
-ui/pages/scan/
-│
-├─ action_parts
-│  ├─ filter_actions.py
-│  ├─ folder_actions.py
-│  ├─ result_actions.py
-│  ├─ worker_actions.py
-│  └─ __init__.py
-│
-├─ preview_table_parts
-│  ├─ filter_logic.py
-│  ├─ row_renderer.py
-│  ├─ summary.py
-│  └─ __init__.py
-│
-├─ progress_parts
-│  ├─ history_formatter.py
-│  ├─ statistics_formatter.py
-│  └─ __init__.py
-│
-├─ worker_parts
-│  ├─ preview_builder.py
-│  ├─ result_builder.py
-│  ├─ runtime_utils.py
-│  ├─ statistics.py
-│  ├─ validation.py
-│  └─ __init__.py
-│
-├─ actions.py
-├─ folder_scanner.py
-├─ folder_section.py
-├─ log_table.py
-├─ log_utils.py
-├─ page.py
-├─ preview_table.py
-├─ progress_section.py
-├─ scan_styles.py
-├─ worker.py
-└─ __init__.py
-```
-
-### 역할
-
-* 폴더 스캔
-* 미리보기 생성
-* 선택 등록
-* 결과 필터링
-* 로그 출력
-* 진행률 표시
-* 최근 스캔 통계 표시
-* 일시정지 / 재개 / 중단
-
----
-
-## Dashboard Page
-
-```text
-ui/pages/dashboard/
-│
-├─ page.py
-├─ actions.py
-├─ dashboard_metrics.py
-├─ dashboard_styles.py
-│
-├─ summary_section.py
-├─ summary_card.py
-│
-├─ update_status_section.py
-├─ scan_statistics_section.py
-├─ recent_activity_section.py
-├─ recent_artists_section.py
-│
-├─ top_ranking_section.py
-│
-├─ recommendation_section.py
-├─ recommendation_card.py
-│
-├─ random_artist_section.py
-│
-├─ utils.py
-└─ __init__.py
-```
-
-### 역할
-
-* 전체 통계 카드
-* 업데이트 상태 표시
-* 최근 스캔 결과
-* 최근 활동 표시
-* TOP 랭킹 표시
-* 추천 작가 표시
-* 랜덤 작가 표시
-
----
-
-## Statistics Page
-
-```text
-ui/pages/statistics/
-│
-├─ page.py
-├─ actions.py
-├─ styles.py
-│
-├─ summary_card.py
-├─ summary_section.py
-│
-├─ quality_section.py
-├─ status_section.py
-├─ rating_section.py
-├─ ranking_section.py
-├─ tag_section.py
-│
-└─ __init__.py
-```
-
-### 역할
-
-* 기초 통계
-* 데이터 품질 분석
-* 상태 분포 분석
-* 평점 분포 분석
-* 작품 수 TOP
-* 파일 수 TOP
-* 저장 용량 TOP
-* 태그 분석
-
----
-
-## Update Check Page
-
-```text
-ui/pages/update_check/
-│
-├─ page.py
-├─ actions.py
-├─ selection_actions.py
-├─ worker.py
-├─ worker_config.py
-├─ artist_table.py
-├─ log_table.py
-├─ styles.py
-├─ utils.py
-└─ __init__.py
-```
-
-### 역할
-
-* 업데이트 확인 실행
-* 다중 작가 선택
-* 선택 작가 일괄 확인
-* 결과 로그 출력
-* 누락 작품 계산
-* 최근 확인 스킵
-* 일시정지 / 재개 / 중단
-* CSV 저장
-
----
-
-## Pixiv Manager Page
-
-```text
-ui/pages/pixiv_manager/
-│
-├─ page.py
-├─ actions.py
-├─ worker.py
-├─ styles.py
-│
-├─ follow_table.py
-├─ bookmark_table.py
-├─ log_table.py
-├─ summary_section.py
-│
-└─ __init__.py
-```
-
-### 역할
-
-* 팔로우 유저 관리
-* 북마크 작품 관리
-* txt / csv 가져오기
-* Pixiv 메타데이터 동기화
-* 태그 수집
-* 로컬 작가 자동 매칭
-* 즐겨찾기 작가 매칭
-* 동기화 로그 출력
-* 통계 요약 표시
-
----
-
-## Settings 구조
-
-```text 
-Settings Page
-│
-├─ Folder Section
-├─ Pixiv Section
-├─ Update Request Section
-├─ Pixiv Request Section
-├─ Database Section
-├─ Settings Management Section
-└─ App Info Section
-```
-
-### 역할
-
-* 기본 Pixiv 폴더 설정
-* Pixiv PHPSESSID 저장 및 테스트
-* 업데이트 확인 요청 간격 설정
-* 업데이트 확인 배치 처리 설정
-* Pixiv 관리 요청 간격 설정
-* Pixiv 관리 배치 처리 설정
-* 데이터베이스 백업 / 복원
-* CSV 내보내기
-* DB 무결성 검사
-* DB 최적화
-* 설정 백업 / 복원
-* 프로그램 정보 표시
+모든 데이터는 SQLite 데이터베이스에 저장된다.
 
 ---
 
@@ -1377,104 +908,9 @@ TAG --> STATISTICS
 QUALITY --> STATISTICS
 FAVORITE --> STATISTICS
 
-STATISTICS[StatisticsService]
+STATISTICS[Statistics Service Group]
 
 STATISTICS --> PAGE[Statistics Page]
-```
-
----
-
-## Statistics Service 구조
-
-```text
-StatisticsService
-│
-├─ StatusService
-├─ RatingService
-├─ RankingService
-├─ TagService
-├─ QualityService
-└─ FavoriteService
-```
-
----
-
-# Repository 구조
-
-## Artist Repository
-
-```text
-Artist Repository
-│
-├─ 조회
-├─ 등록
-├─ 수정
-├─ 삭제
-├─ 복구
-├─ 평점 수정
-├─ 즐겨찾기 수정
-├─ 숨김 상태 수정
-└─ 태그 저장
-```
-
----
-
-## Follow User Repository
-
-```text
-FollowUserRepository
-│
-├─ 팔로우 유저 저장
-├─ 팔로우 유저 조회
-├─ 팔로우 유저 수정
-├─ 중복 Pixiv ID 검사
-├─ 로컬 작가 매칭 정보 저장
-└─ 통계 조회
-```
-
----
-
-## Bookmark Artwork Repository
-
-```text
-BookmarkArtworkRepository
-│
-├─ 북마크 작품 저장
-├─ 북마크 작품 조회
-├─ 북마크 작품 수정
-├─ 중복 작품 ID 검사
-├─ 로컬 작가 매칭 정보 저장
-└─ 통계 조회
-```
-
----
-
-## Update History Repository
-
-```text
-ArtistUpdateHistoryRepository
-│
-├─ 이력 저장
-├─ 최근 결과 조회
-├─ 최근 오류 조회
-├─ 최신 결과 조회
-├─ 누락 증가 조회
-├─ 결과 비교
-├─ 신규 누락 계산
-└─ 해결 작품 계산
-```
-
----
-
-## App Setting Repository
-
-```text
-AppSettingRepository
-│
-├─ 설정 조회
-├─ 설정 저장
-├─ 설정 삭제
-└─ 설정 초기화
 ```
 
 ---
@@ -1495,12 +931,16 @@ Repositories
 
 SQLite
 --> Artists
+
 SQLite
 --> FollowUsers
+
 SQLite
 --> BookmarkArtworks
+
 SQLite
 --> UpdateHistory
+
 SQLite
 --> AppSettings
 ```
@@ -1514,13 +954,13 @@ SQLite
 현재 구조는 다음 기능을 기준으로 설계되었다.
 
 ```text
-작가 관리 고도화
-작가 상세 페이지
+작가 관리
+작가 상세 관리
 스캔 시스템
 업데이트 확인
 대시보드
-설정 관리
 통계 분석
+설정 관리
 Pixiv 팔로우 관리
 Pixiv 북마크 관리
 Pixiv 태그 연동
@@ -1533,14 +973,14 @@ Pixiv 태그 연동
 향후 작품 단위 관리 시스템을 추가할 수 있도록 설계되어 있다.
 
 ```text
-Artwork Manager
-Artwork Detail
-Thumbnail View
-Card View
-Built-in Viewer
-Download Queue
-Artwork Tag Manager
-Artwork Collection
+작품 관리
+작품 상세 관리
+썸네일 뷰
+카드 뷰
+내장 뷰어
+다운로드 큐
+작품 태그 관리
+작품 컬렉션 관리
 ```
 
 ---
@@ -1561,11 +1001,11 @@ Folder Scan Service
 Artist Update Service
 → 업데이트 확인
 
-Pixiv Sync Service
-→ Pixiv 데이터 동기화
+Pixiv Service Group
+→ Pixiv 데이터 처리
 
-Statistics Service
-→ 통계 생성
+Statistics Service Group
+→ 통계 분석
 ```
 
 ---
@@ -1613,7 +1053,7 @@ tag/
 
 ```text
 V2
-→ 기능 확장
+→ Pixiv 관리 기능 확장
 
 V3
 → 작품 단위 관리
@@ -1626,79 +1066,45 @@ V3
 
 ## 5. 유지보수성 우선
 
-파일 크기가 과도하게 커질 경우 분리한다.
+파일 크기가 과도하게 커질 경우 기능 단위로 분리한다.
 
-```text
-page.py
-↓
-actions.py
-↓
-action_parts/
-```
-
-복잡한 Worker 역시 별도 모듈로 분리한다.
-
-```text
-worker.py
-↓
-worker_parts/
-```
+복잡한 UI와 Worker 역시 하위 모듈로 분리하여 관리한다.
 
 ---
 
 # 리팩토링 원칙
 
-## 1. 페이지 분리
-
-```text
-Page
- ↓
-
-Actions
-Sections
-Styles
-Utils
-```
-
----
-
-## 2. 액션 분리
-
-```text
-actions.py
- ↓
-
-action_parts/
-```
-
----
-
-## 3. 워커 분리
-
-```text
-worker.py
- ↓
-
-worker_parts/
-```
-
----
-
-## 4. UI / Service 분리
+## 1. 계층 분리
 
 ```text
 UI
- ↓
+↓
 Service
- ↓
+↓
 Repository
- ↓
+↓
 Database
 ```
 
 ---
 
-## 5. Import 단순화
+## 2. 기능 단위 분리
+
+```text
+artist/
+scan/
+update/
+statistics/
+backup/
+follow/
+bookmark/
+pixiv/
+tag/
+```
+
+---
+
+## 3. Import 단순화
 
 ```python
 from ui.pages.scan import ScanPage
@@ -1717,5 +1123,6 @@ from app.services import (
 
 # 버전 기준
 
-본 문서는 v0.16.0 (Pixiv 관리 시스템 및 Pixiv 메타데이터 연동 완료) 기준으로 작성되었다.
+본 문서는 v0.16.0 기준으로 작성되었다.
 
+Pixiv 관리 시스템과 Pixiv 메타데이터 연동 기능이 포함된 구조를 설명한다.

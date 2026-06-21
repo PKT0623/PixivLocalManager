@@ -1240,15 +1240,89 @@ feat: add pixiv management system and metadata integration
 
 ---
 
-# 향후 예정
+# v0.16.0
+
+## 3차 리팩토링
+
+### 목표
+
+* 대형 파일 추가 분리
+* 기능별 책임 분리
+* 공용 로직 재사용 구조 개선
+* 유지보수성 향상
+* V2 후반 기능 개발 준비
+
+### 변경
+
+#### app/database
+
+* bookmark 구조 분리
+* follow 구조 분리
+* update_history_repository 분리
+
+#### app/services/pixiv
+
+* metadata_parts 분리
+* sync_parts 분리
+
+#### ui/pages/pixiv_manager
+
+* action_parts 분리
+* worker_parts 분리
+* bookmark_table_parts 분리
+* follow_table_parts 분리
+* table_common 추가
+
+#### ui/pages/scan
+
+* worker_actions 추가 분리
+* worker_parts 구조 확장
+* validation 구조 분리
+* page 구조 정리
+
+#### ui/pages/update_check
+
+* action_parts 분리
+* page_parts 분리
+* worker_parts 분리
+
+#### ui/pages/artist_detail
+
+* data_actions_parts 분리
+* info_section 구조 정리
+
+#### ui/pages/dashboard
+
+* recent_activity_parts 분리
+* top_ranking_utils 분리
+
+#### ui/pages/settings
+
+* action_parts 분리
+
+#### ui/pages/statistics
+
+* 공용 formatters 분리
+* 중복 포맷 로직 제거
+
+### 개선
+
+* 대형 파일 크기 감소
+* 기능별 책임 명확화
+* 공용 코드 재사용 증가
+* import 구조 단순화
+* 유지보수성 향상
+* 향후 기능 추가 용이성 향상
+
+### 완료 커밋
+
+```text
+refactor: complete third refactoring phase
+```
 
 ---
 
-## v0.16.0
-
-### 3차 리팩토링
-
-v0.11.0 ~ v0.15.0 진행 과정에서 비대해진 파일 및 폴더 구조 정비
+# 향후 예정
 
 ---
 
