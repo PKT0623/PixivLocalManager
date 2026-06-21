@@ -50,14 +50,14 @@ flowchart LR
 
 UI[UI]
 
-UI --> ARTIST[ArtistService]
+UI --> ARTIST[Artist Services]
 UI --> SCAN[Scan Services]
 UI --> UPDATE[Update Services]
 UI --> STATISTICS[Statistics Services]
 
 UI --> PIXIV_UPDATE[PixivUpdateService]
-UI --> PIXIV_META[Pixiv Metadata Service]
-UI --> PIXIV_SYNC[Pixiv Sync Service]
+UI --> PIXIV_META[PixivMetadataService]
+UI --> PIXIV_SYNC[PixivSyncService]
 
 UI --> FOLLOW[Follow Services]
 UI --> BOOKMARK[Bookmark Services]
@@ -93,13 +93,19 @@ FOLLOW --> FOLLOW_REPO[FollowUserRepository]
 BOOKMARK --> BOOKMARK_REPO[BookmarkArtworkRepository]
 
 STATISTICS --> ARTIST_REPO
+STATISTICS --> FOLLOW_REPO
+STATISTICS --> BOOKMARK_REPO
 
 BACKUP --> ARTIST_REPO
 
 SETTINGS --> SETTING_REPO[AppSettingRepository]
 
 DBINFO --> ARTIST_REPO
+DBINFO --> FOLLOW_REPO
+DBINFO --> BOOKMARK_REPO
+
 DBCHECK --> ARTIST_REPO
+
 SETTINGBACKUP --> SETTING_REPO
 ```
 
@@ -120,7 +126,6 @@ SETTINGBACKUP --> SETTING_REPO
 * 작가 수정
 * 평점 관리
 * 즐겨찾기 관리
-* 숨김 관리
 * 최근 열람 기록 저장
 * 작가 폴더 변경
 * 현재 작가 재스캔
@@ -128,6 +133,10 @@ SETTINGBACKUP --> SETTING_REPO
 * 삭제 전 백업 후 삭제
 * 삭제 작가 복구
 * 태그 저장
+* 태그 수정
+* 누락 작품 정보 저장
+* 저장 용량 갱신
+* 업데이트 이력 연동
 
 ---
 
@@ -146,6 +155,7 @@ SETTINGBACKUP --> SETTING_REPO
 * 파일 수 계산
 * 작품 ID 수집
 * 확장자 통계 생성
+* 비작품 파일 통계 생성
 
 ---
 
@@ -160,6 +170,7 @@ SETTINGBACKUP --> SETTING_REPO
 * 폴더 용량 저장
 * 최신 작품 ID 저장
 * 스캔 결과 생성
+* 미리보기 결과 생성
 
 ---
 
@@ -171,6 +182,7 @@ SETTINGBACKUP --> SETTING_REPO
 * 폴더 변경 후 재스캔
 * 작품 수 갱신
 * 파일 수 갱신
+* 저장 용량 갱신
 * 로컬 작품 ID 갱신
 * 상태 재계산
 
@@ -194,6 +206,8 @@ SETTINGBACKUP --> SETTING_REPO
 * 작가 태그 자동 동기화
 * 오류 정보 저장
 * 업데이트 이력 저장
+* 태그 데이터 갱신
+* 태그 통계 갱신
 
 ---
 
@@ -210,6 +224,8 @@ SETTINGBACKUP --> SETTING_REPO
 * 중단 조건 처리
 * 일시정지 및 재개 지원
 * 요청 간격 및 배치 휴식 적용
+* 진행률 계산
+* 상태 메시지 생성
 
 ---
 
@@ -243,6 +259,8 @@ Pixiv 메타데이터 수집 담당.
 * 일러스트 태그 통계 조회
 * 태그 번역 정보 수집
 * AI 여부 수집
+* 북마크 정보 수집
+* 팔로우 유저 정보 수집
 
 ---
 
@@ -272,6 +290,9 @@ Pixiv 관리 페이지 동기화 담당.
 * 재시도 설정 적용
 * 동기화 결과 생성
 * 로그 출력용 결과 생성
+* 태그 정보 동기화
+* AI 여부 동기화
+* 로컬 작가 매칭 연동
 
 ---
 
@@ -302,6 +323,7 @@ Pixiv 팔로우 유저 관리 담당.
 * 중복 제거
 * 로컬 작가 매칭
 * 요약 통계 생성
+* Pixiv 통계 생성
 
 ---
 
@@ -328,7 +350,6 @@ Pixiv 팔로우 유저 관리 담당.
 * Pixiv ID 기준 작가 검색
 * 로컬 등록 여부 판단
 * 즐겨찾기 상태 확인
-* 숨김 상태 확인
 * 로컬 작가 ID 연결
 
 ---
@@ -346,6 +367,7 @@ Pixiv 북마크 작품 관리 담당.
 * 중복 제거
 * 로컬 작가 매칭
 * 요약 통계 생성
+* Pixiv 통계 생성
 
 ---
 
@@ -372,7 +394,6 @@ Pixiv 북마크 작품 관리 담당.
 * 작가 Pixiv ID 기준 작가 검색
 * 로컬 등록 여부 판단
 * 즐겨찾기 상태 확인
-* 숨김 상태 확인
 * 로컬 작가 ID 연결
 
 ---
@@ -390,6 +411,9 @@ Pixiv 북마크 작품 관리 담당.
 * 사용자 번역 보존
 * 태그 직렬화
 * 태그 표시명 생성
+* 원문 태그 유지
+* 번역 태그 관리
+* 태그 검색 데이터 생성
 
 ---
 
@@ -435,6 +459,8 @@ Pixiv 북마크 작품 관리 담당.
 * 기초 통계 생성
 * 하위 서비스 결과 통합
 * Statistics Page 표시용 데이터 제공
+* Pixiv 통계 생성
+* 주간 변화 통계 생성
 
 ---
 
@@ -489,6 +515,7 @@ Pixiv 북마크 작품 관리 담당.
 * 태그 사용 횟수 계산
 * 태그별 작가 수 계산
 * 상위 태그 생성
+* 태그 보유 작가 TOP 생성
 
 ---
 
@@ -514,6 +541,19 @@ Pixiv 북마크 작품 관리 담당.
 * 즐겨찾기 작가 수 계산
 * 즐겨찾기 평균 평점 계산
 * 즐겨찾기 통계 생성
+
+---
+
+## StatisticsWeeklyService
+
+주간 변화 분석 담당.
+
+### 주요 역할
+
+* 주간 누락 작품 증가량 계산
+* 주간 해결 작품 증가량 계산
+* 주간 저장 용량 증가량 계산
+* 주차별 변화 데이터 생성
 
 ---
 
@@ -625,7 +665,10 @@ SQLite DB 최적화 담당.
 * Pixiv 관리 요청 설정 관리
 * 업데이트 확인 요청 설정 관리
 * 자동 백업 설정 관리
-* 창 크기 / 위치 / 최대화 상태 저장
+* 창 크기 저장
+* 창 위치 저장
+* 최대화 상태 저장
+* 화면 밖 창 복구 지원
 * 최근 경로 저장
 
 ---
@@ -767,4 +810,6 @@ statistics/
 
 # 버전 기준
 
-본 문서는 v0.16.0 (3차 리팩토링 완료) 기준으로 작성되었다.
+본 문서는 v0.17.0 (추가 기능 개발 완료) 기준으로 작성되었다.
+
+Pixiv 관리 시스템, Pixiv 메타데이터 연동 기능, 태그 동기화 기능, 통계 분석 기능, 주간 변화 분석 기능이 포함된 서비스 구조를 설명한다.

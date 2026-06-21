@@ -11,6 +11,7 @@ START --> DASHBOARD[대시보드]
 START --> SCAN[폴더 스캔]
 START --> ARTISTS[작가 관리]
 START --> UPDATE[업데이트 확인]
+START --> PIXIV_MANAGER[Pixiv 관리]
 START --> STATISTICS[통계 분석]
 START --> SETTINGS[설정]
 
@@ -43,20 +44,22 @@ B --> D[통계 카드 계산]
 B --> E[TOP 랭킹 계산]
 B --> F[추천 작가 생성]
 B --> G[랜덤 작가 생성]
+B --> H[최근 등록 작가 생성]
 
-C --> H[업데이트 현황 계산]
-C --> I[최근 활동 생성]
-C --> J[최근 스캔 결과 생성]
-C --> K[누락 변화 계산]
+C --> I[업데이트 현황 계산]
+C --> J[최근 활동 생성]
+C --> K[최근 스캔 결과 생성]
+C --> L[누락 변화 계산]
 
-D --> L[대시보드 표시]
-E --> L
-F --> L
-G --> L
-H --> L
-I --> L
-J --> L
-K --> L
+D --> M[대시보드 표시]
+E --> M
+F --> M
+G --> M
+H --> M
+I --> M
+J --> M
+K --> M
+L --> M
 ```
 
 ---
@@ -70,15 +73,17 @@ A[대시보드]
 
 A --> B[최근 활동]
 A --> C[TOP 랭킹]
+A --> D[최근 등록 작가]
 
-B --> D[작가명 더블클릭]
-C --> D
+B --> E[작가명 더블클릭]
+C --> E
+D --> E
 
-D --> E[작가 ID 확인]
-E --> F[작가 상세 이동]
+E --> F[작가 ID 확인]
+F --> G[작가 상세 이동]
 
-F --> G[돌아가기]
-G --> H[대시보드 복귀]
+G --> H[돌아가기]
+H --> I[대시보드 복귀]
 ```
 
 ---
@@ -289,7 +294,7 @@ G --> H[상세 페이지 및 대시보드 표시]
 
 # 업데이트 확인 흐름
 
-```mermaid
+```mermaid id="yg9wh1"
 flowchart LR
 
 A[작가 선택]
@@ -321,7 +326,7 @@ M --> N
 
 # Pixiv 관리 흐름
 
-```mermaid
+```mermaid id="jlwm3s"
 flowchart LR
 
 A[Pixiv 관리 페이지]
@@ -333,21 +338,25 @@ B --> C{데이터 종류}
 C -->|팔로우| D[팔로우 유저 파싱]
 C -->|북마크| E[북마크 작품 파싱]
 
-D --> F[Pixiv 메타데이터 수집]
+D --> F[중복 제거]
 E --> F
 
-F --> G[로컬 작가 매칭]
+F --> G[Pixiv 메타데이터 수집]
 
-G --> H[DB 저장]
+G --> H[태그 동기화]
+H --> I[로컬 작가 매칭]
 
-H --> I[Pixiv 관리 페이지 반영]
+I --> J[DB 저장]
+
+J --> K[통계 갱신]
+K --> L[페이지 반영]
 ```
 
 ---
 
 # Pixiv 메타데이터 수집 흐름
 
-```mermaid
+```mermaid id="4ls7m0"
 flowchart LR
 
 A[Pixiv ID]
@@ -372,7 +381,7 @@ G --> I[BookmarkService]
 
 # 태그 동기화 흐름
 
-```mermaid
+```mermaid id="m1jnl4"
 flowchart LR
 
 A[Pixiv 태그 조회]
@@ -394,7 +403,7 @@ F --> I[Bookmark Artwork]
 
 # 다중 업데이트 확인 흐름
 
-```mermaid 
+```mermaid id="7p8f0f"
 flowchart LR
 
 A[작가 다중 선택]
@@ -421,7 +430,7 @@ J --> K[완료]
 
 # 업데이트 일시정지 / 재개 흐름
 
-```mermaid 
+```mermaid id="1yb4wb"
 flowchart LR
 
 A[업데이트 확인 시작]
@@ -441,6 +450,7 @@ H --> B
 D --> B
 
 B --> I{모든 작가 완료}
+
 I -->|예| J[결과 요약]
 I -->|아니오| B
 ```
@@ -449,7 +459,7 @@ I -->|아니오| B
 
 # 업데이트 이력 비교 흐름
 
-```mermaid 
+```mermaid id="j9k9sj"
 flowchart LR
 
 A[현재 업데이트 결과]
@@ -474,35 +484,41 @@ G --> I[대시보드 반영]
 
 # 통계 분석 흐름
 
-```mermaid
+```mermaid id="kz1npr"
 flowchart LR
 
 A[통계 페이지 진입]
 
 A --> B[작가 데이터 조회]
+A --> C[Pixiv 관리 데이터 조회]
 
-B --> C[상태 분석]
-B --> D[평점 분석]
-B --> E[랭킹 분석]
-B --> F[태그 분석]
-B --> G[데이터 품질 분석]
-B --> H[즐겨찾기 분석]
+B --> D[상태 분석]
+B --> E[평점 분석]
+B --> F[랭킹 분석]
+B --> G[태그 분석]
+B --> H[데이터 품질 분석]
+B --> I[즐겨찾기 분석]
+B --> J[주간 변화 분석]
 
-C --> I[통계 데이터 생성]
-D --> I
-E --> I
-F --> I
-G --> I
-H --> I
+C --> K[Pixiv 통계 분석]
 
-I --> J[통계 페이지 표시]
+D --> L[통계 데이터 생성]
+E --> L
+F --> L
+G --> L
+H --> L
+I --> L
+J --> L
+K --> L
+
+L --> M[통계 페이지 표시]
 ```
 
 ---
 
 # 상태 분포 분석 흐름
 
-```mermaid 
+```mermaid id="0w4e8n"
 flowchart LR
 
 A[작가 데이터 조회]
@@ -526,7 +542,7 @@ G --> H[상태 분포 표시]
 
 # 평점 분포 분석 흐름
 
-```mermaid 
+```mermaid id="dxf4d4"
 flowchart LR
 
 A[평점 데이터 조회]
@@ -550,7 +566,7 @@ G --> H[평점 분포 표시]
 
 # 랭킹 분석 흐름
 
-```mermaid 
+```mermaid id="l0gnlg"
 flowchart LR
 
 A[작가 데이터 조회]
@@ -572,24 +588,57 @@ G --> H
 
 # 태그 분석 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[태그 데이터 조회]
 
 A --> B[태그 수집]
 B --> C[사용 횟수 계산]
+B --> D[태그 보유 작가 수 계산]
 
-C --> D[상위 태그 정렬]
+C --> E[태그 사용 TOP 생성]
+D --> F[태그 보유 작가 TOP 생성]
 
-D --> E[태그 분석 표시]
+E --> G[태그 분석 표시]
+F --> G
+```
+
+---
+
+# 태그 검색 이동 흐름
+
+```mermaid
+flowchart LR
+
+A[태그 사용 TOP]
+
+A --> B[태그 더블클릭]
+B --> C[원문 태그 확인]
+C --> D[Pixiv 태그 검색 URL 생성]
+D --> E[브라우저에서 Pixiv 검색 열기]
+```
+
+---
+
+# 태그 보유 작가 이동 흐름
+
+```mermaid
+flowchart LR
+
+A[태그 보유 작가 TOP]
+
+A --> B[작가 더블클릭]
+B --> C[Pixiv ID 확인]
+C --> D[Pixiv 작가 URL 생성]
+D --> E[브라우저에서 Pixiv 작가 페이지 열기]
 ```
 
 ---
 
 # 데이터 품질 분석 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[작가 데이터 조회]
@@ -609,9 +658,31 @@ F --> G[품질 통계 표시]
 
 ---
 
+# 주간 변화 분석 흐름
+
+```mermaid
+flowchart LR
+
+A[업데이트 이력 조회]
+
+A --> B[주차별 그룹화]
+
+B --> C[누락 작품 증가량 계산]
+B --> D[해결 작품 증가량 계산]
+B --> E[저장 용량 증가량 계산]
+
+C --> F[주간 변화 데이터 생성]
+D --> F
+E --> F
+
+F --> G[통계 페이지 표시]
+```
+
+---
+
 # 설정 저장 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[설정 변경]
@@ -628,7 +699,7 @@ D --> E[완료]
 
 # 설정 백업 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[설정 백업]
@@ -645,7 +716,7 @@ D --> E[완료]
 
 # 설정 복원 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[설정 복원]
@@ -662,9 +733,55 @@ E --> F[완료]
 
 ---
 
+# 로그 관리 흐름
+
+```mermaid
+flowchart LR
+
+A[로그 관리]
+
+A --> B[로그 종류 선택]
+
+B --> C{로그 종류}
+
+C -->|실행 로그| D[실행 로그 조회]
+C -->|업데이트 로그| E[업데이트 로그 조회]
+C -->|동기화 로그| F[동기화 로그 조회]
+
+D --> G[로그 표시]
+E --> G
+F --> G
+
+G --> H[로그 삭제]
+G --> I[로그 폴더 열기]
+```
+
+---
+
+# 창 위치 복구 흐름
+
+```mermaid
+flowchart LR
+
+A[프로그램 시작]
+
+A --> B[저장된 창 위치 조회]
+B --> C[현재 모니터 영역 조회]
+
+C --> D{창 위치가 화면 안인가}
+
+D -->|예| E[저장 위치 적용]
+D -->|아니오| F[기본 위치로 복구]
+
+E --> G[메인 윈도우 표시]
+F --> G
+```
+
+---
+
 # DB 무결성 검사 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[무결성 검사 실행]
@@ -690,7 +807,7 @@ H --> I[결과 표시]
 
 # DB 최적화 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[DB 최적화 실행]
@@ -731,7 +848,7 @@ F --> G[완료]
 
 # 삭제 작가 복구 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[복구 실행]
@@ -761,7 +878,7 @@ J --> K[완료]
 
 # DB 백업 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[DB 백업 실행]
@@ -778,7 +895,7 @@ D --> E[완료]
 
 # DB 복원 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[DB 복원 실행]
@@ -795,7 +912,7 @@ D --> E[완료]
 
 # CSV 내보내기 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[CSV 내보내기]
@@ -812,7 +929,7 @@ D --> E[완료]
 
 # 평점 일괄 변경 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[작가 다중 선택]
@@ -833,7 +950,7 @@ E -->|아니오| F[완료]
 
 # 즐겨찾기 일괄 변경 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[작가 다중 선택]
@@ -852,30 +969,38 @@ E -->|아니오| F[완료]
 
 ---
 
-# 숨김 일괄 변경 흐름
+# 우클릭 메뉴 처리 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
-A[작가 다중 선택]
+A[작가 목록]
 
-A --> B[숨김 설정 또는 해제]
+A --> B[작가 행 우클릭]
 
-B --> C[선택 작가 반복 처리]
+B --> C{메뉴 선택}
 
-C --> D[상태 저장]
+C -->|평점 변경| D[평점 입력]
+C -->|즐겨찾기| E[즐겨찾기 설정]
+C -->|즐겨찾기 해제| F[즐겨찾기 해제]
+C -->|삭제| G[삭제 확인]
 
-D --> E{다음 작가 존재}
+D --> H[작가 정보 저장]
+E --> H
+F --> H
 
-E -->|예| C
-E -->|아니오| F[완료]
+G --> I[삭제 백업 생성]
+I --> J[작가 삭제]
+
+H --> K[목록 갱신]
+J --> K
 ```
 
 ---
 
 # 태그 정리 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[태그 정리 실행]
@@ -894,16 +1019,17 @@ E --> F[저장]
 
 # 프로그램 종료 흐름
 
-```mermaid 
+```mermaid
 flowchart LR
 
 A[프로그램 종료]
 
 A --> B[진행 중 작업 확인]
 B --> C[업데이트 워커 종료]
-C --> D[DB 연결 종료]
+C --> D[창 크기 및 위치 저장]
+D --> E[DB 연결 종료]
 
-D --> E[종료]
+E --> F[종료]
 ```
 
 ---
@@ -912,7 +1038,7 @@ D --> E[종료]
 
 ## 대시보드
 
-```text 
+```text
 Dashboard
 → ArtistService
 → ArtistUpdateHistoryRepository
@@ -924,7 +1050,7 @@ Dashboard
 
 ## 통계 분석
 
-```text 
+```text
 Statistics Page
 → StatisticsService
 → StatisticsStatusService
@@ -933,6 +1059,8 @@ Statistics Page
 → StatisticsTagService
 → StatisticsQualityService
 → StatisticsFavoriteService
+→ StatisticsPixivManagementService
+→ StatisticsTrendService
 → Statistics UI
 ```
 
@@ -940,7 +1068,7 @@ Statistics Page
 
 ## 작가 등록
 
-```text 
+```text
 폴더 스캔
 → ArtistScanService
 → ArtistRepository
@@ -951,7 +1079,7 @@ Statistics Page
 
 ## 작가 수정
 
-```text 
+```text
 Artist Detail
 → ArtistService
 → ArtistRepository
@@ -976,13 +1104,13 @@ Update Check Page
 
 ## 업데이트 결과 비교
 
-```text 
+```text
 Update Result
 → ArtistUpdateHistoryRepository
 → Previous History
 → Comparison
 → History Save
-→ Dashboard / Artist Detail
+→ Dashboard / Artist Detail / Statistics
 ```
 
 ---
@@ -1000,7 +1128,7 @@ Update Result
 
 ## 폴더 변경
 
-```text 
+```text
 폴더 변경
 → FolderScanService
 → ArtworkStatusService
@@ -1023,7 +1151,7 @@ Settings Page
 
 ## 설정 백업
 
-```text 
+```text
 Settings Backup
 → SettingsBackupService
 → JSON Export
@@ -1032,9 +1160,32 @@ Settings Backup
 
 ---
 
+## 로그 관리
+
+```text
+Settings Page
+→ LogManagementService
+→ 로그 조회 / 삭제
+→ Settings UI
+```
+
+---
+
+## 창 위치 복구
+
+```text
+프로그램 시작
+→ SettingsService
+→ 저장된 창 위치 조회
+→ 모니터 영역 검증
+→ 기본 위치 복구 또는 저장 위치 적용
+```
+
+---
+
 ## DB 무결성 검사
 
-```text 
+```text
 Settings Page
 → DatabaseIntegrityService
 → ArtistRepository
@@ -1046,7 +1197,7 @@ Settings Page
 
 ## DB 최적화
 
-```text 
+```text
 Settings Page
 → DatabaseMaintenanceService
 → VACUUM
@@ -1082,16 +1233,31 @@ Pixiv Metadata
 → Repository
 → SQLite 저장
 ```
+
+---
+
+## 주간 변화 분석
+
+```text
+Statistics Page
+→ StatisticsTrendService
+→ Update History
+→ 주간 변화 계산
+→ Statistics UI
+```
+
 ---
 
 # 향후 확장 예정
 
 ## V2
 
-```text 
-3차 리팩토링
-추가 기능 개발
-4차 리팩토링
+```text
+v0.18.0
+V2 개발 마무리
+성능 최적화
+안정성 점검
+문서 최종 정비
 v1.0.0 배포 준비
 ```
 
@@ -1099,13 +1265,16 @@ v1.0.0 배포 준비
 
 ## V3
 
-```text 
+```text
 작품 관리
 작품 상세 정보
 카드 보기
 썸네일 보기
 자체 뷰어
-자동 업데이트
+Pixiv 자동 동기화
+팔로우 / 북마크 상세
+업데이트 예약 실행
+Pixiv 빠른 검색
 다운로드 큐
 ```
 
@@ -1132,7 +1301,7 @@ UI
 
 ## 3. 기능 단위 모듈 분리
 
-```text 
+```text
 Artist
 Scan
 Update
@@ -1144,6 +1313,7 @@ Follow
 Bookmark
 Pixiv
 Tag
+Log
 ```
 
 ---
@@ -1160,7 +1330,7 @@ Statistics UI
 
 ## 5. Dashboard 계산 분리
 
-```text 
+```text
 Dashboard UI
 → Dashboard Metrics
 → Service Layer
@@ -1176,4 +1346,4 @@ Dashboard UI
 
 # 버전 기준
 
-본 문서는 v0.15.0 (Pixiv 관리 시스템 및 Pixiv 메타데이터 연동 완료) 기준으로 작성되었다.
+본 문서는 v0.17.0 (추가 기능 개발 완료) 기준으로 작성되었다.

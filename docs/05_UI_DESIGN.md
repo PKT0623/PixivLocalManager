@@ -173,7 +173,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>통계 카드</td>
-    <td>전체 작가 수, 전체 작품 수, 전체 파일 수, 전체 폴더 용량, 최근 스캔 일시 표시</td>
+    <td>전체 작가 수, 전체 작품 수, 전체 파일 수, 전체 저장 용량, 최근 스캔 일시 표시</td>
 </tr>
 
 <tr>
@@ -187,23 +187,18 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>TOP 랭킹</td>
-    <td>작품 수, 파일 수, 폴더 용량 기준 TOP 랭킹 제공</td>
-</tr>
-
-<tr>
     <td>추천 작가</td>
-    <td>평점, 작품 수, 파일 수 표시</td>
+    <td>평점 기반 추천 작가 표시</td>
 </tr>
 
 <tr>
     <td>랜덤 작가</td>
-    <td>Pixiv 바로가기, 폴더 바로가기 제공</td>
+    <td>랜덤 작가 표시 및 Pixiv / 폴더 바로가기 제공</td>
 </tr>
 
 <tr>
     <td>상세 페이지 연동</td>
-    <td>최근 활동 및 랭킹 더블클릭 시 상세 페이지 이동</td>
+    <td>최근 활동, 추천 작가, 랜덤 작가 선택 시 상세 페이지 이동</td>
 </tr>
 
 </table>
@@ -229,26 +224,6 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>스캔 및 등록</td>
-    <td>신규 등록 또는 기존 정보 갱신</td>
-</tr>
-
-<tr>
-    <td>스캔 제어</td>
-    <td>일시정지, 재개, 중지</td>
-</tr>
-
-<tr>
-    <td>진행률 표시</td>
-    <td>현재 진행 상태 표시</td>
-</tr>
-
-<tr>
-    <td>스캔 통계</td>
-    <td>등록, 업데이트, 변경 없음, 실패 통계</td>
-</tr>
-
-<tr>
     <td>미리보기 테이블</td>
     <td>예상 결과 목록 표시</td>
 </tr>
@@ -259,34 +234,56 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
+    <td>스캔 실행</td>
+    <td>신규 등록 또는 기존 정보 갱신</td>
+</tr>
+
+<tr>
+    <td>일시정지</td>
+    <td>현재 작업 완료 후 정지</td>
+</tr>
+
+<tr>
+    <td>재개</td>
+    <td>중단 위치부터 이어서 진행</td>
+</tr>
+
+<tr>
+    <td>중지</td>
+    <td>현재 스캔 작업 중지</td>
+</tr>
+
+<tr>
+    <td>진행률 표시</td>
+    <td>현재 진행 상태 표시</td>
+</tr>
+
+<tr>
+    <td>스캔 통계</td>
+    <td>등록, 업데이트, 변경 없음, 실패 통계 표시</td>
+</tr>
+
+<tr>
+    <td>비작품 파일 통계</td>
+    <td>작품으로 분류되지 않은 파일 통계 표시</td>
+</tr>
+
+<tr>
+    <td>실패 항목 재시도</td>
+    <td>실패 항목만 다시 스캔</td>
+</tr>
+
+<tr>
     <td>결과 로그</td>
     <td>작업 로그 및 오류 표시</td>
 </tr>
 
 <tr>
-    <td>실패 항목 관리</td>
-    <td>실패 항목 재시도</td>
-</tr>
-
-<tr>
     <td>CSV 저장</td>
-    <td>결과 저장</td>
+    <td>스캔 결과 저장</td>
 </tr>
 
 </table>
-
----
-
-## Scan 처리 흐름
-
-```text
-폴더 선택
-→ 미리보기 생성
-→ 선택 항목 검토
-→ 스캔 실행
-→ 결과 저장
-→ 최근 스캔 이력 갱신
-```
 
 ---
 
@@ -304,6 +301,11 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
+    <td>자동 선택</td>
+    <td>업데이트 필요, 미확인 작가 자동 선택</td>
+</tr>
+
+<tr>
     <td>업데이트 실행</td>
     <td>Pixiv 최신 작품 확인</td>
 </tr>
@@ -311,6 +313,16 @@ STATISTICS --> DETAIL
 <tr>
     <td>최근 확인 스킵</td>
     <td>최근 확인된 작가 제외</td>
+</tr>
+
+<tr>
+    <td>PHPSESSID 테스트</td>
+    <td>Pixiv 세션 유효성 검사</td>
+</tr>
+
+<tr>
+    <td>일시정지 / 재개</td>
+    <td>작업 제어</td>
 </tr>
 
 <tr>
@@ -329,8 +341,13 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>일시정지 / 재개</td>
-    <td>작업 제어</td>
+    <td>결과 비교</td>
+    <td>이전 결과와 현재 결과 비교</td>
+</tr>
+
+<tr>
+    <td>업데이트 이력 저장</td>
+    <td>업데이트 결과 저장</td>
 </tr>
 
 <tr>
@@ -339,20 +356,6 @@ STATISTICS --> DETAIL
 </tr>
 
 </table>
-
----
-
-## Update Check 실행 흐름
-
-```text
-작가 선택
-→ 업데이트 확인 시작
-→ Pixiv 최신 작품 조회
-→ 누락 작품 계산
-→ 결과 저장
-→ 업데이트 이력 저장
-→ 결과 요약 생성
-```
 
 ---
 
@@ -371,7 +374,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>검색</td>
-    <td>작가명, Pixiv ID 검색</td>
+    <td>전체, 작가명, Pixiv ID, 태그 검색</td>
 </tr>
 
 <tr>
@@ -385,8 +388,8 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>일괄 작업</td>
-    <td>평점, 즐겨찾기, 숨김, 삭제 처리</td>
+    <td>우클릭 메뉴</td>
+    <td>평점 변경, 즐겨찾기, 삭제 기능 제공</td>
 </tr>
 
 <tr>
@@ -418,7 +421,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>폴더 정보</td>
-    <td>경로, 작품 수, 파일 수, 용량 표시</td>
+    <td>경로, 작품 수, 파일 수, 저장 용량 표시</td>
 </tr>
 
 <tr>
@@ -432,7 +435,7 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>최근 작품</td>
+    <td>최근 로컬 작품</td>
     <td>최근 로컬 작품 표시</td>
 </tr>
 
@@ -447,8 +450,18 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>바로가기</td>
-    <td>Pixiv 및 폴더 바로가기 제공</td>
+    <td>Pixiv ID 복사</td>
+    <td>클립보드 복사 기능 제공</td>
+</tr>
+
+<tr>
+    <td>Pixiv 바로가기</td>
+    <td>작가 Pixiv 페이지 이동</td>
+</tr>
+
+<tr>
+    <td>폴더 바로가기</td>
+    <td>작가 폴더 열기</td>
 </tr>
 
 <tr>
@@ -456,7 +469,13 @@ STATISTICS --> DETAIL
     <td>재스캔, 업데이트 확인, 경로 변경 지원</td>
 </tr>
 
+<tr>
+    <td>상태 메시지</td>
+    <td>저장, 재스캔, 업데이트 완료 메시지 표시</td>
+</tr>
+
 </table>
+
 
 ---
 
@@ -484,13 +503,28 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
-    <td>Pixiv 동기화</td>
-    <td>메타데이터 및 태그 수집</td>
+    <td>중복 제거</td>
+    <td>이미 저장된 Pixiv ID 자동 제외</td>
 </tr>
 
 <tr>
     <td>로컬 작가 매칭</td>
-    <td>등록 작가 자동 연결</td>
+    <td>등록된 작가와 자동 연결</td>
+</tr>
+
+<tr>
+    <td>Pixiv 메타데이터 수집</td>
+    <td>작가 및 작품 정보 수집</td>
+</tr>
+
+<tr>
+    <td>태그 동기화</td>
+    <td>Pixiv 태그 정보 수집 및 저장</td>
+</tr>
+
+<tr>
+    <td>AI 작품 관리</td>
+    <td>AI 생성 작품 여부 저장</td>
 </tr>
 
 <tr>
@@ -500,7 +534,7 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>통계 카드</td>
-    <td>팔로우 및 북마크 통계 표시</td>
+    <td>팔로우 수, 북마크 수, 로컬 매칭 수 표시</td>
 </tr>
 
 </table>
@@ -517,7 +551,17 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>요약 통계</td>
-    <td>전체 통계 카드 표시</td>
+    <td>작가 수, 작품 수, 파일 수, 저장 용량 표시</td>
+</tr>
+
+<tr>
+    <td>Pixiv 통계</td>
+    <td>팔로우 수, 북마크 수 표시</td>
+</tr>
+
+<tr>
+    <td>즐겨찾기 통계</td>
+    <td>즐겨찾기 작가 수 및 평균 평점 표시</td>
 </tr>
 
 <tr>
@@ -532,7 +576,12 @@ STATISTICS --> DETAIL
 
 <tr>
     <td>TOP 랭킹</td>
-    <td>작품 수, 파일 수, 용량 TOP 분석</td>
+    <td>작품 수, 파일 수, 저장 용량 TOP 분석</td>
+</tr>
+
+<tr>
+    <td>랭킹 이동</td>
+    <td>더블클릭 시 Pixiv 작가 페이지 이동</td>
 </tr>
 
 <tr>
@@ -541,13 +590,33 @@ STATISTICS --> DETAIL
 </tr>
 
 <tr>
+    <td>태그 검색</td>
+    <td>더블클릭 시 원문 태그 기준 Pixiv 검색</td>
+</tr>
+
+<tr>
+    <td>태그 보유 작가 이동</td>
+    <td>더블클릭 시 Pixiv 작가 페이지 이동</td>
+</tr>
+
+<tr>
     <td>품질 분석</td>
     <td>태그, 메모, 평점 작성률 분석</td>
 </tr>
 
 <tr>
-    <td>즐겨찾기 통계</td>
-    <td>즐겨찾기 작가 통계</td>
+    <td>주간 변화</td>
+    <td>주간별 누락 작품 증가량 분석</td>
+</tr>
+
+<tr>
+    <td>해결 작품 변화</td>
+    <td>주간별 해결 작품 증가량 분석</td>
+</tr>
+
+<tr>
+    <td>저장 용량 변화</td>
+    <td>주간별 저장 용량 증가량 분석</td>
 </tr>
 
 </table>
@@ -565,9 +634,12 @@ No
 Pixiv ID
 작품 수
 파일 수
+저장 용량
+누락 작품 수
 상태
 평점
 태그
+수정일
 최근 열람
 메모
 바로가기
@@ -578,13 +650,19 @@ Pixiv ID
 ## 특징
 
 * 다중 정렬 지원
-* 필터 지원
+* 검색 조건 선택 지원
+* 평점 필터 지원
 * 즐겨찾기 표시
 * 상태 배지 표시
 * 평점 즉시 수정
 * 상위 3개 태그 표시
+* 저장 용량 표시
+* 누락 작품 수 표시
+* 수정일 표시
 * 최근 열람 시각 표시
 * Pixiv 및 폴더 바로가기 제공
+* 우클릭 메뉴 제공
+* 더블클릭 상세 이동 지원
 
 ---
 
@@ -627,6 +705,16 @@ Pixiv ID
 </tr>
 
 <tr>
+    <td>로그 관리</td>
+    <td>실행 로그 및 업데이트 로그 조회 / 삭제</td>
+</tr>
+
+<tr>
+    <td>창 위치 관리</td>
+    <td>창 위치 저장 및 화면 밖 자동 복구</td>
+</tr>
+
+<tr>
     <td>프로그램 정보</td>
     <td>버전 및 시스템 정보 표시</td>
 </tr>
@@ -634,7 +722,6 @@ Pixiv ID
 </table>
 
 ---
-
 # 페이지 연동 흐름
 
 ```mermaid
@@ -645,6 +732,10 @@ Scan --> ArtistDetail
 Artists --> ArtistDetail
 UpdateCheck --> ArtistDetail
 Statistics --> ArtistDetail
+
+Dashboard --> PixivManager
+Statistics --> PixivManager
+PixivManager --> ArtistDetail
 ```
 
 ---
@@ -676,7 +767,22 @@ Statistics --> ArtistDetail
 ```text
 작가 목록 CSV
 스캔 결과 CSV
+스캔 미리보기 CSV
 업데이트 결과 CSV
+비작품 파일 목록
+```
+
+---
+
+## 로그 관리
+
+```text
+실행 로그
+업데이트 로그
+동기화 로그
+로그 조회
+로그 삭제
+로그 폴더 열기
 ```
 
 ---
@@ -694,6 +800,8 @@ Statistics --> ArtistDetail
 전체 파일 수
 전체 저장 용량
 최근 백업 정보
+로그 정보
+Pixiv 설정 상태
 ```
 
 ---
@@ -736,6 +844,7 @@ Page
 ```text
 Page
 → Sections
+→ Section Parts
 ```
 
 ---
@@ -777,8 +886,72 @@ ArtistTable
 
 ---
 
+## 7. 팝업 최소화
+
+단순 완료 알림은 가능하면 화면 내부 상태 메시지로 표시한다.
+
+```text
+저장 완료
+재스캔 완료
+업데이트 확인 완료
+복사 완료
+```
+
+오류, 경고, 삭제 확인처럼 사용자의 판단이 필요한 경우에만 팝업을 사용한다.
+
+---
+
+## 8. 테이블 상호작용
+
+테이블은 화면 목적에 따라 더블클릭, 우클릭 메뉴, 바로가기 버튼을 제공한다.
+
+```text
+더블클릭
+→ 상세 페이지 이동
+→ Pixiv 페이지 이동
+→ Pixiv 태그 검색
+
+우클릭 메뉴
+→ 평점 변경
+→ 즐겨찾기 설정 / 해제
+→ 삭제
+```
+
+---
+
+## 9. 외부 링크 처리
+
+Pixiv 작가, 작품, 태그 검색 페이지는 기본 브라우저에서 연다.
+
+```text
+작가
+→ https://www.pixiv.net/users/{pixiv_id}
+
+작품
+→ https://www.pixiv.net/artworks/{artwork_id}
+
+태그
+→ https://www.pixiv.net/tags/{tag}/artworks
+```
+
+---
+
+## 10. 상태 메시지
+
+작업 완료 또는 복사 완료처럼 즉시 확인 가능한 결과는 화면 내부 메시지로 표시한다.
+
+```text
+상태: 저장 완료
+상태: 재스캔 완료
+상태: 업데이트 확인 완료
+상태: Pixiv ID 복사 완료
+상태: 폴더 경로 복사 완료
+```
+
+---
+
 # 버전 기준
 
-본 문서는 v0.16.0 (3차 리팩토링 완료) 기준으로 작성되었다.
+본 문서는 v0.17.0 (추가 기능 개발 완료) 기준으로 작성되었다.
 
-Pixiv 관리 시스템과 Pixiv 메타데이터 연동 기능이 포함된 UI 구조를 설명한다.
+Pixiv 관리 시스템, Pixiv 메타데이터 연동 기능, 통계 분석 기능, 업데이트 이력 기능, 로그 관리 기능, 주간 변화 분석 기능이 포함된 UI 구조를 설명한다.

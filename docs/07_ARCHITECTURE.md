@@ -342,7 +342,7 @@ ScanPage
 * ScanActions는 스캔 시작, 중지, 일시정지, 재개 요청을 처리한다.
 * ScanWorker는 백그라운드에서 스캔 작업을 실행한다.
 * FolderScanner는 스캔 대상 폴더를 탐색한다.
-* FolderScanService는 폴더 내부 파일, 작품 수, 파일 수, 용량을 분석한다.
+* FolderScanService는 폴더 내부 파일, 작품 수, 파일 수, 저장 용량을 분석한다.
 * ArtistService는 분석 결과를 작가 데이터로 가공한다.
 * ArtistRepository는 작가 정보를 SQLite에 저장한다.
 
@@ -366,7 +366,7 @@ ScanPage
 * 스캔 미리보기는 DB 저장 전에 예상 결과를 표시한다.
 * ScanActions는 미리보기 실행 요청을 처리한다.
 * ScanWorker는 백그라운드에서 폴더 정보를 분석한다.
-* FolderScanService는 작품 수, 파일 수, 폴더 상태를 계산한다.
+* FolderScanService는 작품 수, 파일 수, 저장 용량을 계산한다.
 * ArtworkStatusService는 신규 등록, 업데이트, 변경 없음, 오류 예상 상태를 계산한다.
 * ScanPreviewTable은 미리보기 결과와 선택 상태를 표시한다.
 
@@ -402,7 +402,6 @@ flowchart LR
 ArtistDetailPage
 --> ArtistDetailActions
 --> ArtistService
---> ArtistFolderService
 --> FolderScanService
 --> ArtworkStatusService
 --> ArtistRepository
@@ -412,11 +411,9 @@ ArtistDetailPage
 ### 설명
 
 * ArtistDetailPage에서 새 폴더 경로를 선택한다.
-* ArtistDetailActions는 폴더 변경 요청을 ArtistService로 전달한다.
-* ArtistService는 폴더 변경 처리를 ArtistFolderService에 위임한다.
-* ArtistFolderService는 새 폴더 경로의 유효성을 확인한다.
-* FolderScanService는 새 폴더의 작품 수, 파일 수, 최신 작품 ID를 다시 계산한다.
-* ArtworkStatusService는 로컬 작품 정보와 Pixiv 작품 정보를 비교해 상태를 갱신한다.
+* ArtistDetailActions는 폴더 변경 요청을 처리한다.
+* FolderScanService는 새 폴더의 작품 수, 파일 수, 저장 용량을 다시 계산한다.
+* ArtworkStatusService는 로컬 작품 정보와 Pixiv 작품 정보를 비교하여 상태를 갱신한다.
 * ArtistRepository는 변경된 폴더 정보와 재스캔 결과를 저장한다.
 
 ---
@@ -429,7 +426,6 @@ flowchart LR
 ArtistsPage
 --> ArtistsActions
 --> ArtistService
---> ArtistDeleteService
 --> BackupService
 --> ArtistRepository
 --> SQLite
@@ -438,11 +434,9 @@ ArtistsPage
 ### 설명
 
 * ArtistsPage에서 삭제할 작가를 선택한다.
-* ArtistsActions는 삭제 확인 후 삭제 요청을 처리한다.
-* ArtistService는 삭제 처리를 ArtistDeleteService에 위임한다.
-* ArtistDeleteService는 삭제 전 백업을 생성한다.
-* BackupService는 삭제 대상 작가 데이터를 JSON 백업으로 저장한다.
-* ArtistRepository는 선택한 작가 데이터를 SQLite에서 삭제한다.
+* ArtistsActions는 삭제 요청을 처리한다.
+* BackupService는 삭제 전 작가 정보를 JSON 백업으로 저장한다.
+* ArtistRepository는 선택한 작가를 SQLite에서 삭제한다.
 
 ---
 
@@ -454,7 +448,6 @@ flowchart LR
 ArtistsPage
 --> ArtistsActions
 --> ArtistService
---> ArtistDeleteService
 --> BackupService
 --> ArtistRepository
 --> SQLite
@@ -463,11 +456,8 @@ ArtistsPage
 ### 설명
 
 * ArtistsPage에서 삭제 작가 복구 기능을 실행한다.
-* ArtistsActions는 복구할 백업 파일을 선택한다.
-* ArtistService는 복구 처리를 ArtistDeleteService에 위임한다.
-* ArtistDeleteService는 백업 파일을 읽고 복구 가능한 데이터를 검증한다.
-* BackupService는 백업 데이터 로딩과 복구 결과 생성을 보조한다.
-* ArtistRepository는 중복 Pixiv ID를 제외하고 복구 가능한 작가를 SQLite에 저장한다.
+* BackupService는 백업 파일을 읽는다.
+* ArtistRepository는 복구 가능한 작가를 다시 저장한다.
 * 복구 완료 후 목록을 갱신한다.
 
 ---
@@ -486,7 +476,7 @@ UpdateCheckPage
 --> PixivMetadataService
 --> TagService
 --> ArtworkStatusService
---> ArtistUpdateHistoryRepository
+--> UpdateHistoryRepository
 --> ArtistRepository
 --> SQLite
 ```
@@ -496,14 +486,15 @@ UpdateCheckPage
 * UpdateCheckPage는 업데이트 확인 대상 작가 목록과 실행 옵션을 표시한다.
 * UpdateCheckActions는 시작, 일시정지, 재개, 중지를 제어한다.
 * UpdateCheckWorker는 선택된 작가를 백그라운드에서 순차 처리한다.
-* ArtistService는 단일 작가 업데이트 확인 요청을 ArtistUpdateService에 전달한다.
-* ArtistUpdateService는 PixivUpdateService를 통해 최신 작품 ID를 조회한다.
-* PixivMetadataService는 Pixiv 작가 태그 통계를 조회한다.
+* ArtistService는 업데이트 확인 요청을 처리한다.
+* ArtistUpdateService는 Pixiv 최신 작품 정보를 계산한다.
+* PixivUpdateService는 Pixiv 최신 작품 ID를 조회한다.
+* PixivMetadataService는 태그 통계를 조회한다.
 * TagService는 기존 태그와 Pixiv 태그를 병합한다.
-* ArtworkStatusService는 로컬 작품 ID와 Pixiv 작품 ID를 비교해 상태와 누락 작품을 계산한다.
-* ArtistUpdateHistoryRepository는 확인 결과와 누락 변화 이력을 저장한다.
-* ArtistRepository는 작가의 최신 Pixiv 작품 ID, 업데이트 상태, 태그 정보를 저장한다.
-* 결과는 로그, 진행률, 요약 정보에 반영된다.
+* ArtworkStatusService는 누락 작품 수와 상태를 계산한다.
+* UpdateHistoryRepository는 업데이트 결과와 변화 이력을 저장한다.
+* ArtistRepository는 최신 Pixiv 정보와 상태를 저장한다.
+* 결과는 로그, 통계, 작가 상세 페이지에 반영된다.
 
 ---
 
@@ -518,21 +509,20 @@ PixivManagerPage
 --> PixivSyncService
 --> PixivMetadataService
 --> FollowService
---> FollowUserRepository
+--> FollowRepository
 --> SQLite
 ```
 
 ### 설명
 
-* PixivManagerPage는 팔로우 유저 가져오기 UI를 제공한다.
-* PixivManagerActions는 txt 또는 csv 파일에서 Pixiv 유저 ID 목록을 읽는다.
-* PixivManagerWorker는 가져오기 작업을 백그라운드에서 수행한다.
-* PixivSyncService는 Pixiv API 요청 흐름과 요청 안정성을 관리한다.
-* PixivMetadataService는 유저명, 작품 수, 태그 통계 등 메타데이터를 수집한다.
-* FollowService는 수집 데이터를 저장 가능한 구조로 변환한다.
-* FollowService는 Pixiv ID 기준으로 로컬 작가와 자동 매칭한다.
-* FollowUserRepository는 중복 ID를 제외하고 팔로우 유저 정보를 저장한다.
-* 처리 결과는 팔로우 유저 테이블과 로그에 반영된다.
+* PixivManagerPage는 팔로우 유저 관리 UI를 제공한다.
+* PixivManagerActions는 가져오기 및 동기화 요청을 처리한다.
+* PixivManagerWorker는 백그라운드에서 작업을 수행한다.
+* PixivSyncService는 Pixiv 요청 흐름을 관리한다.
+* PixivMetadataService는 유저 정보를 수집한다.
+* FollowService는 데이터를 저장 가능한 형태로 가공한다.
+* FollowRepository는 팔로우 유저 정보를 저장한다.
+* 결과는 목록, 통계, 로그에 반영된다.
 
 ---
 
@@ -547,21 +537,19 @@ PixivManagerPage
 --> PixivSyncService
 --> PixivMetadataService
 --> BookmarkService
---> BookmarkArtworkRepository
+--> BookmarkRepository
 --> SQLite
 ```
 
 ### 설명
 
-* PixivManagerPage는 북마크 작품 가져오기 UI를 제공한다.
-* PixivManagerActions는 txt 또는 csv 파일에서 Pixiv 작품 ID 목록을 읽는다.
-* PixivManagerWorker는 북마크 작품 정보를 백그라운드에서 수집한다.
-* PixivSyncService는 Pixiv 요청 간격, 배치 휴식, 재시도 정책을 관리한다.
-* PixivMetadataService는 작품명, 작가명, 작가 ID, 북마크 수, 페이지 수, 태그, AI 여부를 수집한다.
-* BookmarkService는 수집 데이터를 저장 가능한 구조로 변환한다.
-* BookmarkService는 작품의 작가 ID를 기준으로 로컬 작가와 자동 매칭한다.
-* BookmarkArtworkRepository는 중복 작품 ID를 제외하고 북마크 작품 정보를 저장한다.
-* 처리 결과는 북마크 작품 테이블과 로그에 반영된다.
+* PixivManagerPage는 북마크 작품 관리 UI를 제공한다.
+* PixivManagerActions는 작품 가져오기 및 동기화 요청을 처리한다.
+* PixivManagerWorker는 백그라운드에서 정보를 수집한다.
+* PixivMetadataService는 작품 정보, 태그, AI 여부를 수집한다.
+* BookmarkService는 수집 데이터를 정규화한다.
+* BookmarkRepository는 북마크 작품 정보를 저장한다.
+* 결과는 북마크 목록과 통계에 반영된다.
 
 ---
 
@@ -581,11 +569,9 @@ PixivMetadataService
 
 * PixivMetadataService는 Pixiv 태그 통계 API를 통해 원문 태그, 번역 태그, 작품 수를 수집한다.
 * TagService는 Pixiv 태그 데이터를 내부 태그 구조로 정규화한다.
-* TagService는 기존 작가 태그와 새 Pixiv 태그를 원문 기준으로 병합한다.
-* 사용자가 직접 수정한 번역 태그는 가능한 한 보존한다.
+* TagService는 기존 태그와 Pixiv 태그를 원문 기준으로 병합한다.
 * ArtistService는 병합된 태그 데이터를 작가 정보 갱신에 포함한다.
 * ArtistRepository는 직렬화된 태그 데이터를 저장한다.
-* 갱신된 태그는 작가 목록, 작가 상세, Pixiv 관리 페이지에 표시된다.
 
 ---
 
@@ -595,30 +581,35 @@ PixivMetadataService
 flowchart LR
 
 StatisticsPage
---> StatisticsActions
 --> StatisticsService
+
+StatisticsService
 --> StatisticsStatusService
 --> StatisticsRatingService
 --> StatisticsRankingService
 --> StatisticsTagService
 --> StatisticsQualityService
 --> StatisticsFavoriteService
+--> StatisticsWeeklyService
+
+StatisticsService
 --> ArtistRepository
---> SQLite
+--> FollowRepository
+--> BookmarkRepository
 ```
 
 ### 설명
 
 * StatisticsPage는 통계 분석 화면을 표시한다.
-* StatisticsActions는 통계 새로고침 요청을 처리한다.
 * StatisticsService는 하위 통계 서비스 결과를 통합한다.
-* StatisticsStatusService는 업데이트 상태 분포를 계산한다.
-* StatisticsRatingService는 평점 분포와 평균 평점을 계산한다.
-* StatisticsRankingService는 작품 수, 파일 수, 저장 용량 기준 랭킹을 생성한다.
+* StatisticsStatusService는 상태 분포를 계산한다.
+* StatisticsRatingService는 평점 분포를 계산한다.
+* StatisticsRankingService는 작품 수, 파일 수, 저장 용량 랭킹을 생성한다.
 * StatisticsTagService는 태그 사용 통계를 분석한다.
-* StatisticsQualityService는 태그, 메모, 평점, 폴더 상태 기반 데이터 품질을 계산한다.
-* StatisticsFavoriteService는 즐겨찾기 작가 통계를 계산한다.
-* ArtistRepository는 통계 계산에 필요한 작가 데이터를 제공한다.
+* StatisticsQualityService는 데이터 품질을 계산한다.
+* StatisticsFavoriteService는 즐겨찾기 통계를 계산한다.
+* StatisticsWeeklyService는 주간 변화 데이터를 계산한다.
+* FollowRepository와 BookmarkRepository를 통해 Pixiv 통계를 생성한다.
 
 ---
 
@@ -640,7 +631,6 @@ SettingsPage
 * SettingsActions는 저장 버튼 클릭과 입력값 검증을 처리한다.
 * SettingsService는 설정값을 저장 형식으로 변환한다.
 * AppSettingRepository는 설정값을 app_settings 테이블에 저장한다.
-* 저장된 설정은 Pixiv 요청, 업데이트 확인, 백업, 창 크기 복원 등에 사용된다.
 
 ---
 
@@ -659,12 +649,11 @@ SettingsPage
 
 ### 설명
 
-* SettingsPage는 백업, 복원, 삭제, DB 최적화 기능을 제공한다.
-* SettingsActions는 사용자가 선택한 백업 작업을 실행한다.
+* SettingsPage는 백업, 복원, 데이터베이스 관리 기능을 제공한다.
 * BackupService는 데이터베이스 백업 파일을 생성하거나 복원한다.
-* ArtistRepository는 작가 데이터를 백업 및 복원 대상으로 제공한다.
-* AppSettingRepository는 설정 데이터를 백업 및 복원 대상으로 제공한다.
-* SQLite 파일은 백업 생성, 복원, 최적화의 대상이 된다.
+* ArtistRepository는 작가 데이터를 제공한다.
+* AppSettingRepository는 설정 데이터를 제공한다.
+* SQLite 파일은 백업, 복원, 최적화 대상이 된다.
 
 ---
 
@@ -763,6 +752,7 @@ UI는 직접 Repository를 호출하지 않는다.
 * Tag Service Group
 * Statistics Service Group
 * Backup Service Group
+* Settings Service
 
 ---
 
@@ -833,7 +823,6 @@ METRICS --> SUMMARY
 METRICS --> STATUS
 METRICS --> ACTIVITY
 METRICS --> SCAN
-METRICS --> TOP
 METRICS --> RECOMMEND
 METRICS --> RANDOM
 ```
@@ -878,6 +867,20 @@ FolderSize --> TopRanking
 
 ---
 
+
+## 랜덤 작가 생성
+
+```mermaid
+flowchart LR
+
+Artists
+--> RandomPool
+--> RandomSelect
+--> RandomArtistCard
+```
+
+---
+
 # Statistics 아키텍처
 
 ## 데이터 생성 구조
@@ -886,6 +889,9 @@ FolderSize --> TopRanking
 flowchart TD
 
 ARTISTS[Artist Data]
+FOLLOWS[Follow Users]
+BOOKMARKS[Bookmark Artworks]
+HISTORY[Update History]
 
 ARTISTS --> STATUS
 ARTISTS --> RATING
@@ -894,12 +900,19 @@ ARTISTS --> TAG
 ARTISTS --> QUALITY
 ARTISTS --> FAVORITE
 
+FOLLOWS --> PIXIV
+BOOKMARKS --> PIXIV
+
+HISTORY --> WEEKLY
+
 STATUS[Status Statistics]
 RATING[Rating Statistics]
 RANKING[Ranking Statistics]
 TAG[Tag Statistics]
 QUALITY[Quality Statistics]
 FAVORITE[Favorite Statistics]
+PIXIV[Pixiv Statistics]
+WEEKLY[Weekly Statistics]
 
 STATUS --> STATISTICS
 RATING --> STATISTICS
@@ -907,6 +920,8 @@ RANKING --> STATISTICS
 TAG --> STATISTICS
 QUALITY --> STATISTICS
 FAVORITE --> STATISTICS
+PIXIV --> STATISTICS
+WEEKLY --> STATISTICS
 
 STATISTICS[Statistics Service Group]
 
@@ -981,6 +996,12 @@ Pixiv 태그 연동
 다운로드 큐
 작품 태그 관리
 작품 컬렉션 관리
+
+팔로우 / 북마크 상세
+Pixiv 자동 동기화
+Pixiv 검색 기능
+동기화 이력 분석
+예약 업데이트 확인
 ```
 
 ---
@@ -1060,6 +1081,8 @@ V3
 → 뷰어 시스템
 → 다운로드 큐
 → 썸네일 시스템
+→ Pixiv 자동 동기화
+→ 팔로우 / 북마크 상세
 ```
 
 ---
@@ -1123,6 +1146,6 @@ from app.services import (
 
 # 버전 기준
 
-본 문서는 v0.16.0 기준으로 작성되었다.
+본 문서는 v0.17.0 (추가 기능 개발 완료) 기준으로 작성되었다.
 
-Pixiv 관리 시스템과 Pixiv 메타데이터 연동 기능이 포함된 구조를 설명한다.
+Pixiv 관리 시스템, Pixiv 메타데이터 연동 기능, 통계 분석 기능, 업데이트 이력 기능, 로그 관리 기능, 주간 변화 분석 기능이 포함된 구조를 설명한다.

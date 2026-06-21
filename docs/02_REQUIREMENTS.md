@@ -274,7 +274,7 @@ REQ --> PIXIV[Pixiv 관리]
 <tr>
     <td>A-03</td>
     <td>작가 검색</td>
-    <td>작가명, Pixiv ID 기반 검색</td>
+    <td>전체, 작가명, Pixiv ID, 태그 기반 검색</td>
 </tr>
 
 <tr>
@@ -291,104 +291,134 @@ REQ --> PIXIV[Pixiv 관리]
 
 <tr>
     <td>A-06</td>
-    <td>숨김</td>
-    <td>숨김 설정 및 해제</td>
-</tr>
-
-<tr>
-    <td>A-07</td>
     <td>평점 관리</td>
     <td>0~10 평점 저장</td>
 </tr>
 
 <tr>
-    <td>A-08</td>
+    <td>A-07</td>
     <td>태그 관리</td>
     <td>태그 등록, 수정, 삭제</td>
 </tr>
 
 <tr>
-    <td>A-09</td>
+    <td>A-08</td>
     <td>메모 관리</td>
     <td>장문 메모 저장</td>
 </tr>
 
 <tr>
-    <td>A-10</td>
+    <td>A-09</td>
     <td>참고 링크</td>
     <td>참고 링크 저장</td>
 </tr>
 
 <tr>
-    <td>A-11</td>
+    <td>A-10</td>
     <td>다운로드 메모</td>
     <td>다운로드 관련 메모 저장</td>
 </tr>
 
 <tr>
-    <td>A-12</td>
+    <td>A-11</td>
     <td>최근 열람 기록</td>
     <td>최근 열람 일시 저장</td>
 </tr>
 
 <tr>
-    <td>A-13</td>
+    <td>A-12</td>
     <td>작가 삭제</td>
     <td>삭제 전 자동 백업 후 삭제</td>
 </tr>
 
 <tr>
-    <td>A-14</td>
+    <td>A-13</td>
     <td>작가 복구</td>
     <td>삭제 백업 기반 복구</td>
 </tr>
 
 <tr>
-    <td>A-15</td>
+    <td>A-14</td>
     <td>폴더 바로가기</td>
     <td>작가 폴더 열기</td>
 </tr>
 
 <tr>
-    <td>A-16</td>
+    <td>A-15</td>
     <td>Pixiv 바로가기</td>
     <td>Pixiv 프로필 열기</td>
 </tr>
 
 <tr>
+    <td>A-16</td>
+    <td>Pixiv ID 복사</td>
+    <td>Pixiv ID 클립보드 복사</td>
+</tr>
+
+<tr>
     <td>A-17</td>
+    <td>폴더 경로 복사</td>
+    <td>작가 폴더 경로 클립보드 복사</td>
+</tr>
+
+<tr>
+    <td>A-18</td>
     <td>폴더 변경</td>
     <td>작가 폴더 경로 변경</td>
 </tr>
 
 <tr>
-    <td>A-18</td>
+    <td>A-19</td>
     <td>현재 작가 재스캔</td>
     <td>선택 작가 재스캔</td>
 </tr>
 
 <tr>
-    <td>A-19</td>
+    <td>A-20</td>
     <td>현재 작가 업데이트 확인</td>
     <td>선택 작가 업데이트 확인</td>
 </tr>
 
 <tr>
-    <td>A-20</td>
+    <td>A-21</td>
     <td>최신 로컬 작품 표시</td>
     <td>최근 작품 목록 표시</td>
 </tr>
 
 <tr>
-    <td>A-21</td>
+    <td>A-22</td>
     <td>누락 작품 표시</td>
     <td>로컬에 없는 작품 ID 표시</td>
 </tr>
 
 <tr>
-    <td>A-22</td>
+    <td>A-23</td>
     <td>업데이트 이력 표시</td>
     <td>최근 업데이트 결과 표시</td>
+</tr>
+
+<tr>
+    <td>A-24</td>
+    <td>우클릭 메뉴</td>
+    <td>작가 목록에서 평점, 즐겨찾기, 삭제 기능 제공</td>
+</tr>
+
+<tr>
+    <td>A-25</td>
+    <td>저장 용량 표시</td>
+    <td>작가 목록 및 상세에서 폴더 저장 용량 표시</td>
+</tr>
+
+<tr>
+    <td>A-26</td>
+    <td>누락 작품 수 표시</td>
+    <td>작가 목록에서 누락 작품 수 표시</td>
+</tr>
+
+<tr>
+    <td>A-27</td>
+    <td>수정일 표시</td>
+    <td>작가 목록에서 수정일 표시 및 정렬</td>
 </tr>
 
 </table>
@@ -524,6 +554,24 @@ REQ --> PIXIV[Pixiv 관리]
     <td>작가 태그 자동 갱신</td>
 </tr>
 
+<tr>
+    <td>U-21</td>
+    <td>업데이트 결과 비교</td>
+    <td>직전 결과와 현재 결과 비교</td>
+</tr>
+
+<tr>
+    <td>U-22</td>
+    <td>업데이트 이력 조회</td>
+    <td>작가 상세에서 저장된 이력 조회</td>
+</tr>
+
+<tr>
+    <td>U-23</td>
+    <td>누락 작품 변화 추적</td>
+    <td>신규 누락 및 해결 작품 변화 추적</td>
+</tr>
+
 </table>
 
 ---
@@ -539,104 +587,122 @@ REQ --> PIXIV[Pixiv 관리]
 
 <tr>
     <td>S-01</td>
-    <td>기본 폴더 설정</td>
-    <td>Pixiv 루트 폴더 저장</td>
+    <td>Pixiv 루트 폴더 설정</td>
+    <td>기본 Pixiv 폴더 경로 저장</td>
 </tr>
 
 <tr>
     <td>S-02</td>
-    <td>Pixiv PHPSESSID 저장</td>
+    <td>PHPSESSID 저장</td>
     <td>Pixiv 로그인 세션 저장</td>
 </tr>
 
 <tr>
     <td>S-03</td>
-    <td>PHPSESSID 테스트</td>
-    <td>세션 유효성 확인</td>
+    <td>세션 테스트</td>
+    <td>PHPSESSID 유효성 검사</td>
 </tr>
 
 <tr>
     <td>S-04</td>
-    <td>업데이트 확인 요청 설정</td>
-    <td>요청 간격, 배치 수, 휴식 시간, 재시도 설정</td>
+    <td>Pixiv 요청 간격 설정</td>
+    <td>Pixiv 관리 요청 간격 설정</td>
 </tr>
 
 <tr>
     <td>S-05</td>
-    <td>Pixiv 관리 요청 설정</td>
-    <td>요청 간격, 배치 수, 휴식 시간, 재시도 설정</td>
+    <td>Pixiv 배치 설정</td>
+    <td>Pixiv 관리 배치 처리 수 설정</td>
 </tr>
 
 <tr>
     <td>S-06</td>
-    <td>DB 정보 조회</td>
-    <td>DB 크기 및 통계 정보 조회</td>
+    <td>업데이트 요청 간격 설정</td>
+    <td>업데이트 확인 요청 간격 설정</td>
 </tr>
 
 <tr>
     <td>S-07</td>
+    <td>업데이트 배치 설정</td>
+    <td>업데이트 확인 배치 처리 수 설정</td>
+</tr>
+
+<tr>
+    <td>S-08</td>
+    <td>창 위치 저장</td>
+    <td>창 크기 및 위치 저장</td>
+</tr>
+
+<tr>
+    <td>S-09</td>
+    <td>창 위치 복구</td>
+    <td>프로그램 시작 시 창 상태 복구</td>
+</tr>
+
+<tr>
+    <td>S-10</td>
+    <td>DB 정보 조회</td>
+    <td>DB 크기 및 통계 조회</td>
+</tr>
+
+<tr>
+    <td>S-11</td>
     <td>DB 무결성 검사</td>
     <td>데이터 이상 여부 검사</td>
 </tr>
 
 <tr>
-    <td>S-08</td>
+    <td>S-12</td>
     <td>DB 최적화</td>
-    <td>VACUUM 및 ANALYZE 실행</td>
+    <td>VACUUM, ANALYZE 실행</td>
 </tr>
 
 <tr>
-    <td>S-09</td>
+    <td>S-13</td>
     <td>DB 백업</td>
     <td>SQLite DB 백업</td>
 </tr>
 
 <tr>
-    <td>S-10</td>
+    <td>S-14</td>
     <td>DB 복원</td>
-    <td>백업 파일 복원</td>
+    <td>SQLite DB 복원</td>
 </tr>
 
 <tr>
-    <td>S-11</td>
-    <td>자동 백업</td>
-    <td>자동 백업 설정</td>
-</tr>
-
-<tr>
-    <td>S-12</td>
-    <td>백업 보관 정책</td>
-    <td>최대 보관 개수 관리</td>
-</tr>
-
-<tr>
-    <td>S-13</td>
+    <td>S-15</td>
     <td>설정 백업</td>
     <td>설정 JSON 백업</td>
 </tr>
 
 <tr>
-    <td>S-14</td>
+    <td>S-16</td>
     <td>설정 복원</td>
     <td>설정 JSON 복원</td>
 </tr>
 
 <tr>
-    <td>S-15</td>
-    <td>설정 초기화</td>
-    <td>기본 설정 복원</td>
-</tr>
-
-<tr>
-    <td>S-16</td>
-    <td>CSV 내보내기</td>
-    <td>작가 목록 CSV 저장</td>
-</tr>
-
-<tr>
     <td>S-17</td>
-    <td>환경 정보 저장</td>
-    <td>창 크기 및 위치 저장</td>
+    <td>프로그램 정보</td>
+    <td>버전 및 환경 정보 표시</td>
+</tr>
+
+<tr>
+    <td>S-18</td>
+    <td>최근 경로 저장</td>
+    <td>가져오기 및 내보내기 경로 저장</td>
+</tr>
+
+<tr>
+    <td>S-19</td>
+    <td>로그 관리</td>
+    <td>실행 로그 조회 및 관리</td>
+</tr>
+
+<tr>
+    <td>S-20</td>
+    <td>백업 정보 조회</td>
+    <td>최근 백업 정보 표시</td>
 </tr>
 
 </table>
@@ -654,62 +720,68 @@ REQ --> PIXIV[Pixiv 관리]
 
 <tr>
     <td>T-01</td>
-    <td>기초 통계</td>
-    <td>작가 수, 작품 수, 파일 수, 용량 통계</td>
+    <td>전체 통계</td>
+    <td>전체 작가, 작품, 파일, 용량 집계</td>
 </tr>
 
 <tr>
     <td>T-02</td>
     <td>상태 분포 분석</td>
-    <td>업데이트 상태 분포 표시</td>
+    <td>업데이트 상태 분포 분석</td>
 </tr>
 
 <tr>
     <td>T-03</td>
     <td>평점 분포 분석</td>
-    <td>평점 구간별 통계</td>
+    <td>평점 분포 분석</td>
 </tr>
 
 <tr>
     <td>T-04</td>
-    <td>데이터 품질 분석</td>
-    <td>태그, 평점, 메모 작성 비율 분석</td>
+    <td>TOP 랭킹</td>
+    <td>작품 수, 파일 수, 용량 TOP 분석</td>
 </tr>
 
 <tr>
     <td>T-05</td>
-    <td>작품 수 TOP</td>
-    <td>작품 수 기준 랭킹</td>
+    <td>태그 분석</td>
+    <td>사용 태그 통계 분석</td>
 </tr>
 
 <tr>
     <td>T-06</td>
-    <td>파일 수 TOP</td>
-    <td>파일 수 기준 랭킹</td>
+    <td>품질 분석</td>
+    <td>태그, 메모, 평점 작성률 분석</td>
 </tr>
 
 <tr>
     <td>T-07</td>
-    <td>용량 TOP</td>
-    <td>폴더 용량 기준 랭킹</td>
-</tr>
-
-<tr>
-    <td>T-08</td>
-    <td>태그 분석</td>
-    <td>태그 사용 빈도 분석</td>
-</tr>
-
-<tr>
-    <td>T-09</td>
-    <td>즐겨찾기 통계</td>
+    <td>즐겨찾기 분석</td>
     <td>즐겨찾기 작가 통계</td>
 </tr>
 
 <tr>
+    <td>T-08</td>
+    <td>주간 변화 분석</td>
+    <td>누락 변화 및 저장 용량 변화 분석</td>
+</tr>
+
+<tr>
+    <td>T-09</td>
+    <td>Pixiv 관리 통계</td>
+    <td>팔로우 및 북마크 통계 분석</td>
+</tr>
+
+<tr>
     <td>T-10</td>
-    <td>태그별 작품 수 분석</td>
-    <td>Pixiv 태그 통계 기반 분석</td>
+    <td>태그 검색 이동</td>
+    <td>Pixiv 태그 검색 페이지 이동</td>
+</tr>
+
+<tr>
+    <td>T-11</td>
+    <td>작가 페이지 이동</td>
+    <td>Pixiv 작가 페이지 이동</td>
 </tr>
 
 </table>
@@ -727,74 +799,92 @@ REQ --> PIXIV[Pixiv 관리]
 
 <tr>
     <td>P-01</td>
-    <td>팔로우 유저 가져오기</td>
-    <td>TXT, CSV 기반 팔로우 ID 등록</td>
+    <td>팔로우 유저 관리</td>
+    <td>팔로우 유저 목록 저장 및 조회</td>
 </tr>
 
 <tr>
     <td>P-02</td>
-    <td>북마크 작품 가져오기</td>
-    <td>TXT, CSV 기반 작품 ID 등록</td>
+    <td>북마크 작품 관리</td>
+    <td>북마크 작품 목록 저장 및 조회</td>
 </tr>
 
 <tr>
     <td>P-03</td>
-    <td>중복 제거</td>
-    <td>이미 등록된 ID 자동 제외</td>
+    <td>TXT 가져오기</td>
+    <td>TXT 파일에서 ID 추출</td>
 </tr>
 
 <tr>
     <td>P-04</td>
-    <td>로컬 작가 매칭</td>
-    <td>Pixiv ID 기준 자동 매칭</td>
+    <td>CSV 가져오기</td>
+    <td>CSV 파일에서 ID 추출</td>
 </tr>
 
 <tr>
     <td>P-05</td>
-    <td>팔로우 유저 관리</td>
-    <td>팔로우 목록 조회 및 관리</td>
+    <td>중복 제거</td>
+    <td>중복 ID 자동 제외</td>
 </tr>
 
 <tr>
     <td>P-06</td>
-    <td>북마크 작품 관리</td>
-    <td>북마크 목록 조회 및 관리</td>
+    <td>Pixiv 메타데이터 수집</td>
+    <td>작가 및 작품 정보 수집</td>
 </tr>
 
 <tr>
     <td>P-07</td>
-    <td>Pixiv 메타데이터 조회</td>
-    <td>작품 및 유저 정보 수집</td>
+    <td>Pixiv 태그 수집</td>
+    <td>태그 및 번역 정보 수집</td>
 </tr>
 
 <tr>
     <td>P-08</td>
-    <td>태그 통계 수집</td>
-    <td>Pixiv 태그 및 작품 수 수집</td>
+    <td>AI 정보 수집</td>
+    <td>AI 생성 여부 수집</td>
 </tr>
 
 <tr>
     <td>P-09</td>
-    <td>AI 작품 여부 수집</td>
-    <td>AI 생성 여부 저장</td>
+    <td>로컬 작가 매칭</td>
+    <td>Pixiv ID 기반 자동 매칭</td>
 </tr>
 
 <tr>
     <td>P-10</td>
-    <td>Pixiv 바로가기</td>
-    <td>유저 및 작품 페이지 열기</td>
+    <td>동기화 실행</td>
+    <td>Pixiv 정보 동기화</td>
 </tr>
 
 <tr>
     <td>P-11</td>
     <td>동기화 로그</td>
-    <td>동기화 결과 로그 출력</td>
+    <td>동기화 진행 로그 저장</td>
 </tr>
 
 <tr>
     <td>P-12</td>
-    <td>요약 통계</td>
-    <td>팔로우, 북마크, 매칭 통계 표시</td>
+    <td>통계 생성</td>
+    <td>팔로우 및 북마크 통계 생성</td>
+</tr>
+
+<tr>
+    <td>P-13</td>
+    <td>동기화 결과 비교</td>
+    <td>이전 동기화 결과와 현재 결과 비교</td>
+</tr>
+
+<tr>
+    <td>P-14</td>
+    <td>동기화 이력 저장</td>
+    <td>동기화 실행 결과 저장</td>
+</tr>
+
+<tr>
+    <td>P-15</td>
+    <td>태그 재동기화</td>
+    <td>저장된 태그 정보 재수집</td>
 </tr>
 
 </table>
@@ -814,20 +904,32 @@ REQ --> PIXIV[Pixiv 관리]
 
 <tr>
     <td>N-01</td>
-    <td>UI 응답성</td>
-    <td>장시간 작업 중 UI 멈춤 방지</td>
+    <td>작가 조회</td>
+    <td>1,000명 이상 작가 목록에서 원활한 조회 지원</td>
 </tr>
 
 <tr>
     <td>N-02</td>
-    <td>멀티스레드</td>
-    <td>스캔 및 업데이트 작업을 별도 스레드에서 실행</td>
+    <td>스캔 처리</td>
+    <td>대량 폴더 스캔 시 UI 응답 유지</td>
 </tr>
 
 <tr>
     <td>N-03</td>
-    <td>대량 데이터 처리</td>
-    <td>수백~수천 작가 데이터 처리 지원</td>
+    <td>업데이트 확인</td>
+    <td>다중 작가 처리 중 UI 응답 유지</td>
+</tr>
+
+<tr>
+    <td>N-04</td>
+    <td>통계 생성</td>
+    <td>통계 페이지 진입 시 빠른 데이터 계산</td>
+</tr>
+
+<tr>
+    <td>N-05</td>
+    <td>DB 최적화</td>
+    <td>대용량 데이터 환경에서도 정상 동작</td>
 </tr>
 
 </table>
@@ -844,27 +946,33 @@ REQ --> PIXIV[Pixiv 관리]
 </tr>
 
 <tr>
-    <td>N-04</td>
-    <td>예외 처리</td>
-    <td>오류 발생 시 프로그램 종료 방지</td>
-</tr>
-
-<tr>
-    <td>N-05</td>
-    <td>자동 백업</td>
-    <td>데이터 손실 방지</td>
-</tr>
-
-<tr>
     <td>N-06</td>
-    <td>복구 기능</td>
-    <td>삭제 데이터 복구 지원</td>
+    <td>오류 처리</td>
+    <td>예외 발생 시 프로그램 종료 방지</td>
 </tr>
 
 <tr>
     <td>N-07</td>
-    <td>DB 무결성</td>
-    <td>정기 무결성 검사 지원</td>
+    <td>데이터 보호</td>
+    <td>삭제 전 자동 백업 수행</td>
+</tr>
+
+<tr>
+    <td>N-08</td>
+    <td>복구 지원</td>
+    <td>삭제 작가 복구 지원</td>
+</tr>
+
+<tr>
+    <td>N-09</td>
+    <td>DB 보호</td>
+    <td>DB 백업 및 복원 지원</td>
+</tr>
+
+<tr>
+    <td>N-10</td>
+    <td>설정 보호</td>
+    <td>설정 백업 및 복원 지원</td>
 </tr>
 
 </table>
@@ -881,40 +989,40 @@ REQ --> PIXIV[Pixiv 관리]
 </tr>
 
 <tr>
-    <td>N-08</td>
-    <td>Service Layer</td>
-    <td>UI와 비즈니스 로직 분리</td>
-</tr>
-
-<tr>
-    <td>N-09</td>
-    <td>Repository Layer</td>
-    <td>데이터 접근 계층 분리</td>
-</tr>
-
-<tr>
-    <td>N-10</td>
-    <td>모듈화</td>
-    <td>기능 단위 폴더 구조 유지</td>
-</tr>
-
-<tr>
     <td>N-11</td>
-    <td>리팩토링 용이성</td>
-    <td>대규모 기능 추가를 고려한 구조 유지</td>
+    <td>계층 분리</td>
+    <td>UI → Service → Repository 구조 유지</td>
 </tr>
 
 <tr>
     <td>N-12</td>
+    <td>모듈화</td>
+    <td>기능별 모듈 분리</td>
+</tr>
+
+<tr>
+    <td>N-13</td>
+    <td>UI 분리</td>
+    <td>Page, Section, Widget 구조 사용</td>
+</tr>
+
+<tr>
+    <td>N-14</td>
+    <td>비동기 처리</td>
+    <td>장시간 작업은 Worker 사용</td>
+</tr>
+
+<tr>
+    <td>N-15</td>
     <td>확장성</td>
-    <td>V3 작품 관리 시스템 확장 지원</td>
+    <td>V3 기능 추가 시 구조 변경 최소화</td>
 </tr>
 
 </table>
 
 ---
 
-## NFR-04 Pixiv 연동 안정성
+## NFR-04 사용성
 
 <table>
 <tr>
@@ -924,40 +1032,40 @@ REQ --> PIXIV[Pixiv 관리]
 </tr>
 
 <tr>
-    <td>N-13</td>
-    <td>요청 간격 제한</td>
-    <td>과도한 Pixiv 요청 방지</td>
-</tr>
-
-<tr>
-    <td>N-14</td>
-    <td>배치 처리</td>
-    <td>대량 요청 시 휴식 적용</td>
-</tr>
-
-<tr>
-    <td>N-15</td>
-    <td>재시도</td>
-    <td>일시적 오류 자동 재시도</td>
-</tr>
-
-<tr>
     <td>N-16</td>
-    <td>세션 검증</td>
-    <td>PHPSESSID 유효성 검사 지원</td>
+    <td>일관성</td>
+    <td>모든 페이지에서 동일한 UI 패턴 사용</td>
 </tr>
 
 <tr>
     <td>N-17</td>
-    <td>최소 수집 원칙</td>
-    <td>필요한 정보만 조회하여 계정 위험 최소화</td>
+    <td>가독성</td>
+    <td>상태 배지 및 통계 정보 시각화</td>
+</tr>
+
+<tr>
+    <td>N-18</td>
+    <td>접근성</td>
+    <td>검색, 필터, 정렬 중심 사용성 제공</td>
+</tr>
+
+<tr>
+    <td>N-19</td>
+    <td>바로가기</td>
+    <td>Pixiv 및 폴더 바로가기 제공</td>
+</tr>
+
+<tr>
+    <td>N-20</td>
+    <td>작업 효율</td>
+    <td>일괄 처리 기능 제공</td>
 </tr>
 
 </table>
 
 ---
 
-# 시스템 제약사항
+# 제약 사항
 
 ## 기술 스택
 
@@ -967,6 +1075,7 @@ PySide6
 SQLite
 JSON
 CSV
+PyInstaller
 ```
 
 ---
@@ -981,138 +1090,142 @@ Local Database
 
 ---
 
-## 데이터 저장
+## Pixiv 정책 대응
 
 ```text
-SQLite Database
-JSON Backup
-CSV Export
+최소 요청 수 유지
+요청 간격 적용
+배치 휴식 적용
+재시도 제한
+PHPSESSID 기반 인증
 ```
 
 ---
 
-# V2 개발 예정 기능
+# 우선순위
 
-현재 V2는 핵심 기능 구현이 완료되었으며 아래 항목이 남아 있다.
+## 필수 기능
 
 ```text
-3차 리팩토링
-추가 기능 개발
-4차 리팩토링
+작가 관리
+폴더 스캔
+업데이트 확인
+대시보드
+설정 관리
+통계 분석
+Pixiv 관리
+백업 및 복구
+```
+
+---
+
+## V2 완료 목표
+
+```text
+작가 중심 관리 시스템 완성
+Pixiv 관리 시스템 완성
+통계 분석 시스템 완성
 v1.0.0 배포 준비
 ```
 
 ---
 
-# V3 개발 예정 기능
+## V3 목표
+
+```text
+작품 중심 관리 시스템 구축
+자체 뷰어 구축
+Pixiv 자동 동기화 구축
+예약 실행 시스템 구축
+```
+
+---
+
+# 요구사항 추적
+
+## V1
+
+```text
+프로젝트 구조
+데이터베이스
+서비스 레이어
+GUI
+폴더 스캔
+작가 등록
+설정 관리
+업데이트 확인
+```
+
+완료
+
+---
+
+## V2
+
+```text
+작가 목록 관리
+작가 상세 관리
+스캔 시스템
+업데이트 확인
+대시보드
+설정 관리
+통계 분석
+Pixiv 관리
+Pixiv 연동
+3차 리팩토링
+추가 기능 개발
+```
+
+완료
+
+---
+
+## V2 잔여 작업
+
+```text
+V2 개발 마무리
+성능 최적화
+안정성 점검
+문서 정비
+v1.0.0 배포 준비
+```
+
+---
+
+## V3
 
 ```text
 작품 관리
-작품 상세 정보
-썸네일 보기
-카드 보기
-작품 검색
-작품 태그 관리
-작품 통계
+작품 상세
+작품 태그 편집
+
+팔로우 / 북마크 상세
+
+Pixiv 계정 연동
+
+자동 동기화
+동기화 결과 비교
+동기화 이력
+동기화 로그
+태그 재동기화
+
+업데이트 예약 실행
+예약 실행 로그
+예약 실행 오류 기록
+
+Pixiv 검색 기능
+
 자체 뷰어
-슬라이드쇼
-전체 화면
 다운로드 연동
 다중 라이브러리
 ```
 
----
-
-# 구현 완료 기능
-
-## V1 완료
-
-```text
-프로젝트 구조 설계
-데이터베이스 설계
-서비스 레이어 구축
-GUI 구축
-폴더 스캔
-작가 등록
-작가 상세 조회
-설정 관리
-Pixiv 업데이트 확인
-```
-
----
-
-## V2 완료
-
-```text
-작가 목록 관리 고도화
-작가 상세 페이지 고도화
-스캔 시스템 고도화
-2차 리팩토링
-업데이트 확인 고도화
-대시보드 고도화
-설정 / 관리 고도화
-통계 / 분석 기능 추가
-Pixiv 관리 / 연동
-```
-
----
-
-# 사용자 시나리오
-
-## 작가 등록
-
-```text
-사용자
-→ 폴더 선택
-→ 폴더 스캔
-→ 미리보기 확인
-→ 선택 등록
-→ 작가 목록 반영
-```
-
----
-
-## 업데이트 확인
-
-```text
-사용자
-→ 작가 선택
-→ 업데이트 확인
-→ 누락 작품 계산
-→ 상태 계산
-→ 결과 저장
-→ 대시보드 반영
-```
-
----
-
-## Pixiv 관리
-
-```text
-사용자
-→ TXT / CSV 불러오기
-→ 팔로우 / 북마크 ID 파싱
-→ 메타데이터 수집
-→ 로컬 작가 매칭
-→ 데이터 저장
-→ Pixiv 관리 페이지 반영
-```
-
----
-
-## 데이터 관리
-
-```text
-사용자
-→ 설정 페이지
-→ DB 정보 조회
-→ 무결성 검사
-→ DB 최적화
-→ 백업 / 복원
-```
+예정
 
 ---
 
 # 버전 기준
 
-본 문서는 v0.15.0 (Pixiv 관리 시스템 및 Pixiv 메타데이터 연동 완료) 기준으로 작성되었다.
+본 문서는 v0.17.0 (추가 기능 개발 완료) 기준으로 작성되었다.
+
+현재 프로젝트는 v0.18.0 (V2 개발 마무리 및 v1.0.0 준비) 단계 진행 예정 상태이다.
