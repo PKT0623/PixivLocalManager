@@ -24,26 +24,19 @@ class UpdateCheckWorkerLogMixin:
         total: int,
     ):
         artist = result.get("artist") or {}
+        artist_id = artist.get("id")
 
-        result_label = self._status_label(
-            result
-        )
+        result_label = self._status_label(result)
+        missing_count = result.get("missing_count", 0)
 
-        missing_count = result.get(
-            "missing_count",
-            0,
-        )
-
-        comparison = (
-            self.history_repo.build_comparison(
-                current_history={
-                    "missing_count": missing_count,
-                    "missing_ids": self._ids_to_text(
-                        result.get("missing_ids")
-                    ),
-                },
-                previous_history=previous_history,
-            )
+        comparison = self.history_repo.build_comparison(
+            current_history={
+                "missing_count": missing_count,
+                "missing_ids": self._ids_to_text(
+                    result.get("missing_ids")
+                ),
+            },
+            previous_history=previous_history,
         )
 
         self._update_summary(
@@ -53,36 +46,17 @@ class UpdateCheckWorkerLogMixin:
 
         self.log_requested.emit(
             {
-                "time": datetime.now().strftime(
-                    "%H:%M:%S"
-                ),
+                "time": datetime.now().strftime("%H:%M:%S"),
                 "progress": f"{index}/{total}",
                 "result": result_label,
-                "artist_name": artist.get(
-                    "artist_name",
-                    "-",
-                ),
-                "pixiv_id": artist.get(
-                    "pixiv_id",
-                    "-",
-                ),
-                "local_count": result.get(
-                    "local_count",
-                    "-",
-                ),
-                "pixiv_count": result.get(
-                    "pixiv_count",
-                    "-",
-                ),
+                "artist_id": artist_id,
+                "artist_name": artist.get("artist_name", "-"),
+                "pixiv_id": artist.get("pixiv_id", "-"),
+                "local_count": result.get("local_count", "-"),
+                "pixiv_count": result.get("pixiv_count", "-"),
                 "missing_count": missing_count,
-                "missing_delta": comparison.get(
-                    "missing_delta",
-                    0,
-                ),
-                "has_previous": comparison.get(
-                    "has_previous",
-                    False,
-                ),
+                "missing_delta": comparison.get("missing_delta", 0),
+                "has_previous": comparison.get("has_previous", False),
                 "new_missing_count": comparison.get(
                     "new_missing_count",
                     0,
@@ -104,15 +78,13 @@ class UpdateCheckWorkerLogMixin:
                 ),
                 "download_candidate_ids": (
                     self._ids_to_text(
-                        result.get(
-                            "download_candidate_ids"
-                        )
+                        result.get("download_candidate_ids")
+                    )
+                    or self._ids_to_text(
+                        result.get("missing_ids")
                     )
                 ),
-                "status": result.get(
-                    "status",
-                    "-",
-                ),
+                "status": result.get("status", "-"),
             }
         )
 
@@ -133,19 +105,12 @@ class UpdateCheckWorkerLogMixin:
 
         self.log_requested.emit(
             {
-                "time": datetime.now().strftime(
-                    "%H:%M:%S"
-                ),
+                "time": datetime.now().strftime("%H:%M:%S"),
                 "progress": f"{index}/{total}",
                 "result": "스킵",
-                "artist_name": artist.get(
-                    "artist_name",
-                    "-",
-                ),
-                "pixiv_id": artist.get(
-                    "pixiv_id",
-                    "-",
-                ),
+                "artist_id": artist.get("id"),
+                "artist_name": artist.get("artist_name", "-"),
+                "pixiv_id": artist.get("pixiv_id", "-"),
                 "local_count": "-",
                 "pixiv_count": "-",
                 "missing_count": 0,
@@ -157,9 +122,7 @@ class UpdateCheckWorkerLogMixin:
                 "new_missing_ids": "",
                 "resolved_missing_ids": "",
                 "download_candidate_ids": "",
-                "status": (
-                    "최근 1일 이내 확인한 작가"
-                ),
+                "status": "최근 1일 이내 확인한 작가",
             }
         )
 
@@ -170,26 +133,30 @@ class UpdateCheckWorkerLogMixin:
         total: int,
         message: str,
     ):
-        self.failed_artist_detected.emit(
-            artist_id
-        )
+        self.failed_artist_detected.emit(artist_id)
 
         self._update_summary(
             "오류",
             0,
         )
 
+        artist = self.artist_service.get_artist(artist_id)
+
+        if artist:
+            artist_name = artist.get("artist_name", f"artist_id={artist_id}")
+            pixiv_id = artist.get("pixiv_id", "-")
+        else:
+            artist_name = f"artist_id={artist_id}"
+            pixiv_id = "-"
+
         self.log_requested.emit(
             {
-                "time": datetime.now().strftime(
-                    "%H:%M:%S"
-                ),
+                "time": datetime.now().strftime("%H:%M:%S"),
                 "progress": f"{index}/{total}",
                 "result": "오류",
-                "artist_name": (
-                    f"artist_id={artist_id}"
-                ),
-                "pixiv_id": "-",
+                "artist_id": artist_id,
+                "artist_name": artist_name,
+                "pixiv_id": pixiv_id,
                 "local_count": "-",
                 "pixiv_count": "-",
                 "missing_count": "-",
@@ -214,11 +181,10 @@ class UpdateCheckWorkerLogMixin:
     ):
         self.log_requested.emit(
             {
-                "time": datetime.now().strftime(
-                    "%H:%M:%S"
-                ),
+                "time": datetime.now().strftime("%H:%M:%S"),
                 "progress": f"{current}/{total}",
                 "result": result,
+                "artist_id": None,
                 "artist_name": message,
                 "pixiv_id": "-",
                 "local_count": "-",

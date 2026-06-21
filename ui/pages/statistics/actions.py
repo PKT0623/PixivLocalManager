@@ -13,6 +13,7 @@ class StatisticsActions:
         self.page.summary_section.update_summary(
             summary=statistics.get("summary", {}),
             favorite=statistics.get("favorite", {}),
+            pixiv_management=statistics.get("pixiv_management", {}),
         )
         self.page.status_section.update_status(
             statistics.get("status", {})
@@ -28,4 +29,7 @@ class StatisticsActions:
         )
         self.page.quality_section.update_quality(
             statistics.get("quality", {})
+        )
+        self.page.trend_section.update_trend(
+            statistics.get("trend", {})
         )

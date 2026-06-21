@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
@@ -9,11 +9,12 @@ from .actions import ArtistTableActions
 from .columns import (
     COLUMN_ARTIST_NAME,
     COLUMN_ARTWORK_COUNT,
-    COLUMN_CREATED_AT,
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
+    COLUMN_FOLDER_SIZE,
     COLUMN_HEADERS,
     COLUMN_LAST_VIEWED_AT,
+    COLUMN_MISSING_ARTWORK_COUNT,
     COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
@@ -21,6 +22,7 @@ from .columns import (
     COLUMN_SORT_FIELDS,
     COLUMN_STATUS,
     COLUMN_TAGS,
+    COLUMN_UPDATED_AT,
     COLUMNS,
 )
 from .row_renderer import ArtistTableRowRenderer
@@ -31,6 +33,9 @@ class ArtistTable(QTableWidget):
     sort_requested = Signal(str, bool)
     favorite_toggled = Signal(int)
     rating_changed = Signal(int, int)
+    context_rating_requested = Signal(list)
+    context_favorite_requested = Signal(list, bool)
+    context_delete_requested = Signal(list)
 
     def __init__(self):
         super().__init__()
@@ -54,6 +59,7 @@ class ArtistTable(QTableWidget):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setDefaultSectionSize(42)
@@ -72,6 +78,9 @@ class ArtistTable(QTableWidget):
         self.cellDoubleClicked.connect(
             self.actions.handle_cell_double_clicked
         )
+        self.customContextMenuRequested.connect(
+            self.actions.show_context_menu
+        )
 
     def _setup_header_resize_modes(self, header):
         fixed_columns = (
@@ -80,11 +89,13 @@ class ArtistTable(QTableWidget):
             COLUMN_ARTIST_NAME,
             COLUMN_PIXIV_ID,
             COLUMN_ARTWORK_COUNT,
+            COLUMN_MISSING_ARTWORK_COUNT,
             COLUMN_FILE_COUNT,
+            COLUMN_FOLDER_SIZE,
             COLUMN_STATUS,
             COLUMN_RATING,
             COLUMN_LAST_VIEWED_AT,
-            COLUMN_CREATED_AT,
+            COLUMN_UPDATED_AT,
             COLUMN_SHORTCUTS,
         )
 
@@ -174,6 +185,7 @@ class ArtistTable(QTableWidget):
         self.clearSelection()
 
         selection_model = self.selectionModel()
+        first_index = None
 
         for row, artist_id in enumerate(self.artist_ids):
             if artist_id is None:
@@ -189,6 +201,13 @@ class ArtistTable(QTableWidget):
                 selection_model.SelectionFlag.Select
                 | selection_model.SelectionFlag.Rows,
             )
+
+            if first_index is None:
+                first_index = index
+
+        if first_index is not None:
+            self.setCurrentIndex(first_index)
+            self.scrollTo(first_index)
 
     def set_sort_indicators(
         self,

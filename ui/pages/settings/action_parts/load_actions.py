@@ -22,15 +22,20 @@ class SettingsLoadActions:
                 "세션 상태: 미확인"
             )
 
+        self._load_scan_image_extensions()
         self._load_pixiv_request_settings()
         self._load_update_check_request_settings()
         self._load_backup_settings()
         self.refresh_database_info()
         self.refresh_backup_list()
         self.refresh_environment_info()
+        self.refresh_log_list()
 
     def _clear_setting_inputs(self):
         self.page.folder_section.pixiv_root_input.clear()
+        self.page.folder_section.set_scan_image_extensions(
+            self.page.settings_service.DEFAULT_SCAN_IMAGE_EXTENSIONS
+        )
         self.page.pixiv_section.phpsessid_input.clear()
         self.page.pixiv_section.phpsessid_status_label.setText(
             "저장된 PHPSESSID 없음"
@@ -38,6 +43,10 @@ class SettingsLoadActions:
         self.page.pixiv_section.session_status_label.setText(
             "세션 상태: 미확인"
         )
+
+    def _load_scan_image_extensions(self):
+        extensions = self.page.settings_service.get_scan_image_extensions()
+        self.page.folder_section.set_scan_image_extensions(extensions)
 
     def _load_pixiv_request_settings(self):
         section = self.page.pixiv_manager_request_section

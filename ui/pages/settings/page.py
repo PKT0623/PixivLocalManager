@@ -12,6 +12,7 @@ from .actions import SettingsActions
 from .app_info_section import AppInfoSection
 from .database_section import DatabaseSection
 from .folder_section import FolderSection
+from .log_section import LogSection
 from .pixiv_section import (
     PixivManagerRequestSection,
     PixivSection,
@@ -51,15 +52,18 @@ class SettingsPage(QWidget):
         self.database_section = DatabaseSection()
         self.settings_management_section = SettingsManagementSection()
         self.app_info_section = AppInfoSection()
+        self.log_section = LogSection()
 
         self.basic_tab = self._create_basic_tab()
         self.database_tab = self._create_database_tab()
         self.environment_tab = self._create_environment_tab()
+        self.log_tab = self._create_log_tab()
         self.info_tab = self._create_info_tab()
 
         self.tab_widget.addTab(self.basic_tab, "기본 설정")
         self.tab_widget.addTab(self.database_tab, "데이터 관리")
         self.tab_widget.addTab(self.environment_tab, "환경 설정")
+        self.tab_widget.addTab(self.log_tab, "로그 관리")
         self.tab_widget.addTab(self.info_tab, "프로그램 정보")
 
         self.status_label = QLabel("준비됨")
@@ -105,6 +109,16 @@ class SettingsPage(QWidget):
 
         return tab
 
+    def _create_log_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(16)
+
+        layout.addWidget(self.log_section, 1)
+
+        return tab
+
     def _create_info_tab(self) -> QWidget:
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -122,6 +136,12 @@ class SettingsPage(QWidget):
         )
         self.folder_section.save_pixiv_root_button.clicked.connect(
             self.actions.save_pixiv_root_folder
+        )
+        self.folder_section.save_scan_extensions_button.clicked.connect(
+            self.actions.save_scan_image_extensions
+        )
+        self.folder_section.reset_scan_extensions_button.clicked.connect(
+            self.actions.reset_scan_image_extensions
         )
         self.pixiv_section.save_phpsessid_button.clicked.connect(
             self.actions.save_phpsessid
@@ -167,6 +187,21 @@ class SettingsPage(QWidget):
         )
         self.database_section.refresh_db_info_button.clicked.connect(
             self.actions.refresh_database_info
+        )
+        self.log_section.refresh_log_button.clicked.connect(
+            self.actions.refresh_log_list
+        )
+        self.log_section.open_log_folder_button.clicked.connect(
+            self.actions.open_log_folder
+        )
+        self.log_section.delete_selected_log_button.clicked.connect(
+            self.actions.delete_selected_log
+        )
+        self.log_section.delete_all_logs_button.clicked.connect(
+            self.actions.delete_all_logs
+        )
+        self.log_section.log_table.itemSelectionChanged.connect(
+            self.actions.load_selected_log
         )
         self.settings_management_section.backup_settings_button.clicked.connect(
             self.actions.backup_settings

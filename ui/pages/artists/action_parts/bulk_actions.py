@@ -10,10 +10,19 @@ class ArtistsBulkActions:
         if not artist_ids:
             return
 
+        self.handle_rating_change_for_artist_ids(artist_ids)
+
+    def handle_rating_change_for_artist_ids(
+        self,
+        artist_ids: list[int],
+    ):
+        if not artist_ids:
+            return
+
         rating_text, ok = QInputDialog.getText(
             self.page,
-            "평점 일괄 변경",
-            "선택한 작가의 평점 입력 (0~10)",
+            "평점 변경",
+            f"선택한 작가 {len(artist_ids)}명의 평점 입력 (0~10)",
         )
 
         if not ok:
@@ -47,7 +56,7 @@ class ArtistsBulkActions:
             )
         except Exception as error:
             self.show_warning(
-                "일괄 변경 실패",
+                "변경 실패",
                 str(error),
             )
             return
@@ -66,6 +75,19 @@ class ArtistsBulkActions:
         if not artist_ids:
             return
 
+        self.handle_favorite_state_for_artist_ids(
+            artist_ids,
+            is_favorite,
+        )
+
+    def handle_favorite_state_for_artist_ids(
+        self,
+        artist_ids: list[int],
+        is_favorite: bool,
+    ):
+        if not artist_ids:
+            return
+
         try:
             self.page.artist_service.bulk_update_favorite(
                 artist_ids,
@@ -73,33 +95,7 @@ class ArtistsBulkActions:
             )
         except Exception as error:
             self.show_warning(
-                "일괄 변경 실패",
-                str(error),
-            )
-            return
-
-        self.reload_artists_keep_selection(artist_ids)
-
-    def handle_bulk_hide(self):
-        self._handle_bulk_hidden_state(True)
-
-    def handle_bulk_unhide(self):
-        self._handle_bulk_hidden_state(False)
-
-    def _handle_bulk_hidden_state(self, is_hidden: bool):
-        artist_ids = self._get_selected_artist_ids()
-
-        if not artist_ids:
-            return
-
-        try:
-            self.page.artist_service.bulk_update_hidden(
-                artist_ids,
-                is_hidden,
-            )
-        except Exception as error:
-            self.show_warning(
-                "일괄 변경 실패",
+                "변경 실패",
                 str(error),
             )
             return
@@ -109,6 +105,15 @@ class ArtistsBulkActions:
     def handle_bulk_delete(self):
         artist_ids = self._get_selected_artist_ids()
 
+        if not artist_ids:
+            return
+
+        self.handle_delete_for_artist_ids(artist_ids)
+
+    def handle_delete_for_artist_ids(
+        self,
+        artist_ids: list[int],
+    ):
         if not artist_ids:
             return
 
@@ -193,7 +198,7 @@ class ArtistsBulkActions:
                 for item in preview_items
             )
 
-            message += f"\n\n건너뜬 항목:\n{preview}"
+            message += f"\n\n건너뛴 항목:\n{preview}"
 
             if len(skipped_artists) > len(preview_items):
                 message += "\n..."

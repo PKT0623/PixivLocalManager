@@ -21,9 +21,14 @@ class TopRankingSection(
     artist_detail_requested = Signal(int)
 
     RANKING_ITEMS = [
-        ("artwork_top", "작품 수 TOP", "folder_artwork_count"),
-        ("file_top", "파일 수 TOP", "folder_file_count"),
-        ("folder_size_top", "폴더 용량 TOP", "folder_size_bytes"),
+        ("artwork_top", "작품 수 TOP", "folder_artwork_count", "작품 수"),
+        ("file_top", "파일 수 TOP", "folder_file_count", "파일 수"),
+        (
+            "folder_size_top",
+            "폴더 용량 TOP",
+            "folder_size_bytes",
+            "저장 용량",
+        ),
     ]
 
     RANKING_LIMITS = [10, 30, 50]
@@ -71,7 +76,7 @@ class TopRankingSection(
         ranking_layout.setSpacing(10)
 
         for index, item in enumerate(self.RANKING_ITEMS):
-            key, title, value_field = item
+            key, title, value_field, value_title = item
             self._add_ranking_card(
                 parent_layout=ranking_layout,
                 row=0,
@@ -79,6 +84,7 @@ class TopRankingSection(
                 key=key,
                 title=title,
                 value_field=value_field,
+                value_title=value_title,
             )
 
         layout.addLayout(header_layout)
@@ -94,6 +100,7 @@ class TopRankingSection(
         key: str,
         title: str,
         value_field: str,
+        value_title: str,
     ):
         card = QFrame()
         card.setObjectName("rankingCard")
@@ -108,7 +115,7 @@ class TopRankingSection(
         table = QTableWidget()
         table.setProperty("value_field", value_field)
         table.setColumnCount(3)
-        table.setHorizontalHeaderLabels(["순위", "작가명", "값"])
+        table.setHorizontalHeaderLabels(["순위", "작가명", value_title])
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.setSelectionMode(QAbstractItemView.NoSelection)
         table.verticalHeader().setVisible(False)

@@ -4,6 +4,8 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog
 
+from app.services.scan import NonArtworkFileExporter
+
 
 class ScanResultActions:
     def load_scan_history(self):
@@ -167,6 +169,97 @@ class ScanResultActions:
             f"미리보기 결과 CSV 저장 완료: {file_path}"
         )
 
+    def export_non_artwork_files_txt(self):
+        records = self._collect_non_artwork_files_from_preview()
+
+        if not records:
+            self.page.log_table.add_info_log(
+                "TXT로 저장할 비작품 파일 목록이 없습니다."
+            )
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self.page,
+            "비작품 파일 TXT 저장",
+            "scan_non_artwork_files.txt",
+            "Text Files (*.txt)",
+        )
+
+        if not file_path:
+            return
+
+        try:
+            exporter = NonArtworkFileExporter()
+            saved_path = exporter.export_txt(records, file_path)
+        except Exception as error:
+            self.page.log_table.add_info_log(
+                f"비작품 파일 TXT 저장 실패: {error}"
+            )
+            return
+
+        self.page.log_table.add_info_log(
+            f"비작품 파일 TXT 저장 완료: {saved_path}"
+        )
+
+    def export_non_artwork_files_csv(self):
+        records = self._collect_non_artwork_files_from_preview()
+
+        if not records:
+            self.page.log_table.add_info_log(
+                "CSV로 저장할 비작품 파일 목록이 없습니다."
+            )
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self.page,
+            "비작품 파일 CSV 저장",
+            "scan_non_artwork_files.csv",
+            "CSV Files (*.csv)",
+        )
+
+        if not file_path:
+            return
+
+        try:
+            exporter = NonArtworkFileExporter()
+            saved_path = exporter.export_csv(records, file_path)
+        except Exception as error:
+            self.page.log_table.add_info_log(
+                f"비작품 파일 CSV 저장 실패: {error}"
+            )
+            return
+
+        self.page.log_table.add_info_log(
+            f"비작품 파일 CSV 저장 완료: {saved_path}"
+        )
+
+    def _collect_non_artwork_files_from_preview(self) -> list[dict]:
+        rows = self.page.preview_table.get_all_preview_rows()
+        records = []
+        seen_keys = set()
+
+        for row in rows:
+            row_records = row.get("non_artwork_files", [])
+
+            if not isinstance(row_records, list):
+                continue
+
+            for record in row_records:
+                if not isinstance(record, dict):
+                    continue
+
+                file_path = str(record.get("file_path", "") or "")
+                reason = str(record.get("reason", "") or "")
+                key = (file_path, reason)
+
+                if key in seen_keys:
+                    continue
+
+                seen_keys.add(key)
+                records.append(record)
+
+        return records
+
     def _write_rows_csv(
         self,
         file_path: str | Path,
@@ -228,6 +321,7 @@ class ScanResultActions:
             "file_count",
             "folder_path",
             "message",
+            "non_artwork_summary_text",
         ]
 
         with open(
@@ -254,6 +348,10 @@ class ScanResultActions:
                         "file_count": row.get("file_count", "-"),
                         "folder_path": row.get("folder_path", "-"),
                         "message": row.get("message", "-"),
+                        "non_artwork_summary_text": row.get(
+                            "non_artwork_summary_text",
+                            "-",
+                        ),
                     }
                 )
 
@@ -366,6 +464,7 @@ class ScanResultActions:
             ("failed", "실패"),
             ("total_file_count", "파일"),
             ("total_artwork_count", "작품"),
+            ("non_artwork_file_count", "비작품"),
         ]
 
         items = []

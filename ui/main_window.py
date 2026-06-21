@@ -1,4 +1,11 @@
-from PySide6.QtWidgets import QHBoxLayout, QMainWindow, QStackedWidget, QWidget
+from PySide6.QtCore import QRect
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QMainWindow,
+    QStackedWidget,
+    QWidget,
+)
 
 from app.services.backup import DatabaseBackupService
 from app.services.settings_service import SettingsService
@@ -78,6 +85,7 @@ class MainWindow(QMainWindow):
         dashboard_page = self.pages["dashboard"]
         artists_page = self.pages["artists"]
         scan_page = self.pages["scan"]
+        update_check_page = self.pages["update_check"]
         detail_page = self.pages["artist_detail"]
 
         dashboard_page.artist_detail_requested.connect(
@@ -85,6 +93,12 @@ class MainWindow(QMainWindow):
         )
         artists_page.artist_selected.connect(self.show_artist_detail)
         scan_page.artist_detail_requested.connect(self.show_artist_detail)
+        update_check_page.artist_detail_requested.connect(
+            self.show_artist_detail
+        )
+        update_check_page.artist_list_requested.connect(
+            self.show_artists_with_ids
+        )
 
         detail_page.back_requested.connect(self.go_back_from_artist_detail)
         detail_page.artist_updated.connect(self._handle_artist_updated)
@@ -132,12 +146,45 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            self.move(
-                int(x),
-                int(y),
-            )
+            position_x = int(x)
+            position_y = int(y)
         except (TypeError, ValueError):
             return
+
+        if not self._is_window_geometry_visible(
+            x=position_x,
+            y=position_y,
+            width=width,
+            height=height,
+        ):
+            return
+
+        self.move(
+            position_x,
+            position_y,
+        )
+
+    def _is_window_geometry_visible(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+    ) -> bool:
+        window_rect = QRect(
+            x,
+            y,
+            max(1, width),
+            max(1, height),
+        )
+
+        for screen in QApplication.screens():
+            available_rect = screen.availableGeometry()
+
+            if available_rect.intersects(window_rect):
+                return True
+
+        return False
 
     def _save_window_geometry(self):
         self.settings_service.set_setting(
@@ -207,6 +254,18 @@ class MainWindow(QMainWindow):
         detail_page.set_artist(artist_id)
 
         self.show_page("artist_detail")
+
+    def show_artists_with_ids(self, artist_ids: list[int]):
+        artists_page = self.pages["artists"]
+
+        self.show_page("artists")
+
+        if hasattr(artists_page, "select_artist_ids"):
+            artists_page.select_artist_ids(artist_ids)
+            return
+
+        if hasattr(artists_page, "load_artists"):
+            artists_page.load_artists()
 
     def go_back_from_artist_detail(self):
         target_page = self.previous_page

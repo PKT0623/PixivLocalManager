@@ -50,6 +50,21 @@ class ResultBuilderMixin:
                 statistics.get("total_artwork_count", 0) or 0
             ),
             "extension_counts": statistics.get("extension_counts", {}) or {},
+            "non_artwork_file_count": int(
+                statistics.get("non_artwork_file_count", 0) or 0
+            ),
+            "unsupported_extension_count": int(
+                statistics.get("unsupported_extension_count", 0) or 0
+            ),
+            "artwork_id_not_found_count": int(
+                statistics.get("artwork_id_not_found_count", 0) or 0
+            ),
+            "empty_file_count": int(
+                statistics.get("empty_file_count", 0) or 0
+            ),
+            "scan_error_count": int(
+                statistics.get("scan_error_count", 0) or 0
+            ),
         }
 
     def _build_scan_result_row(

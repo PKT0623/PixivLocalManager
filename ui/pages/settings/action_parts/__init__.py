@@ -3,6 +3,7 @@ from .common import SettingsCommonActions
 from .database_actions import SettingsDatabaseActions
 from .environment_actions import SettingsEnvironmentActions
 from .load_actions import SettingsLoadActions
+from .log_actions import SettingsLogActions
 from .pixiv_actions import SettingsPixivActions
 from .request_actions import SettingsRequestActions
 
@@ -13,6 +14,7 @@ __all__ = [
     "SettingsDatabaseActions",
     "SettingsEnvironmentActions",
     "SettingsLoadActions",
+    "SettingsLogActions",
     "SettingsPixivActions",
     "SettingsRequestActions",
 ]

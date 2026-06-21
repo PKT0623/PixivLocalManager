@@ -69,7 +69,6 @@ class ArtistSaveActions:
             update_data["is_favorite"] = int(
                 section.favorite_checkbox.isChecked()
             )
-            update_data["is_hidden"] = int(section.hidden_checkbox.isChecked())
             update_data["artist_tags"] = artist_tags
             update_data["memo"] = section.memo_edit.toPlainText().strip()
             update_data["reference_links"] = (
@@ -100,7 +99,4 @@ class ArtistSaveActions:
 
         self.page.artist_updated.emit(self.page.artist_id)
 
-        self.show_information(
-            "저장 완료",
-            "작가 정보가 저장되었습니다.",
-        )
+        self.show_status_message("작가 정보가 저장되었습니다.")

@@ -21,12 +21,13 @@ def format_cell_value(
     rating_display_mode: str,
 ) -> str:
     from .columns import (
-        COLUMN_CREATED_AT,
         COLUMN_FAVORITE,
+        COLUMN_FOLDER_SIZE,
         COLUMN_LAST_VIEWED_AT,
         COLUMN_RATING,
         COLUMN_STATUS,
         COLUMN_TAGS,
+        COLUMN_UPDATED_AT,
     )
 
     if column == COLUMN_STATUS:
@@ -38,9 +39,12 @@ def format_cell_value(
     if column == COLUMN_TAGS:
         return format_artist_tags(value)
 
+    if column == COLUMN_FOLDER_SIZE:
+        return format_file_size(value)
+
     if column in (
         COLUMN_LAST_VIEWED_AT,
-        COLUMN_CREATED_AT,
+        COLUMN_UPDATED_AT,
     ):
         return format_datetime(value)
 
@@ -200,6 +204,29 @@ def to_non_negative_int(value) -> int:
         return max(0, int(value))
     except (TypeError, ValueError):
         return 0
+
+
+def format_file_size(value) -> str:
+    try:
+        size = int(value or 0)
+    except (TypeError, ValueError):
+        size = 0
+
+    if size <= 0:
+        return "-"
+
+    units = ["B", "KB", "MB", "GB", "TB"]
+    unit_index = 0
+    display_size = float(size)
+
+    while display_size >= 1024 and unit_index < len(units) - 1:
+        display_size /= 1024
+        unit_index += 1
+
+    if unit_index == 0:
+        return f"{int(display_size)} {units[unit_index]}"
+
+    return f"{display_size:.1f} {units[unit_index]}"
 
 
 def format_datetime(value) -> str:

@@ -1,11 +1,13 @@
 from app.database import ArtistRepository
 
 from .favorite_service import StatisticsFavoriteService
+from .pixiv_management_service import StatisticsPixivManagementService
 from .quality_service import StatisticsQualityService
 from .ranking_service import StatisticsRankingService, to_int
 from .rating_service import StatisticsRatingService
 from .status_service import StatisticsStatusService
 from .tag_service import StatisticsTagService
+from .trend_service import StatisticsTrendService
 
 
 class StatisticsService:
@@ -19,6 +21,8 @@ class StatisticsService:
         self.tag_service = StatisticsTagService()
         self.favorite_service = StatisticsFavoriteService()
         self.quality_service = StatisticsQualityService()
+        self.pixiv_management_service = StatisticsPixivManagementService()
+        self.trend_service = StatisticsTrendService()
 
     def get_statistics(
         self,
@@ -51,6 +55,11 @@ class StatisticsService:
             "quality": self.quality_service.get_quality_statistics(
                 artists
             ),
+            "pixiv_management": (
+                self.pixiv_management_service
+                .get_pixiv_management_statistics()
+            ),
+            "trend": self.trend_service.get_trend_statistics(),
         }
 
     def get_summary_statistics(

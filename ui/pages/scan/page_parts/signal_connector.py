@@ -43,6 +43,12 @@ class ScanSignalConnectorMixin:
         self.preview_export_csv_button.clicked.connect(
             self.actions.export_preview_results_csv
         )
+        self.preview_export_non_artwork_txt_button.clicked.connect(
+            self.actions.export_non_artwork_files_txt
+        )
+        self.preview_export_non_artwork_csv_button.clicked.connect(
+            self.actions.export_non_artwork_files_csv
+        )
         self.preview_scan_selected_button.clicked.connect(
             self.actions.start_selected_preview_items_scan
         )

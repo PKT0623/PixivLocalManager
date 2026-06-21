@@ -21,6 +21,7 @@ from ..utils import (
 
 
 class ArtistArtworkActions:
+    PIXIV_ARTIST_URL = "https://www.pixiv.net/users/{pixiv_id}"
     PIXIV_ARTWORK_URL = "https://www.pixiv.net/artworks/{artwork_id}"
 
     def copy_folder_path(self):
@@ -35,6 +36,7 @@ class ArtistArtworkActions:
             return
 
         QApplication.clipboard().setText(folder_path)
+        self.show_status_message("폴더 경로가 복사되었습니다.")
 
     def copy_pixiv_id(self):
         artist = self.page.current_artist
@@ -48,6 +50,55 @@ class ArtistArtworkActions:
             return
 
         QApplication.clipboard().setText(pixiv_id)
+        self.show_status_message("Pixiv ID가 복사되었습니다.")
+
+    def open_artist_pixiv(self):
+        artist = self.page.current_artist
+
+        if artist is None:
+            return
+
+        pixiv_id = str(artist.get("pixiv_id", "") or "").strip()
+
+        if not pixiv_id:
+            return
+
+        webbrowser.open(
+            self.PIXIV_ARTIST_URL.format(
+                pixiv_id=pixiv_id,
+            )
+        )
+
+    def open_artist_folder(self):
+        artist = self.page.current_artist
+
+        if artist is None:
+            return
+
+        folder_path = str(artist.get("folder_path", "") or "").strip()
+
+        if not folder_path:
+            return
+
+        path = Path(folder_path)
+
+        if not path.exists() or not path.is_dir():
+            self.show_warning(
+                "폴더 열기 오류",
+                "작가 폴더를 찾을 수 없습니다.",
+            )
+            return
+
+        try:
+            subprocess.Popen(
+                f'explorer.exe "{path}"',
+                shell=True,
+            )
+        except Exception as error:
+            self.show_warning(
+                "폴더 열기 오류",
+                f"작가 폴더를 열지 못했습니다.\n{error}",
+            )
 
     def open_all_missing_artworks(self):
         artwork_ids = self.get_all_artwork_ids(
@@ -187,7 +238,10 @@ class ArtistArtworkActions:
             table.setItem(
                 row,
                 0,
-                self.create_readonly_item(artwork_id),
+                self.create_readonly_item(
+                    artwork_id,
+                    Qt.AlignLeft | Qt.AlignVCenter,
+                ),
             )
             table.setItem(
                 row,
@@ -221,8 +275,13 @@ class ArtistArtworkActions:
 
             table.setCellWidget(row, 3, shortcut_widget)
 
-    def create_readonly_item(self, text: str) -> QTableWidgetItem:
+    def create_readonly_item(
+        self,
+        text: str,
+        alignment=Qt.AlignCenter,
+    ) -> QTableWidgetItem:
         item = QTableWidgetItem(str(text))
+        item.setTextAlignment(alignment)
         item.setFlags(item.flags() & ~Qt.ItemIsEditable)
 
         return item

@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -62,6 +62,13 @@ class ArtistDetailPage(QWidget):
         header_layout.addWidget(self.save_button)
         header_layout.addWidget(self.back_button)
 
+        self.status_message_label = QLabel("상태: 준비됨")
+        self.status_message_label.setObjectName("statusMessageLabel")
+
+        self.status_message_timer = QTimer(self)
+        self.status_message_timer.setSingleShot(True)
+        self.status_message_timer.timeout.connect(self.clear_status_message)
+
         self.info_section = ArtistInfoSection()
 
         self.scroll_area = QScrollArea()
@@ -71,6 +78,7 @@ class ArtistDetailPage(QWidget):
         self.scroll_area.setWidget(self.info_section)
 
         layout.addLayout(header_layout)
+        layout.addWidget(self.status_message_label)
         layout.addWidget(self.scroll_area, 1)
 
         self.setStyleSheet(ARTIST_DETAIL_STYLES)
@@ -83,11 +91,15 @@ class ArtistDetailPage(QWidget):
         )
         self.refresh_button.clicked.connect(self.actions.refresh_artist)
         self.save_button.clicked.connect(self.actions.save_artist)
-        self.info_section.copy_folder_path_button.clicked.connect(
-            self.actions.copy_folder_path
-        )
+
         self.info_section.copy_pixiv_id_button.clicked.connect(
             self.actions.copy_pixiv_id
+        )
+        self.info_section.open_pixiv_button.clicked.connect(
+            self.actions.open_artist_pixiv
+        )
+        self.info_section.open_folder_button.clicked.connect(
+            self.actions.open_artist_folder
         )
         self.info_section.open_all_missing_artwork_button.clicked.connect(
             self.actions.open_all_missing_artworks
@@ -110,3 +122,14 @@ class ArtistDetailPage(QWidget):
 
     def set_artist(self, artist_id: int):
         self.actions.set_artist(artist_id)
+
+    def show_status_message(
+        self,
+        message: str,
+        timeout: int = 4000,
+    ):
+        self.status_message_label.setText(f"상태: {message}")
+        self.status_message_timer.start(timeout)
+
+    def clear_status_message(self):
+        self.status_message_label.setText("상태: 준비됨")

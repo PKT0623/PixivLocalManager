@@ -27,6 +27,7 @@ class ArtistsDataActions:
         artists = filter_artists(
             self.page.all_artists,
             keyword=toolbar.search_input.text(),
+            search_mode=toolbar.get_search_mode(),
             rating_value=toolbar.get_rating_filter_value(),
             rating_filter_mode=toolbar.get_rating_filter_mode(),
             favorite_only=toolbar.favorite_only_checkbox.isChecked(),
@@ -35,7 +36,6 @@ class ArtistsDataActions:
             ),
             unknown_only=toolbar.unknown_only_checkbox.isChecked(),
             unrated_only=toolbar.unrated_only_checkbox.isChecked(),
-            exclude_hidden=toolbar.exclude_hidden_checkbox.isChecked(),
         )
 
         artists = sort_artists(

@@ -66,6 +66,29 @@ def format_timestamp(value: float) -> str:
     return parsed.strftime("%Y-%m-%d %H:%M")
 
 
+def format_file_size(size_bytes) -> str:
+    try:
+        size = float(size_bytes or 0)
+    except (TypeError, ValueError):
+        size = 0
+
+    if size <= 0:
+        return "0 B"
+
+    units = ["B", "KB", "MB", "GB", "TB"]
+
+    for unit in units:
+        if size < 1024 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(size)} {unit}"
+
+            return f"{size:.1f} {unit}"
+
+        size /= 1024
+
+    return "0 B"
+
+
 def folder_status_label(folder_path: str) -> str:
     folder_path = str(folder_path or "").strip()
 
@@ -248,3 +271,4 @@ def sort_artwork_id(value: str):
         return int(value)
     except ValueError:
         return value
+

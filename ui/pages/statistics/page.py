@@ -15,6 +15,7 @@ from .rating_section import StatisticsRatingSection
 from .status_section import StatisticsStatusSection
 from .styles import STATISTICS_PAGE_STYLE
 from .summary_section import StatisticsSummarySection
+from .trend_section import StatisticsTrendSection
 from .tag_section import StatisticsTagSection
 
 
@@ -63,6 +64,7 @@ class StatisticsPage(QWidget):
         self.status_section = StatisticsStatusSection()
         self.tag_section = StatisticsTagSection()
         self.rating_section = StatisticsRatingSection()
+        self.trend_section = StatisticsTrendSection()
 
         self.quality_section.setMinimumHeight(230)
         self.quality_section.setMaximumHeight(280)
@@ -70,8 +72,12 @@ class StatisticsPage(QWidget):
         self.status_section.setMinimumHeight(220)
         self.status_section.setMaximumHeight(270)
 
-        self.rating_section.setMinimumHeight(345)
-        self.rating_section.setMaximumHeight(405)
+        self.rating_section.setMinimumHeight(300)
+        self.rating_section.setMaximumHeight(350)
+
+        self.ranking_section.setMinimumHeight(520)
+        self.tag_section.setMinimumHeight(520)
+        self.trend_section.setMinimumHeight(220)
 
         main_layout = QHBoxLayout()
         main_layout.setSpacing(14)
@@ -96,7 +102,7 @@ class StatisticsPage(QWidget):
         right_column.addWidget(self.quality_section)
         right_column.addWidget(self.status_section)
         right_column.addWidget(self.rating_section)
-        right_column.addStretch(1)
+        right_column.addWidget(self.trend_section, 1)
 
         main_layout.addLayout(left_column, 2)
         main_layout.addLayout(right_column, 1)

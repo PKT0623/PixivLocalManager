@@ -33,6 +33,11 @@ class UpdateCheckUIStateActions:
         self.page.batch_rest_ms_input.setEnabled(not is_running)
         self.page.artist_table.setEnabled(not is_running)
 
+        self._set_log_action_buttons_enabled(False)
+
+        if not is_running:
+            self.update_log_action_buttons()
+
     def set_paused_state(self):
         self.page.start_button.setEnabled(False)
         self.page.pause_button.setEnabled(False)
@@ -53,6 +58,25 @@ class UpdateCheckUIStateActions:
         self.page.batch_size_input.setEnabled(False)
         self.page.batch_rest_ms_input.setEnabled(False)
         self.page.artist_table.setEnabled(False)
+
+        self._set_log_action_buttons_enabled(False)
+
+    def _set_log_action_buttons_enabled(
+        self,
+        enabled: bool,
+    ):
+        log_buttons = [
+            self.page.open_log_artist_detail_button,
+            self.page.open_log_artist_list_button,
+            self.page.rescan_selected_log_button,
+            self.page.rescan_missing_log_button,
+            self.page.rescan_error_log_button,
+            self.page.export_download_txt_button,
+            self.page.export_download_csv_button,
+        ]
+
+        for button in log_buttons:
+            button.setEnabled(enabled)
 
     def _is_worker_running(self) -> bool:
         return (

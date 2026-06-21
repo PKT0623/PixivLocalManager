@@ -2,6 +2,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import re
 
+from app.services.settings_service import SettingsService
+
+from .non_artwork_file_collector import NonArtworkFileCollector
+
 
 @dataclass
 class FolderScanResult:
@@ -14,18 +18,12 @@ class FolderScanResult:
     local_latest_artwork_ids: str
     extension_counts: dict[str, int] = field(default_factory=dict)
     invalid_artwork_file_names: list[str] = field(default_factory=list)
+    non_artwork_files: list[dict] = field(default_factory=list)
+    non_artwork_summary: dict = field(default_factory=dict)
+    non_artwork_summary_text: str = "비작품 파일 없음"
 
 
 class FolderScanService:
-    IMAGE_EXTENSIONS = {
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".webp",
-        ".bmp",
-    }
-
     BRACKETED_PIXIV_ID_PATTERN = re.compile(r"[\[\(](\d{5,})[\]\)]")
     TRAILING_PIXIV_ID_PATTERN = re.compile(r"[-_ ]+(\d{5,})$")
     ANY_PIXIV_ID_PATTERN = re.compile(r"(\d{5,})")
@@ -34,6 +32,14 @@ class FolderScanService:
         r"^(\d{5,})(?:_p\d+)?(?:\D.*)?$"
     )
     ARTWORK_ID_PATTERN = re.compile(r"(\d{5,})")
+
+    def __init__(self):
+        self.settings_service = SettingsService()
+        self.non_artwork_collector = NonArtworkFileCollector()
+
+    @property
+    def image_extensions(self) -> set[str]:
+        return self.settings_service.get_scan_image_extension_set()
 
     def scan_folder(self, folder_path: str) -> FolderScanResult:
         path = Path(folder_path)
@@ -46,7 +52,15 @@ class FolderScanService:
 
         artist_name, pixiv_id = self.parse_artist_folder_name(path.name)
         scan_data = self._scan_folder_files(path)
-        artwork_result = self._extract_artwork_ids(scan_data["image_files"])
+        artwork_result = self._extract_artwork_ids(
+            folder_path=path,
+            image_files=scan_data["image_files"],
+            non_artwork_files=scan_data["non_artwork_files"],
+        )
+        non_artwork_files = artwork_result["non_artwork_files"]
+        non_artwork_summary = self.non_artwork_collector.summarize(
+            non_artwork_files
+        )
 
         return FolderScanResult(
             artist_name=artist_name,
@@ -58,6 +72,13 @@ class FolderScanService:
             local_latest_artwork_ids=",".join(artwork_result["artwork_ids"]),
             extension_counts=scan_data["extension_counts"],
             invalid_artwork_file_names=artwork_result["invalid_file_names"],
+            non_artwork_files=non_artwork_files,
+            non_artwork_summary=non_artwork_summary,
+            non_artwork_summary_text=(
+                self.non_artwork_collector.format_summary_text(
+                    non_artwork_summary
+                )
+            ),
         )
 
     def parse_artist_folder_name(
@@ -154,19 +175,57 @@ class FolderScanService:
 
     def _scan_folder_files(self, folder_path: Path) -> dict:
         image_files: list[Path] = []
+        non_artwork_files: list[dict] = []
         folder_size_bytes = 0
         extension_counts: dict[str, int] = {}
+        image_extensions = self.image_extensions
 
         for file_path in folder_path.rglob("*"):
             if not file_path.is_file():
                 continue
 
             try:
-                folder_size_bytes += file_path.stat().st_size
+                file_size = file_path.stat().st_size
+                folder_size_bytes += file_size
             except OSError:
+                non_artwork_files.append(
+                    self.non_artwork_collector.build_record(
+                        file_path=file_path,
+                        folder_path=folder_path,
+                        reason=(
+                            self.non_artwork_collector
+                            .REASON_SCAN_ERROR
+                        ),
+                    )
+                )
                 continue
 
-            if file_path.suffix.lower() not in self.IMAGE_EXTENSIONS:
+            if file_size <= 0:
+                non_artwork_files.append(
+                    self.non_artwork_collector.build_record(
+                        file_path=file_path,
+                        folder_path=folder_path,
+                        reason=(
+                            self.non_artwork_collector
+                            .REASON_EMPTY_FILE
+                        ),
+                        size_bytes=file_size,
+                    )
+                )
+                continue
+
+            if file_path.suffix.lower() not in image_extensions:
+                non_artwork_files.append(
+                    self.non_artwork_collector.build_record(
+                        file_path=file_path,
+                        folder_path=folder_path,
+                        reason=(
+                            self.non_artwork_collector
+                            .REASON_UNSUPPORTED_EXTENSION
+                        ),
+                        size_bytes=file_size,
+                    )
+                )
                 continue
 
             image_files.append(file_path)
@@ -182,6 +241,7 @@ class FolderScanService:
 
         return {
             "image_files": image_files,
+            "non_artwork_files": non_artwork_files,
             "folder_size_bytes": folder_size_bytes,
             "extension_counts": dict(
                 sorted(
@@ -221,9 +281,15 @@ class FolderScanService:
             )
         )
 
-    def _extract_artwork_ids(self, image_files: list[Path]) -> dict:
+    def _extract_artwork_ids(
+        self,
+        folder_path: Path,
+        image_files: list[Path],
+        non_artwork_files: list[dict],
+    ) -> dict:
         artwork_ids: set[str] = set()
         invalid_file_names: list[str] = []
+        collected_non_artwork_files = list(non_artwork_files)
 
         for file_path in image_files:
             artwork_id = self._extract_artwork_id(file_path)
@@ -233,10 +299,22 @@ class FolderScanService:
                 continue
 
             invalid_file_names.append(file_path.name)
+            collected_non_artwork_files.append(
+                self.non_artwork_collector.build_record(
+                    file_path=file_path,
+                    folder_path=folder_path,
+                    reason=(
+                        self.non_artwork_collector
+                        .REASON_ARTWORK_ID_NOT_FOUND
+                    ),
+                    size_bytes=self._safe_get_file_size(file_path),
+                )
+            )
 
         return {
             "artwork_ids": sorted(artwork_ids, key=int, reverse=True),
             "invalid_file_names": invalid_file_names,
+            "non_artwork_files": collected_non_artwork_files,
         }
 
     def _extract_artwork_id(
@@ -254,3 +332,12 @@ class FolderScanService:
             return fallback_match.group(1)
 
         return ""
+
+    def _safe_get_file_size(
+        self,
+        file_path: Path,
+    ) -> int:
+        try:
+            return file_path.stat().st_size
+        except OSError:
+            return 0

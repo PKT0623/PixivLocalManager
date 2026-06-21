@@ -18,7 +18,7 @@ class ScanPreviewHeaderMixin:
         self.preview_show_error_checkbox = QCheckBox("오류만 보기")
 
         self.preview_hide_unchanged_checkbox = QCheckBox("변경 없음 숨김")
-        self.preview_hide_unchanged_checkbox.setChecked(True)
+        self.preview_hide_unchanged_checkbox.setChecked(False)
 
         self.preview_select_all_button = QPushButton("전체 선택")
         self.preview_clear_selection_button = QPushButton("전체 해제")
@@ -26,6 +26,12 @@ class ScanPreviewHeaderMixin:
         self.preview_keep_selected_button = QPushButton("선택만 남김")
         self.preview_exclude_error_button = QPushButton("오류 제외")
         self.preview_export_csv_button = QPushButton("미리보기 CSV")
+        self.preview_export_non_artwork_txt_button = QPushButton(
+            "비작품 TXT"
+        )
+        self.preview_export_non_artwork_csv_button = QPushButton(
+            "비작품 CSV"
+        )
         self.preview_scan_selected_button = QPushButton("선택 항목 등록")
 
         self._setup_preview_button_styles()
@@ -39,6 +45,8 @@ class ScanPreviewHeaderMixin:
             self.preview_keep_selected_button,
             self.preview_exclude_error_button,
             self.preview_export_csv_button,
+            self.preview_export_non_artwork_txt_button,
+            self.preview_export_non_artwork_csv_button,
         )
 
         for button in clear_buttons:
@@ -82,6 +90,12 @@ class ScanPreviewHeaderMixin:
         )
         self.preview_header_layout.addWidget(
             self.preview_export_csv_button
+        )
+        self.preview_header_layout.addWidget(
+            self.preview_export_non_artwork_txt_button
+        )
+        self.preview_header_layout.addWidget(
+            self.preview_export_non_artwork_csv_button
         )
         self.preview_header_layout.addWidget(
             self.preview_scan_selected_button

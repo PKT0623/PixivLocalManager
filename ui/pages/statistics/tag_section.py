@@ -1,3 +1,6 @@
+import webbrowser
+from urllib.parse import quote
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -12,6 +15,9 @@ from PySide6.QtWidgets import (
 
 
 class StatisticsTagSection(QWidget):
+    PIXIV_ARTIST_URL = "https://www.pixiv.net/users/{pixiv_id}"
+    PIXIV_TAG_URL = "https://www.pixiv.net/tags/{tag}/artworks"
+
     def __init__(self):
         super().__init__()
 
@@ -56,11 +62,16 @@ class StatisticsTagSection(QWidget):
         )
 
         self._setup_table_base(table)
+        table.cellDoubleClicked.connect(
+            self._open_pixiv_tag_from_table
+        )
 
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.Fixed)
+
+        table.setColumnWidth(2, 100)
 
         return table
 
@@ -77,12 +88,18 @@ class StatisticsTagSection(QWidget):
         )
 
         self._setup_table_base(table)
+        table.cellDoubleClicked.connect(
+            self._open_artist_pixiv_from_table
+        )
 
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.Fixed)
+        header.setSectionResizeMode(3, QHeaderView.Fixed)
+
+        table.setColumnWidth(2, 110)
+        table.setColumnWidth(3, 100)
 
         return table
 
@@ -123,6 +140,12 @@ class StatisticsTagSection(QWidget):
         self.tag_top_table.setRowCount(len(items))
 
         for row_index, item in enumerate(items):
+            display_tag = self._get_display_tag(item)
+            original_tag = self._get_original_tag(item)
+
+            tag_item = self._create_text_item(display_tag)
+            tag_item.setData(Qt.UserRole, original_tag)
+
             self.tag_top_table.setItem(
                 row_index,
                 0,
@@ -131,12 +154,12 @@ class StatisticsTagSection(QWidget):
             self.tag_top_table.setItem(
                 row_index,
                 1,
-                self._create_text_item(item.get("tag", "-")),
+                tag_item,
             )
             self.tag_top_table.setItem(
                 row_index,
                 2,
-                self._create_right_item(
+                self._create_center_item(
                     self._format_count(item.get("count", 0))
                 ),
             )
@@ -166,10 +189,86 @@ class StatisticsTagSection(QWidget):
             self.artist_top_table.setItem(
                 row_index,
                 3,
-                self._create_right_item(
+                self._create_center_item(
                     self._format_count(item.get("tag_count", 0))
                 ),
             )
+
+    def _open_pixiv_tag_from_table(
+        self,
+        row: int,
+        column: int,
+    ):
+        tag_item = self.tag_top_table.item(row, 1)
+
+        if tag_item is None:
+            return
+
+        tag = str(tag_item.data(Qt.UserRole) or "").strip()
+
+        if not tag:
+            tag = tag_item.text().strip()
+
+        if not tag or tag == "-":
+            return
+
+        webbrowser.open(
+            self.PIXIV_TAG_URL.format(
+                tag=quote(tag),
+            )
+        )
+
+    def _open_artist_pixiv_from_table(
+        self,
+        row: int,
+        column: int,
+    ):
+        pixiv_id_item = self.artist_top_table.item(row, 2)
+
+        if pixiv_id_item is None:
+            return
+
+        pixiv_id = pixiv_id_item.text().strip()
+
+        if not pixiv_id or pixiv_id == "-":
+            return
+
+        webbrowser.open(
+            self.PIXIV_ARTIST_URL.format(
+                pixiv_id=pixiv_id,
+            )
+        )
+
+    def _get_display_tag(
+        self,
+        item: dict,
+    ) -> str:
+        return str(
+            item.get("display_tag")
+            or item.get("translated_tag")
+            or item.get("tag_ko")
+            or item.get("ko")
+            or item.get("translated")
+            or item.get("tag")
+            or item.get("original_tag")
+            or "-"
+        )
+
+    def _get_original_tag(
+        self,
+        item: dict,
+    ) -> str:
+        return str(
+            item.get("original_tag")
+            or item.get("tag_original")
+            or item.get("raw_tag")
+            or item.get("tag_en")
+            or item.get("en")
+            or item.get("source_tag")
+            or item.get("tag")
+            or item.get("display_tag")
+            or "-"
+        )
 
     def _create_text_item(self, text: str) -> QTableWidgetItem:
         item = QTableWidgetItem(str(text or "-"))
@@ -180,12 +279,6 @@ class StatisticsTagSection(QWidget):
     def _create_center_item(self, text: str) -> QTableWidgetItem:
         item = self._create_text_item(text)
         item.setTextAlignment(Qt.AlignCenter)
-
-        return item
-
-    def _create_right_item(self, text: str) -> QTableWidgetItem:
-        item = self._create_text_item(text)
-        item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         return item
 

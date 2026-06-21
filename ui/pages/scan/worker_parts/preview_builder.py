@@ -17,7 +17,10 @@ class PreviewBuilderMixin:
                 can_scan=True,
                 scan_result=scan_result,
                 existing_artist=None,
-                message="새 작가로 등록됩니다.",
+                message=self._append_non_artwork_message(
+                    "새 작가로 등록됩니다.",
+                    scan_result,
+                ),
             )
 
         update_status = self.status_service.calculate_status(
@@ -48,7 +51,10 @@ class PreviewBuilderMixin:
                 can_scan=True,
                 scan_result=scan_result,
                 existing_artist=existing_artist,
-                message=change_message,
+                message=self._append_non_artwork_message(
+                    change_message,
+                    scan_result,
+                ),
             )
 
         return self._build_preview_row(
@@ -56,7 +62,10 @@ class PreviewBuilderMixin:
             can_scan=True,
             scan_result=scan_result,
             existing_artist=existing_artist,
-            message="등록된 정보와 변경 사항이 없습니다.",
+            message=self._append_non_artwork_message(
+                "등록된 정보와 변경 사항이 없습니다.",
+                scan_result,
+            ),
         )
 
     def _build_preview_row(
@@ -81,6 +90,11 @@ class PreviewBuilderMixin:
             "file_count": scan_result.folder_file_count,
             "folder_path": scan_result.folder_path,
             "message": message,
+            "non_artwork_summary": scan_result.non_artwork_summary,
+            "non_artwork_summary_text": (
+                scan_result.non_artwork_summary_text
+            ),
+            "non_artwork_files": scan_result.non_artwork_files,
             "scan_result": scan_result,
         }
 
@@ -98,6 +112,9 @@ class PreviewBuilderMixin:
             "file_count": "-",
             "folder_path": row_data.get("folder_path", "-"),
             "message": row_data.get("error_message", "-"),
+            "non_artwork_summary": {},
+            "non_artwork_summary_text": "비작품 파일 없음",
+            "non_artwork_files": [],
         }
 
     def _build_preview_exception_row(
@@ -115,6 +132,9 @@ class PreviewBuilderMixin:
             "file_count": "-",
             "folder_path": str(folder_path),
             "message": str(error),
+            "non_artwork_summary": {},
+            "non_artwork_summary_text": "비작품 파일 없음",
+            "non_artwork_files": [],
         }
 
     def _strip_preview_runtime_objects(
@@ -213,6 +233,25 @@ class PreviewBuilderMixin:
             messages.append("최신 작품 ID 순서 변경")
 
         return messages
+
+    def _append_non_artwork_message(
+        self,
+        message: str,
+        scan_result,
+    ) -> str:
+        summary_text = getattr(
+            scan_result,
+            "non_artwork_summary_text",
+            "",
+        )
+
+        if (
+            not summary_text
+            or summary_text == "비작품 파일 없음"
+        ):
+            return message
+
+        return f"{message} / {summary_text}"
 
     def _split_artwork_ids(
         self,

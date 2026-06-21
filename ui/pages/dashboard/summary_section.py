@@ -7,12 +7,14 @@ class SummarySection(QGridLayout):
     SUMMARY_ITEMS = [
         ("total_artists", "전체 작가", "0", 0, 0),
         ("favorite_artists", "즐겨찾기", "0", 0, 1),
-        ("need_update_count", "업데이트 필요", "0", 0, 2),
-        ("error_count", "오류 작가", "0", 0, 3),
-        ("total_artworks", "전체 작품 수", "0", 1, 0),
-        ("total_files", "전체 파일 수", "0", 1, 1),
-        ("total_folder_size", "전체 폴더 용량", "0 B", 1, 2),
-        ("recent_scan", "최근 스캔", "-", 1, 3),
+        ("follow_users", "팔로우", "0", 0, 2),
+        ("bookmark_artworks", "북마크", "0", 0, 3),
+        ("need_update_count", "업데이트 필요", "0", 0, 4),
+        ("error_count", "오류 작가", "0", 1, 0),
+        ("total_artworks", "전체 작품 수", "0", 1, 1),
+        ("total_files", "전체 파일 수", "0", 1, 2),
+        ("total_folder_size", "전체 폴더 용량", "0 B", 1, 3),
+        ("recent_scan", "최근 스캔", "-", 1, 4),
     ]
 
     def __init__(self):

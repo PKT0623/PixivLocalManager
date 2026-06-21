@@ -1,5 +1,4 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidgetItem
 
 from .cell_widgets import (
@@ -10,16 +9,18 @@ from .cell_widgets import (
 from .columns import (
     COLUMN_ARTIST_NAME,
     COLUMN_ARTWORK_COUNT,
-    COLUMN_CREATED_AT,
     COLUMN_FAVORITE,
     COLUMN_FILE_COUNT,
+    COLUMN_FOLDER_SIZE,
     COLUMN_LAST_VIEWED_AT,
+    COLUMN_MISSING_ARTWORK_COUNT,
     COLUMN_NO,
     COLUMN_PIXIV_ID,
     COLUMN_RATING,
     COLUMN_SHORTCUTS,
     COLUMN_STATUS,
     COLUMN_TAGS,
+    COLUMN_UPDATED_AT,
 )
 from .formatters import format_cell_value
 
@@ -36,13 +37,10 @@ class ArtistTableRowRenderer:
     ):
         self.table.artist_ids.append(artist.get("id"))
 
-        is_hidden = bool(artist.get("is_hidden", 0))
-
         self.set_item(
             row,
             COLUMN_NO,
             index,
-            is_hidden,
         )
 
         self.set_favorite_button(
@@ -55,25 +53,31 @@ class ArtistTableRowRenderer:
             row,
             COLUMN_ARTIST_NAME,
             artist.get("artist_name"),
-            is_hidden,
         )
         self.set_item(
             row,
             COLUMN_PIXIV_ID,
             artist.get("pixiv_id"),
-            is_hidden,
         )
         self.set_item(
             row,
             COLUMN_ARTWORK_COUNT,
             artist.get("folder_artwork_count", 0),
-            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_MISSING_ARTWORK_COUNT,
+            self.get_missing_artwork_count(artist),
         )
         self.set_item(
             row,
             COLUMN_FILE_COUNT,
             artist.get("folder_file_count", 0),
-            is_hidden,
+        )
+        self.set_item(
+            row,
+            COLUMN_FOLDER_SIZE,
+            artist.get("folder_size_bytes", 0),
         )
 
         self.set_status_badge(
@@ -85,25 +89,21 @@ class ArtistTableRowRenderer:
             row,
             COLUMN_RATING,
             artist.get("rating", 0),
-            is_hidden,
         )
         self.set_item(
             row,
             COLUMN_TAGS,
             artist.get("artist_tags", ""),
-            is_hidden,
         )
         self.set_item(
             row,
             COLUMN_LAST_VIEWED_AT,
             artist.get("last_viewed_at"),
-            is_hidden,
         )
         self.set_item(
             row,
-            COLUMN_CREATED_AT,
-            artist.get("created_at"),
-            is_hidden,
+            COLUMN_UPDATED_AT,
+            artist.get("updated_at"),
         )
 
         self.set_shortcut_buttons(
@@ -117,7 +117,6 @@ class ArtistTableRowRenderer:
         row: int,
         column: int,
         value,
-        is_hidden: bool = False,
     ):
         text = format_cell_value(
             column,
@@ -132,21 +131,16 @@ class ArtistTableRowRenderer:
             COLUMN_NO,
             COLUMN_PIXIV_ID,
             COLUMN_ARTWORK_COUNT,
+            COLUMN_MISSING_ARTWORK_COUNT,
             COLUMN_FILE_COUNT,
+            COLUMN_FOLDER_SIZE,
             COLUMN_RATING,
             COLUMN_LAST_VIEWED_AT,
-            COLUMN_CREATED_AT,
+            COLUMN_UPDATED_AT,
         ):
             item.setTextAlignment(Qt.AlignCenter)
 
-        if is_hidden:
-            self.apply_hidden_style(item)
-
         self.table.setItem(row, column, item)
-
-    def apply_hidden_style(self, item: QTableWidgetItem):
-        item.setBackground(QColor("#b8b8b8"))
-        item.setForeground(QColor("#111111"))
 
     def set_favorite_button(
         self,
@@ -194,3 +188,35 @@ class ArtistTableRowRenderer:
             COLUMN_SHORTCUTS,
             widget,
         )
+
+    def get_missing_artwork_count(self, artist: dict) -> int:
+        local_ids = self.parse_artwork_ids(
+            artist.get("local_latest_artwork_ids", "")
+        )
+        pixiv_ids = self.parse_artwork_ids(
+            artist.get("pixiv_latest_artwork_ids", "")
+        )
+
+        if not pixiv_ids:
+            return 0
+
+        return len(pixiv_ids - local_ids)
+
+    def parse_artwork_ids(self, value) -> set[str]:
+        if not value:
+            return set()
+
+        if isinstance(value, (list, tuple, set)):
+            return {
+                str(item).strip()
+                for item in value
+                if str(item).strip()
+            }
+
+        text = str(value)
+
+        return {
+            item.strip()
+            for item in text.replace("\n", ",").split(",")
+            if item.strip()
+        }

@@ -1,42 +1,6 @@
 ﻿time,progress,result,artist_name,pixiv_id,artwork_count,file_count,update_status,folder_path,error_message
-20:58:01,-,정보,스캔 시작: C:/Users/Owner/Downloads/pixiv,-,-,-,-,-,-
-20:58:06,1/38,오류,(꼴),-,-,-,-,C:\Users\Owner\Downloads\pixiv\(꼴),이미지 파일이 없습니다. 스캔에서 제외합니다.
-20:58:06,2/38,오류,(애매),-,-,-,-,C:\Users\Owner\Downloads\pixiv\(애매),이미지 파일이 없습니다. 스캔에서 제외합니다.
-20:58:06,3/38,오류,(임시),-,-,-,-,C:\Users\Owner\Downloads\pixiv\(임시),Pixiv ID가 없습니다. 스캔에서 제외합니다.
-20:58:06,-,경고,이미 등록된 Pixiv ID,-,-,-,-,C:\Users\Owner\Downloads\pixiv,이미 등록된 Pixiv ID 35개를 발견했습니다. 해당 항목은 기존 작가 정보 갱신 대상으로 처리합니다.
-20:58:06,-,정보,스캔 대상 작가 폴더: 35개,-,-,-,-,-,-
-20:58:06,1/35,변경 없음,( ᐛ )ｶﾜｲｿｳﾆ,119340610,30,416,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\( ᐛ )ｶﾜｲｿｳﾆ-119340610,-
-20:58:07,2/35,업데이트,04,115273840,508,10982,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\04-115273840,-
-20:58:07,3/35,변경 없음,5p2,6447236,162,2771,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\5p2-6447236,-
-20:58:07,4/35,변경 없음,ASNMN,108328712,36,607,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\ASNMN-108328712,-
-20:58:08,5/35,업데이트,Asukaaa,103556073,830,10006,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\Asukaaa-103556073,-
-20:58:08,6/35,변경 없음,daifukumaru,120682291,131,2494,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\daifukumaru-120682291,-
-20:58:08,7/35,변경 없음,EDF战斗员,116223287,131,280,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\EDF战斗员-116223287,-
-20:58:09,8/35,변경 없음,FA,117026932,109,2633,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\FA-117026932,-
-20:58:09,9/35,변경 없음,huyyq232,118185024,139,831,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\huyyq232-118185024,-
-20:58:10,10/35,업데이트,Latte,14911546,240,8472,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\Latte-14911546,-
-20:58:10,11/35,변경 없음,LC666,23687911,382,4087,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\LC666-23687911,-
-20:58:10,12/35,변경 없음,LITTESSL,122061878,94,234,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\LITTESSL-122061878,-
-20:58:10,13/35,변경 없음,Luka45,115577578,224,4387,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\Luka45-115577578,-
-20:58:11,14/35,변경 없음,M,75260943,73,1516,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\M-75260943,-
-20:58:11,15/35,변경 없음,mP2o,46445858,13,386,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\mP2o-46445858,-
-20:58:11,16/35,변경 없음,MSK@水曜日東B05ab,2864095,464,490,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\MSK@水曜日東B05ab-2864095,-
-20:58:12,17/35,변경 없음,Oki Senpai,113289403,439,14597,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\Oki Senpai-113289403,-
-20:58:12,18/35,변경 없음,orimineko,111449970,175,909,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\orimineko-111449970,-
-20:58:13,19/35,변경 없음,Raimy AI,113024421,124,4607,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\Raimy AI-113024421,-
-20:58:13,20/35,변경 없음,rororo,64101854,722,1161,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\rororo-64101854,-
-20:58:13,21/35,변경 없음,S.A.M12138,124420679,33,1817,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\S.A.M12138-124420679,-
-20:58:13,22/35,변경 없음,Strelitzia,69261024,29,224,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\Strelitzia-69261024,-
-20:58:13,23/35,변경 없음,suinetoria,120988648,29,523,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\suinetoria-120988648,-
-20:58:13,24/35,변경 없음,World All Waifu,104930031,457,2674,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\World All Waifu-104930031,-
-20:58:13,25/35,변경 없음,wsosw,126286403,21,695,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\wsosw-126286403,-
-20:58:14,26/35,변경 없음,りぃのあ,79664500,414,2745,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\りぃのあ-79664500,-
-20:58:14,27/35,변경 없음,ダブルスラッシュ,117396740,311,2265,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\ダブルスラッシュ-117396740,-
-20:58:14,28/35,변경 없음,レツ,12940810,27,887,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\レツ-12940810,-
-20:58:14,29/35,변경 없음,午后不知道,68856046,63,401,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\午后不知道-68856046,-
-20:58:14,30/35,업데이트,夜间无梦时,118852059,76,767,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\夜间无梦时-118852059,-
-20:58:14,31/35,변경 없음,小白船,17254840,53,855,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\小白船-17254840,-
-20:58:14,32/35,변경 없음,成田大进,53214500,111,1316,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\成田大进-53214500,-
-20:58:15,33/35,변경 없음,新天天可爱,103431467,572,2452,up_to_date,C:\Users\Owner\Downloads\pixiv\(임시)\新天天可爱-103431467,-
-20:58:15,34/35,변경 없음,猫庵,124119090,453,6120,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\猫庵-124119090,-
-20:58:16,35/35,변경 없음,百破领域大神,87526958,107,3306,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\百破领域大神-87526958,-
+01:10:26,-,정보,업데이트 확인 결과 기반 재스캔 대상: 1개,-,-,-,-,-,-
+01:10:26,-,정보,스캔 시작: C:\Users\Owner\Downloads\pixiv\(임시),-,-,-,-,-,-
+01:10:26,-,경고,이미 등록된 Pixiv ID,-,-,-,-,C:\Users\Owner\Downloads\pixiv\(임시),이미 등록된 Pixiv ID 1개를 발견했습니다. 해당 항목은 기존 작가 정보 갱신 대상으로 처리합니다.
+01:10:26,-,정보,스캔 대상 작가 폴더: 1개,-,-,-,-,-,-
+01:10:26,1/1,변경 없음,( ᐛ )ｶﾜｲｿｳﾆ,119340610,30,416,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\( ᐛ )ｶﾜｲｿｳﾆ-119340610,-

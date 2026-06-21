@@ -36,6 +36,35 @@ class SettingsPixivActions:
         self.refresh_environment_info()
         self.set_status("기본 Pixiv 폴더가 저장되었습니다.")
 
+    def save_scan_image_extensions(self):
+        extensions = self.page.folder_section.get_scan_image_extensions()
+
+        if not extensions:
+            self.set_status(
+                "작품 파일 확장자를 최소 1개 이상 선택하세요.",
+                error=True,
+            )
+            return
+
+        try:
+            self.page.settings_service.set_scan_image_extensions(extensions)
+        except Exception as error:
+            self.set_status(f"작품 파일 확장자 저장 실패: {error}", error=True)
+            return
+
+        self._load_scan_image_extensions()
+        self.set_status("작품 파일 확장자 설정이 저장되었습니다.")
+
+    def reset_scan_image_extensions(self):
+        try:
+            self.page.settings_service.reset_scan_image_extensions()
+        except Exception as error:
+            self.set_status(f"작품 파일 확장자 기본값 복원 실패: {error}", error=True)
+            return
+
+        self._load_scan_image_extensions()
+        self.set_status("작품 파일 확장자 기본값을 복원했습니다.")
+
     def save_phpsessid(self):
         phpsessid = self.page.pixiv_section.phpsessid_input.text().strip()
 

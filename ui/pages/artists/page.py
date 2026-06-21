@@ -59,13 +59,26 @@ class ArtistsPage(QWidget):
                 font-size: 14px;
             }
 
+            QComboBox {
+                padding: 6px 10px;
+                border: 1px solid #cccccc;
+                border-radius: 6px;
+                background-color: #ffffff;
+                font-size: 14px;
+            }
+
+            QComboBox::drop-down {
+                width: 24px;
+                border: none;
+            }
+
             QCheckBox {
                 font-size: 14px;
                 spacing: 6px;
             }
 
             QPushButton {
-                padding: 8px 14px;
+                padding: 7px 12px;
                 border: 1px solid #cccccc;
                 border-radius: 6px;
                 background-color: #f5f5f5;
@@ -79,6 +92,9 @@ class ArtistsPage(QWidget):
         )
 
     def _connect_signals(self):
+        self.toolbar.search_mode_combo.currentIndexChanged.connect(
+            self.actions.apply_filter_and_sort
+        )
         self.toolbar.search_input.textChanged.connect(
             self.actions.apply_filter_and_sort
         )
@@ -100,9 +116,6 @@ class ArtistsPage(QWidget):
         self.toolbar.unrated_only_checkbox.stateChanged.connect(
             self.actions.apply_filter_and_sort
         )
-        self.toolbar.exclude_hidden_checkbox.stateChanged.connect(
-            self.actions.apply_filter_and_sort
-        )
         self.toolbar.reset_filter_button.clicked.connect(
             self.actions.reset_filters
         )
@@ -115,25 +128,6 @@ class ArtistsPage(QWidget):
         )
         self.toolbar.refresh_button.clicked.connect(
             self.actions.load_artists
-        )
-
-        self.toolbar.bulk_rating_button.clicked.connect(
-            self.actions.handle_bulk_rating_change
-        )
-        self.toolbar.bulk_favorite_button.clicked.connect(
-            self.actions.handle_bulk_favorite
-        )
-        self.toolbar.bulk_unfavorite_button.clicked.connect(
-            self.actions.handle_bulk_unfavorite
-        )
-        self.toolbar.bulk_hide_button.clicked.connect(
-            self.actions.handle_bulk_hide
-        )
-        self.toolbar.bulk_unhide_button.clicked.connect(
-            self.actions.handle_bulk_unhide
-        )
-        self.toolbar.bulk_delete_button.clicked.connect(
-            self.actions.handle_bulk_delete
         )
         self.toolbar.restore_deleted_button.clicked.connect(
             self.actions.handle_restore_deleted_artists
@@ -151,6 +145,23 @@ class ArtistsPage(QWidget):
         self.artist_table.rating_changed.connect(
             self.actions.handle_rating_changed
         )
+        self.artist_table.context_rating_requested.connect(
+            self.actions.handle_rating_change_for_artist_ids
+        )
+        self.artist_table.context_favorite_requested.connect(
+            self.actions.handle_favorite_state_for_artist_ids
+        )
+        self.artist_table.context_delete_requested.connect(
+            self.actions.handle_delete_for_artist_ids
+        )
 
     def load_artists(self):
         self.actions.load_artists()
+
+    def select_artist_ids(
+        self,
+        artist_ids: list[int],
+    ):
+        self.actions.load_artists()
+        self.artist_table.select_artist_ids(artist_ids)
+        self.artist_table.setFocus()

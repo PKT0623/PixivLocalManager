@@ -2,6 +2,7 @@ from ...utils import (
     display_value,
     folder_status_label,
     format_datetime,
+    format_file_size,
     status_label,
     to_int,
 )
@@ -54,6 +55,9 @@ class ArtistLoadActions:
         section.file_count_input.setText(
             str(to_int(artist.get("folder_file_count", 0)))
         )
+        section.folder_size_label.setText(
+            format_file_size(artist.get("folder_size_bytes", 0))
+        )
         section.rating_input.setText(
             str(to_int(artist.get("rating", 0), minimum=0, maximum=10))
         )
@@ -67,10 +71,6 @@ class ArtistLoadActions:
         section.favorite_checkbox.setChecked(
             bool(artist.get("is_favorite", 0))
         )
-        section.hidden_checkbox.setChecked(
-            bool(artist.get("is_hidden", 0))
-        )
-
         section.last_checked_at_label.setText(
             format_datetime(artist.get("last_checked_at"))
         )
@@ -118,10 +118,10 @@ class ArtistLoadActions:
         section.artwork_count_input.clear()
         section.file_count_input.clear()
         section.rating_input.clear()
+        section.folder_size_label.setText("-")
         section.status_label.setText("-")
         section.update_status_label.setText("-")
         section.favorite_checkbox.setChecked(False)
-        section.hidden_checkbox.setChecked(False)
         section.last_checked_at_label.setText("-")
         section.last_viewed_at_label.setText("-")
         section.created_at_label.setText("-")

@@ -10,6 +10,16 @@ QLabel#sectionTitle {
     margin-top: 8px;
 }
 
+QLabel#statusMessageLabel {
+    padding: 8px 12px;
+    border: 1px solid #cfe2ff;
+    border-radius: 6px;
+    background-color: #eef5ff;
+    color: #0d6efd;
+    font-size: 14px;
+    font-weight: 700;
+}
+
 QLabel#historySummaryLabel {
     font-size: 14px;
     font-weight: 700;
@@ -28,6 +38,7 @@ QPushButton#saveButton,
 QPushButton#normalButton,
 QPushButton#folderSelectButton,
 QPushButton#copyButton,
+QPushButton#shortcutButton,
 QPushButton#artworkButton,
 QPushButton#smallActionButton,
 QPushButton#tagButton {
@@ -60,6 +71,11 @@ QPushButton#tagButton {
     min-width: 90px;
 }
 
+QPushButton#shortcutButton {
+    min-width: 90px;
+    padding: 6px 12px;
+}
+
 QPushButton#copyButton {
     min-width: 60px;
     padding: 6px 12px;
@@ -80,6 +96,7 @@ QPushButton#refreshButton:hover,
 QPushButton#normalButton:hover,
 QPushButton#folderSelectButton:hover,
 QPushButton#copyButton:hover,
+QPushButton#shortcutButton:hover,
 QPushButton#artworkButton:hover,
 QPushButton#smallActionButton:hover,
 QPushButton#tagButton:hover {

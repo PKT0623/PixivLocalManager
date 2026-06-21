@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QApplication, QInputDialog
+from PySide6.QtWidgets import QApplication, QInputDialog, QMenu
 
 from .columns import (
     COLUMN_FAVORITE,
@@ -83,6 +83,50 @@ class ArtistTableActions:
             return
 
         self.table.artist_selected.emit(int(artist_id))
+
+    def show_context_menu(self, position):
+        row = self.table.rowAt(position.y())
+
+        if row < 0 or row >= len(self.table.artist_ids):
+            return
+
+        if not self.table.selectionModel().isRowSelected(
+            row,
+            self.table.rootIndex(),
+        ):
+            self.table.selectRow(row)
+
+        artist_ids = self.table.get_selected_artist_ids()
+
+        if not artist_ids:
+            return
+
+        menu = QMenu(self.table)
+
+        rating_action = menu.addAction("평점 변경")
+        favorite_action = menu.addAction("즐겨찾기")
+        unfavorite_action = menu.addAction("즐겨찾기 해제")
+        menu.addSeparator()
+        delete_action = menu.addAction("삭제")
+
+        selected_action = menu.exec(
+            self.table.viewport().mapToGlobal(position)
+        )
+
+        if selected_action == rating_action:
+            self.table.context_rating_requested.emit(artist_ids)
+        elif selected_action == favorite_action:
+            self.table.context_favorite_requested.emit(
+                artist_ids,
+                True,
+            )
+        elif selected_action == unfavorite_action:
+            self.table.context_favorite_requested.emit(
+                artist_ids,
+                False,
+            )
+        elif selected_action == delete_action:
+            self.table.context_delete_requested.emit(artist_ids)
 
     def _handle_rating_double_clicked(
         self,

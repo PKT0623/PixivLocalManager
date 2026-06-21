@@ -24,10 +24,7 @@ class ArtistOperationsActions:
         self.refresh_artist()
         self.page.artist_updated.emit(self.page.artist_id)
 
-        self.show_information(
-            "재스캔 완료",
-            "현재 작가 폴더를 다시 스캔했습니다.",
-        )
+        self.show_status_message("현재 작가 폴더를 다시 스캔했습니다.")
 
     def check_artist_update(self):
         if self.page.artist_id is None:
@@ -57,7 +54,6 @@ class ArtistOperationsActions:
         )
         status_text = status_label(result.get("status"))
 
-        self.show_information(
-            "업데이트 확인 완료",
-            f"업데이트 상태: {status_text}\n누락 작품 수: {missing_count}",
+        self.show_status_message(
+            f"업데이트 상태: {status_text} / 누락 작품 수: {missing_count}"
         )

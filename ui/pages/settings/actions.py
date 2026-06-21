@@ -4,6 +4,7 @@ from app.services.database_integrity_service import DatabaseIntegrityService
 from app.services.database_maintenance_service import (
     DatabaseMaintenanceService,
 )
+from app.services.log_management_service import LogManagementService
 from app.services.pixiv import PixivSessionService
 from app.services.settings_backup_service import SettingsBackupService
 
@@ -13,6 +14,7 @@ from .action_parts import (
     SettingsDatabaseActions,
     SettingsEnvironmentActions,
     SettingsLoadActions,
+    SettingsLogActions,
     SettingsPixivActions,
     SettingsRequestActions,
 )
@@ -25,6 +27,7 @@ class SettingsActions(
     SettingsDatabaseActions,
     SettingsBackupActions,
     SettingsEnvironmentActions,
+    SettingsLogActions,
     SettingsCommonActions,
 ):
     def __init__(self, page):
@@ -34,4 +37,5 @@ class SettingsActions(
         self.database_integrity_service = DatabaseIntegrityService()
         self.database_maintenance_service = DatabaseMaintenanceService()
         self.settings_backup_service = SettingsBackupService()
+        self.log_management_service = LogManagementService()
         self.pixiv_session_service = PixivSessionService()

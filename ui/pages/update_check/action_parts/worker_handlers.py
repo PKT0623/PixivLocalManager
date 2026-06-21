@@ -3,6 +3,10 @@ from PySide6.QtCore import Slot
 
 class UpdateCheckWorkerHandlerActions:
     @Slot(dict)
+    def handle_log_requested(self, row_data: dict):
+        self.page.log_table.add_log_row(row_data)
+
+    @Slot(dict)
     def handle_summary_updated(self, summary: dict):
         self.current_summary = summary.copy()
         self.page.update_summary(summary)
@@ -42,6 +46,7 @@ class UpdateCheckWorkerHandlerActions:
         self.page.export_csv_button.setEnabled(
             self.page.log_table.rowCount() > 0
         )
+        self.update_log_action_buttons()
         self.page.update_finished.emit()
 
     @Slot(str)
@@ -57,6 +62,7 @@ class UpdateCheckWorkerHandlerActions:
         self.page.export_csv_button.setEnabled(
             self.page.log_table.rowCount() > 0
         )
+        self.update_log_action_buttons()
         self.page.update_finished.emit()
 
     @Slot()

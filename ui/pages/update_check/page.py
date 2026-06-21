@@ -29,6 +29,16 @@ class UpdateCheckPage(
     UpdateCheckDataMixin,
 ):
     update_finished = Signal()
+    artist_detail_requested = Signal(int)
+    artist_list_requested = Signal(list)
+
+    worker_log_received = Signal(dict)
+    worker_progress_received = Signal(int, int)
+    worker_summary_received = Signal(dict)
+    worker_failed_artist_received = Signal(int)
+    worker_paused_received = Signal(int, int)
+    worker_finished_received = Signal()
+    worker_failed_received = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -110,9 +120,58 @@ class UpdateCheckPage(
         self.export_csv_button.clicked.connect(
             self.actions.export_log_csv
         )
+        self.open_log_artist_detail_button.clicked.connect(
+            self.actions.open_selected_log_artist_detail
+        )
+        self.open_log_artist_list_button.clicked.connect(
+            self.actions.open_selected_log_artist_list
+        )
+        self.rescan_selected_log_button.clicked.connect(
+            self.actions.rescan_selected_log_artists
+        )
+        self.rescan_missing_log_button.clicked.connect(
+            self.actions.rescan_missing_log_artists
+        )
+        self.rescan_error_log_button.clicked.connect(
+            self.actions.rescan_error_log_artists
+        )
+        self.export_download_txt_button.clicked.connect(
+            self.actions.export_download_plan_txt
+        )
+        self.export_download_csv_button.clicked.connect(
+            self.actions.export_download_plan_csv
+        )
         self.skip_recent_checkbox.toggled.connect(
             self.update_target_count
         )
         self.artist_table.selection_changed.connect(
             self.update_target_count
+        )
+        self.log_table.artist_detail_requested.connect(
+            self.actions.open_log_artist_detail_by_id
+        )
+        self.log_table.selection_changed.connect(
+            self.actions.update_log_action_buttons
+        )
+
+        self.worker_log_received.connect(
+            self.actions.handle_log_requested
+        )
+        self.worker_progress_received.connect(
+            self.actions.update_progress
+        )
+        self.worker_summary_received.connect(
+            self.actions.handle_summary_updated
+        )
+        self.worker_failed_artist_received.connect(
+            self.actions.add_failed_artist_id
+        )
+        self.worker_paused_received.connect(
+            self.actions.handle_paused
+        )
+        self.worker_finished_received.connect(
+            self.actions.handle_finished
+        )
+        self.worker_failed_received.connect(
+            self.actions.handle_failed
         )

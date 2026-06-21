@@ -19,16 +19,24 @@ class StatisticsTagService:
     ) -> dict:
         artist_tag_items = self._build_artist_tag_items(artists)
         tag_counter = Counter()
+        tag_display_map = {}
 
         for item in artist_tag_items:
-            tag_counter.update(item["tags"])
+            for tag in item["tags"]:
+                original = tag["original"]
+                display = tag["display"]
+
+                tag_counter.update([original])
+                tag_display_map[original] = display
 
         tag_top = [
             {
-                "tag": tag,
+                "tag": tag_display_map.get(original, original),
+                "original_tag": original,
+                "display_tag": tag_display_map.get(original, original),
                 "count": count,
             }
-            for tag, count in tag_counter.most_common(limit)
+            for original, count in tag_counter.most_common(limit)
         ]
 
         tag_artist_top = sorted(
@@ -73,7 +81,7 @@ class StatisticsTagService:
             for artist in artists
         ]
 
-    def _parse_tags(self, raw_tags) -> list[str]:
+    def _parse_tags(self, raw_tags) -> list[dict]:
         if raw_tags is None:
             return []
 
@@ -98,7 +106,7 @@ class StatisticsTagService:
     def _parse_tag_list(
         self,
         values: list,
-    ) -> list[str]:
+    ) -> list[dict]:
         tags = []
 
         for value in values:
@@ -106,42 +114,62 @@ class StatisticsTagService:
                 tag = value.strip()
 
                 if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
-                    tags.append(tag)
+                    tags.append(
+                        {
+                            "original": tag,
+                            "display": tag,
+                        }
+                    )
 
                 continue
 
             if not isinstance(value, dict):
                 continue
 
-            translated = str(
-                value.get("translated")
-                or value.get("translated_name")
-                or ""
-            ).strip()
             original = str(
                 value.get("original")
                 or value.get("name")
+                or value.get("tag")
+                or ""
+            ).strip()
+            translated = str(
+                value.get("translated")
+                or value.get("translated_name")
+                or value.get("tag_translation")
                 or ""
             ).strip()
 
-            tag = translated or original
+            display = translated or original
 
-            if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
-                tags.append(tag)
+            if (
+                original
+                and original.lower() not in self.EMPTY_TAG_VALUES
+            ):
+                tags.append(
+                    {
+                        "original": original,
+                        "display": display,
+                    }
+                )
 
         return tags
 
     def _parse_legacy_text(
         self,
         raw_text: str,
-    ) -> list[str]:
+    ) -> list[dict]:
         tags = []
 
         for value in raw_text.replace("\n", ",").split(","):
             tag = value.strip()
 
             if tag and tag.lower() not in self.EMPTY_TAG_VALUES:
-                tags.append(tag)
+                tags.append(
+                    {
+                        "original": tag,
+                        "display": tag,
+                    }
+                )
 
         return tags
 

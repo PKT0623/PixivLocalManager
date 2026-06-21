@@ -12,6 +12,11 @@ class StatisticsMixin:
             "total_file_count": 0,
             "total_artwork_count": 0,
             "extension_counts": {},
+            "non_artwork_file_count": 0,
+            "unsupported_extension_count": 0,
+            "artwork_id_not_found_count": 0,
+            "empty_file_count": 0,
+            "scan_error_count": 0,
         }
 
     def _increase_preview_summary(
@@ -77,3 +82,25 @@ class StatisticsMixin:
                 statistics["extension_counts"].get(extension, 0)
                 + int(count or 0)
             )
+
+        non_artwork_summary = getattr(
+            scan_result,
+            "non_artwork_summary",
+            {},
+        ) or {}
+
+        statistics["non_artwork_file_count"] += int(
+            non_artwork_summary.get("total", 0) or 0
+        )
+        statistics["unsupported_extension_count"] += int(
+            non_artwork_summary.get("unsupported_extension", 0) or 0
+        )
+        statistics["artwork_id_not_found_count"] += int(
+            non_artwork_summary.get("artwork_id_not_found", 0) or 0
+        )
+        statistics["empty_file_count"] += int(
+            non_artwork_summary.get("empty_file", 0) or 0
+        )
+        statistics["scan_error_count"] += int(
+            non_artwork_summary.get("scan_error", 0) or 0
+        )

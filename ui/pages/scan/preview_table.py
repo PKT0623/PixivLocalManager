@@ -1,7 +1,12 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QHeaderView,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionButton,
+    QStyleOptionViewItem,
     QTableWidget,
     QTableWidgetItem,
 )
@@ -11,6 +16,111 @@ from .preview_table_parts import (
     matches_preview_filters,
     render_preview_rows,
 )
+
+
+class CenteredCheckBoxDelegate(QStyledItemDelegate):
+    def paint(
+        self,
+        painter,
+        option,
+        index,
+    ):
+        if index.column() != 0:
+            super().paint(painter, option, index)
+            return
+
+        style = option.widget.style() if option.widget else QApplication.style()
+
+        item_option = QStyleOptionViewItem(option)
+        self.initStyleOption(item_option, index)
+        style.drawPrimitive(
+            QStyle.PE_PanelItemViewItem,
+            item_option,
+            painter,
+            option.widget,
+        )
+
+        check_option = QStyleOptionButton()
+        check_option.state |= QStyle.State_Enabled
+
+        if index.data(Qt.CheckStateRole) == Qt.Checked:
+            check_option.state |= QStyle.State_On
+        else:
+            check_option.state |= QStyle.State_Off
+
+        check_option.rect = self._get_check_box_rect(option)
+        style.drawControl(
+            QStyle.CE_CheckBox,
+            check_option,
+            painter,
+            option.widget,
+        )
+
+    def editorEvent(
+        self,
+        event,
+        model,
+        option,
+        index,
+    ):
+        if index.column() != 0:
+            return super().editorEvent(event, model, option, index)
+
+        if not index.flags() & Qt.ItemIsUserCheckable:
+            return False
+
+        if event.type() == QEvent.MouseButtonRelease:
+            if not self._get_check_box_rect(option).contains(
+                event.position().toPoint()
+            ):
+                return False
+
+            self._toggle_check_state(model, index)
+            return True
+
+        if event.type() == QEvent.KeyPress and event.key() in (
+            Qt.Key_Space,
+            Qt.Key_Select,
+        ):
+            self._toggle_check_state(model, index)
+            return True
+
+        return False
+
+    def _toggle_check_state(
+        self,
+        model,
+        index,
+    ):
+        current_state = index.data(Qt.CheckStateRole)
+        next_state = Qt.Unchecked
+
+        if current_state != Qt.Checked:
+            next_state = Qt.Checked
+
+        model.setData(index, next_state, Qt.CheckStateRole)
+
+    def _get_check_box_rect(
+        self,
+        option,
+    ):
+        style = option.widget.style() if option.widget else QApplication.style()
+        check_box_rect = style.subElementRect(
+            QStyle.SE_CheckBoxIndicator,
+            QStyleOptionButton(),
+            option.widget,
+        )
+
+        x = option.rect.x() + (
+            option.rect.width() - check_box_rect.width()
+        ) // 2
+        y = option.rect.y() + (
+            option.rect.height() - check_box_rect.height()
+        ) // 2
+
+        check_box_rect.moveTo(x, y)
+
+        return check_box_rect
 
 
 class ScanPreviewTable(QTableWidget):
@@ -24,7 +134,7 @@ class ScanPreviewTable(QTableWidget):
         self.show_created_only = False
         self.show_updated_only = False
         self.show_error_only = False
-        self.hide_unchanged = True
+        self.hide_unchanged = False
 
         self._setup_ui()
         self.itemChanged.connect(self._handle_item_changed)
@@ -52,7 +162,10 @@ class ScanPreviewTable(QTableWidget):
         self.setShowGrid(True)
         self.verticalHeader().setDefaultSectionSize(30)
 
+        self.setItemDelegateForColumn(0, CenteredCheckBoxDelegate(self))
+
         header = self.horizontalHeader()
+        header.setDefaultAlignment(Qt.AlignCenter)
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QHeaderView.Stretch)

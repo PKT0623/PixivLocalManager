@@ -17,3 +17,7 @@ class ArtistDialogActions:
         message_box.setText(message)
         message_box.setStandardButtons(QMessageBox.Ok)
         message_box.exec()
+
+
+    def show_status_message(self, message: str):
+        self.page.show_status_message(message)

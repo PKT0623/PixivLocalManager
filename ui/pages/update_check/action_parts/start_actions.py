@@ -37,6 +37,8 @@ class UpdateCheckStartActions:
         self.page.reset_summary()
         self.page.log_table.clear_logs()
 
+        self._save_current_request_settings()
+
         self._start_worker(
             artist_ids=artist_ids,
             progress_offset=0,
@@ -63,6 +65,7 @@ class UpdateCheckStartActions:
                 "time": datetime.now().strftime("%H:%M:%S"),
                 "progress": f"{self.progress_offset}/{self.total_count}",
                 "result": "재개",
+                "artist_id": None,
                 "artist_name": "일시정지된 작업을 재개합니다.",
                 "pixiv_id": "-",
                 "local_count": "-",
@@ -73,6 +76,8 @@ class UpdateCheckStartActions:
                 "status": "-",
             }
         )
+
+        self._save_current_request_settings()
 
         self._start_worker(
             artist_ids=self.resume_artist_ids,
@@ -143,13 +148,27 @@ class UpdateCheckStartActions:
     ):
         worker_thread.started.connect(worker.run)
 
-        worker.log_requested.connect(self.page.log_table.add_log_row)
-        worker.progress_updated.connect(self.update_progress)
-        worker.summary_updated.connect(self.handle_summary_updated)
-        worker.failed_artist_detected.connect(self.add_failed_artist_id)
-        worker.paused.connect(self.handle_paused)
-        worker.finished.connect(self.handle_finished)
-        worker.failed.connect(self.handle_failed)
+        worker.log_requested.connect(
+            self.page.worker_log_received
+        )
+        worker.progress_updated.connect(
+            self.page.worker_progress_received
+        )
+        worker.summary_updated.connect(
+            self.page.worker_summary_received
+        )
+        worker.failed_artist_detected.connect(
+            self.page.worker_failed_artist_received
+        )
+        worker.paused.connect(
+            self.page.worker_paused_received
+        )
+        worker.finished.connect(
+            self.page.worker_finished_received
+        )
+        worker.failed.connect(
+            self.page.worker_failed_received
+        )
 
         worker.paused.connect(worker_thread.quit)
         worker.finished.connect(worker_thread.quit)
@@ -161,3 +180,30 @@ class UpdateCheckStartActions:
 
         worker_thread.finished.connect(worker_thread.deleteLater)
         worker_thread.finished.connect(self.cleanup_worker)
+
+    def _save_current_request_settings(self):
+        request_interval_ms = max(
+            MIN_UPDATE_CHECK_REQUEST_INTERVAL_MS,
+            self.page.get_request_interval_ms(),
+        )
+        batch_size = max(
+            MIN_UPDATE_CHECK_BATCH_SIZE,
+            self.page.get_batch_size(),
+        )
+        batch_rest_ms = max(
+            MIN_UPDATE_CHECK_BATCH_REST_MS,
+            self.page.get_batch_rest_ms(),
+        )
+
+        self.page.settings_service.set_setting(
+            "update_check_request_interval_ms",
+            request_interval_ms,
+        )
+        self.page.settings_service.set_setting(
+            "update_check_batch_size",
+            batch_size,
+        )
+        self.page.settings_service.set_setting(
+            "update_check_batch_rest_ms",
+            batch_rest_ms,
+        )

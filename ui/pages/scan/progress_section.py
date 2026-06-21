@@ -132,13 +132,21 @@ class ScanProgressSection(QWidget):
         self.total_artwork_count_label = self._create_sub_text(
             "총 작품 수: 0"
         )
+        self.non_artwork_file_count_label = self._create_sub_text(
+            "비작품 파일 수: 0"
+        )
+        self.non_artwork_summary_label = self._create_sub_text(
+            "비작품 파일 요약: -"
+        )
         self.extension_counts_label = self._create_sub_text(
             "확장자별 파일 수: -"
         )
 
         layout.addWidget(self.total_file_count_label, 0, 0)
         layout.addWidget(self.total_artwork_count_label, 0, 1)
-        layout.addWidget(self.extension_counts_label, 1, 0, 1, 2)
+        layout.addWidget(self.non_artwork_file_count_label, 0, 2)
+        layout.addWidget(self.non_artwork_summary_label, 1, 0, 1, 3)
+        layout.addWidget(self.extension_counts_label, 2, 0, 1, 3)
 
         return frame
 
@@ -234,6 +242,11 @@ class ScanProgressSection(QWidget):
                 "total_file_count": 0,
                 "total_artwork_count": 0,
                 "extension_counts": {},
+                "non_artwork_file_count": 0,
+                "unsupported_extension_count": 0,
+                "artwork_id_not_found_count": 0,
+                "empty_file_count": 0,
+                "scan_error_count": 0,
             }
         )
 
@@ -342,6 +355,9 @@ class ScanProgressSection(QWidget):
         created = int(info.get("created", 0) or 0)
         updated = int(info.get("updated", 0) or 0)
         failed = int(info.get("failed", 0) or 0)
+        non_artwork_file_count = int(
+            info.get("non_artwork_file_count", 0) or 0
+        )
 
         if not finished_at:
             self.last_scan_time_label.setText("마지막 스캔: -")
@@ -350,7 +366,8 @@ class ScanProgressSection(QWidget):
         self.last_scan_time_label.setText(
             "마지막 스캔: "
             f"{finished_at} / 대상 {total}개 / "
-            f"등록 {created}, 업데이트 {updated}, 실패 {failed}"
+            f"등록 {created}, 업데이트 {updated}, 실패 {failed}, "
+            f"비작품 {non_artwork_file_count}"
         )
 
     def update_recent_scan_history(
@@ -380,6 +397,9 @@ class ScanProgressSection(QWidget):
             statistics.get("total_artwork_count", 0) or 0
         )
         extension_counts = statistics.get("extension_counts", {}) or {}
+        non_artwork_file_count = int(
+            statistics.get("non_artwork_file_count", 0) or 0
+        )
 
         self.total_file_count_label.setText(
             f"총 파일 수: {total_file_count}"
@@ -387,7 +407,40 @@ class ScanProgressSection(QWidget):
         self.total_artwork_count_label.setText(
             f"총 작품 수: {total_artwork_count}"
         )
+        self.non_artwork_file_count_label.setText(
+            f"비작품 파일 수: {non_artwork_file_count}"
+        )
+        self.non_artwork_summary_label.setText(
+            "비작품 파일 요약: "
+            f"{self._format_non_artwork_summary(statistics)}"
+        )
         self.extension_counts_label.setText(
             "확장자별 파일 수: "
             f"{format_extension_counts(extension_counts)}"
         )
+
+    def _format_non_artwork_summary(
+        self,
+        statistics: dict,
+    ) -> str:
+        items = []
+
+        summary_fields = [
+            ("unsupported_extension_count", "지원하지 않는 확장자"),
+            ("artwork_id_not_found_count", "작품 ID 추출 실패"),
+            ("empty_file_count", "0바이트"),
+            ("scan_error_count", "파일 확인 오류"),
+        ]
+
+        for key, label in summary_fields:
+            count = int(statistics.get(key, 0) or 0)
+
+            if count <= 0:
+                continue
+
+            items.append(f"{label} {count}개")
+
+        if not items:
+            return "-"
+
+        return " / ".join(items)
