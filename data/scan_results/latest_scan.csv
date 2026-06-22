@@ -1,6 +1,0 @@
-﻿time,progress,result,artist_name,pixiv_id,artwork_count,file_count,update_status,folder_path,error_message
-01:10:26,-,정보,업데이트 확인 결과 기반 재스캔 대상: 1개,-,-,-,-,-,-
-01:10:26,-,정보,스캔 시작: C:\Users\Owner\Downloads\pixiv\(임시),-,-,-,-,-,-
-01:10:26,-,경고,이미 등록된 Pixiv ID,-,-,-,-,C:\Users\Owner\Downloads\pixiv\(임시),이미 등록된 Pixiv ID 1개를 발견했습니다. 해당 항목은 기존 작가 정보 갱신 대상으로 처리합니다.
-01:10:26,-,정보,스캔 대상 작가 폴더: 1개,-,-,-,-,-,-
-01:10:26,1/1,변경 없음,( ᐛ )ｶﾜｲｿｳﾆ,119340610,30,416,need_update,C:\Users\Owner\Downloads\pixiv\(임시)\( ᐛ )ｶﾜｲｿｳﾆ-119340610,-

@@ -24,6 +24,9 @@ exports/
 # Thumbnail Cache
 thumbnails/
 
+# Scan Results
+data/scan_results/
+
 # Logs
 *.log
 
