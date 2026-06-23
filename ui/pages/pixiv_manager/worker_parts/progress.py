@@ -2,12 +2,20 @@ import time
 
 
 class ProgressMixin:
+    PIXIV_SYNC_UI_SIGNAL_ENABLED = False
+
     def _handle_sync_progress(
         self,
         current: int,
         total: int,
         message: str,
     ):
+        self.current_progress = current
+        self.current_total = total
+
+        if not self._should_emit_ui_signal():
+            return
+
         self._emit_direct_progress(current, total, message)
 
         elapsed = max(time.time() - self.started_at, 0.001)
@@ -23,6 +31,9 @@ class ProgressMixin:
         self,
         message: str,
     ):
+        if not self._should_emit_ui_signal():
+            return
+
         self.progress_updated.emit(
             self.current_progress,
             self.current_total,
@@ -34,6 +45,9 @@ class ProgressMixin:
         result: str,
         message: str,
     ):
+        if not self._should_emit_ui_signal():
+            return
+
         self.log_requested.emit(
             {
                 "target": self.target_label,
@@ -58,6 +72,10 @@ class ProgressMixin:
     ):
         self.current_progress = current
         self.current_total = total
+
+        if not self._should_emit_ui_signal():
+            return
+
         self.progress_updated.emit(current, total, message)
 
     def _emit_progress(
@@ -80,6 +98,12 @@ class ProgressMixin:
         self.estimated_time_updated.emit(
             self._format_seconds(remain_seconds)
         )
+
+    def _should_emit_ui_signal(self) -> bool:
+        if getattr(self, "import_source", "") != "pixiv":
+            return True
+
+        return self.PIXIV_SYNC_UI_SIGNAL_ENABLED
 
     def _is_cancel_requested(self) -> bool:
         return self.cancel_requested

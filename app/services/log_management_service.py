@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
@@ -40,18 +41,31 @@ class LogManagementService:
         ],
     }
 
+    def __init__(self):
+        self.last_error = ""
+
     def list_log_files(self) -> list[LogFileInfo]:
         logs = []
+        self.last_error = ""
 
         for log_dir in self.CANDIDATE_LOG_DIRS:
-            if not log_dir.exists():
-                continue
-
-            for file_path in log_dir.glob("*.log"):
-                if not file_path.is_file():
+            try:
+                if not log_dir.exists():
                     continue
 
-                logs.append(self._create_log_file_info(file_path))
+                for file_path in log_dir.glob("*.log"):
+                    if not file_path.is_file():
+                        continue
+
+                    log_info = self._try_create_log_file_info(file_path)
+
+                    if log_info is None:
+                        continue
+
+                    logs.append(log_info)
+            except OSError as error:
+                self.last_error = str(error)
+                continue
 
         return sorted(
             logs,
@@ -74,7 +88,7 @@ class LogManagementService:
                 encoding="utf-8",
                 errors="replace",
             )
-        except Exception as error:
+        except OSError as error:
             return f"로그 파일을 읽지 못했습니다.\n{error}"
 
         if len(text) <= max_chars:
@@ -87,13 +101,16 @@ class LogManagementService:
         file_path: str,
     ) -> bool:
         path = self._safe_log_path(file_path)
+        self.last_error = ""
 
         if path is None or not path.exists():
+            self.last_error = "로그 파일을 찾을 수 없습니다."
             return False
 
         try:
             path.unlink()
-        except Exception:
+        except OSError as error:
+            self.last_error = str(error)
             return False
 
         return True
@@ -114,6 +131,42 @@ class LogManagementService:
         )
 
         return self.LOG_DIR
+
+    def append_app_log(
+        self,
+        message: str,
+        error=None,
+    ) -> bool:
+        try:
+            log_dir = self.ensure_log_dir()
+            log_path = log_dir / "app.log"
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            lines = [
+                f"[{timestamp}] {message}",
+            ]
+
+            if error is not None:
+                lines.append(f"error={error}")
+
+            log_path.open(
+                "a",
+                encoding="utf-8",
+            ).write("\n".join(lines) + "\n")
+        except OSError as log_error:
+            self.last_error = str(log_error)
+            return False
+
+        return True
+
+    def _try_create_log_file_info(
+        self,
+        file_path: Path,
+    ) -> LogFileInfo | None:
+        try:
+            return self._create_log_file_info(file_path)
+        except OSError as error:
+            self.last_error = str(error)
+            return None
 
     def _create_log_file_info(
         self,
@@ -148,13 +201,13 @@ class LogManagementService:
     ) -> Path | None:
         try:
             path = Path(file_path).resolve()
-        except Exception:
+        except OSError:
             return None
 
         for log_dir in self.CANDIDATE_LOG_DIRS:
             try:
                 resolved_dir = log_dir.resolve()
-            except Exception:
+            except OSError:
                 continue
 
             if path == resolved_dir or resolved_dir in path.parents:
@@ -166,8 +219,6 @@ class LogManagementService:
         self,
         timestamp: float,
     ) -> str:
-        from datetime import datetime
-
         return datetime.fromtimestamp(timestamp).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
@@ -194,4 +245,3 @@ class LogManagementService:
             size /= 1024
 
         return f"{size:.1f} PB"
-

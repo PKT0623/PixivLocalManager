@@ -14,6 +14,7 @@ from .action_parts import (
 
 
 class PixivManagerActions(
+    QObject,
     PixivManagerDataActions,
     PixivManagerPaginationActions,
     PixivManagerImportActions,
@@ -21,12 +22,11 @@ class PixivManagerActions(
     PixivManagerSelectionActions,
     PixivManagerDeleteActions,
     PixivManagerLogActions,
-    QObject,
 ):
     PAGE_SIZE_SETTING_KEY = "pixiv_manager_page_size"
 
     def __init__(self, page):
-        super().__init__(page)
+        QObject.__init__(self, page)
 
         self.page = page
         self.follow_service = FollowService()

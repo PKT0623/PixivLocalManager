@@ -82,6 +82,71 @@ class ArtistUpdateHistoryRepository:
 
             return [dict(row) for row in rows]
 
+    def get_by_artist_ids(
+        self,
+        artist_ids: list[int],
+        limit_per_artist: int = 20,
+    ) -> dict[int, list[dict]]:
+        normalized_artist_ids = []
+
+        for artist_id in artist_ids:
+            try:
+                normalized_artist_id = int(artist_id)
+            except (TypeError, ValueError):
+                continue
+
+            if normalized_artist_id in normalized_artist_ids:
+                continue
+
+            normalized_artist_ids.append(normalized_artist_id)
+
+        if not normalized_artist_ids:
+            return {}
+
+        placeholders = ", ".join("?" for _ in normalized_artist_ids)
+
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                f"""
+                SELECT *
+                FROM (
+                    SELECT
+                        history.*,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY artist_id
+                            ORDER BY checked_at DESC, id DESC
+                        ) AS row_number
+                    FROM artist_update_history AS history
+                    WHERE artist_id IN ({placeholders})
+                )
+                WHERE row_number <= ?
+                ORDER BY checked_at DESC, id DESC
+                """,
+                (*normalized_artist_ids, limit_per_artist),
+            )
+
+            rows = cursor.fetchall()
+
+        histories_by_artist_id = {
+            artist_id: []
+            for artist_id in normalized_artist_ids
+        }
+
+        for row in rows:
+            history = dict(row)
+            history.pop("row_number", None)
+
+            try:
+                artist_id = int(history.get("artist_id"))
+            except (TypeError, ValueError):
+                continue
+
+            histories_by_artist_id.setdefault(artist_id, []).append(history)
+
+        return histories_by_artist_id
+
     def get_by_artist_id_with_comparison(
         self,
         artist_id: int,
@@ -249,23 +314,41 @@ class ArtistUpdateHistoryRepository:
         for history in recent_histories:
             artist_id = history.get("artist_id")
 
-            if artist_id in artist_ids:
+            if artist_id is None:
                 continue
 
-            artist_ids.append(artist_id)
+            try:
+                normalized_artist_id = int(artist_id)
+            except (TypeError, ValueError):
+                continue
 
+            if normalized_artist_id in artist_ids:
+                continue
+
+            artist_ids.append(normalized_artist_id)
+
+        histories_by_artist_id = self.get_by_artist_ids(
+            artist_ids=artist_ids,
+            limit_per_artist=2,
+        )
         increased_histories = []
 
         for artist_id in artist_ids:
-            histories = self.get_by_artist_id_with_comparison(
-                artist_id=artist_id,
-                limit=2,
-            )
+            histories = histories_by_artist_id.get(artist_id, [])
 
             if not histories:
                 continue
 
-            latest_history = histories[0]
+            latest_history = dict(histories[0])
+            previous_history = histories[1] if len(histories) > 1 else None
+
+            latest_history.update(
+                self.build_comparison(
+                    current_history=latest_history,
+                    previous_history=previous_history,
+                )
+            )
+
             missing_delta = int(latest_history.get("missing_delta", 0) or 0)
 
             if missing_delta <= 0:

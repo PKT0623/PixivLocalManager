@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.services.backup import DatabaseBackupService
+from app.services.log_management_service import LogManagementService
 from app.services.settings_service import SettingsService
 from ui.pages import (
     ArtistDetailPage,
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.settings_service = SettingsService()
+        self.log_service = LogManagementService()
         self.should_restore_maximized = False
         self.did_restore_window_state = False
 
@@ -106,7 +108,11 @@ class MainWindow(QMainWindow):
     def _run_startup_auto_backup(self):
         try:
             DatabaseBackupService().run_startup_auto_backup()
-        except Exception:
+        except Exception as error:
+            self.log_service.append_app_log(
+                "시작 자동 백업 실패",
+                error,
+            )
             return
 
         settings_page = self.pages.get("settings")

@@ -1,10 +1,10 @@
-from app.services.pixiv_update import (
+from .errors import (
     REQUEST_REASON_LABELS,
-    PixivArtworkFetchResult,
     PixivRequestError,
     PixivRequestReason,
-    PixivUpdateService,
 )
+from .models import PixivArtworkFetchResult
+from .service import PixivUpdateService
 
 __all__ = [
     "REQUEST_REASON_LABELS",

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from app.database.app_setting_repository import AppSettingRepository
 from app.database.connection import DATA_DIR
+from app.services.settings_service import SettingsService
 
 
 class SettingsBackupService:
@@ -11,6 +12,7 @@ class SettingsBackupService:
 
     def __init__(self):
         self.repo = AppSettingRepository()
+        self.settings_service = SettingsService()
 
     def export_settings(
         self,
@@ -90,9 +92,9 @@ class SettingsBackupService:
                 skipped_count += 1
                 continue
 
-            self.repo.set(
+            self.settings_service.set_setting(
                 key,
-                str(value),
+                value,
             )
             imported_count += 1
 

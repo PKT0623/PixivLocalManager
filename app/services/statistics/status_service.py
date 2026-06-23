@@ -1,3 +1,6 @@
+from collections import Counter
+
+
 class StatisticsStatusService:
     STATUS_LABELS = {
         "up_to_date": "최신 상태",
@@ -16,10 +19,14 @@ class StatisticsStatusService:
 
     def get_status_statistics(self, artists: list[dict]) -> dict:
         total_count = len(artists)
+        status_counter = Counter(
+            str(artist.get("update_status", "") or "")
+            for artist in artists
+        )
 
         counts = {
             status_name: self.count_status(
-                artists=artists,
+                status_counter=status_counter,
                 statuses=statuses,
             )
             for status_name, statuses in self.STATUS_GROUPS.items()
@@ -45,13 +52,12 @@ class StatisticsStatusService:
 
     def count_status(
         self,
-        artists: list[dict],
+        status_counter: Counter,
         statuses: set[str],
     ) -> int:
         return sum(
-            1
-            for artist in artists
-            if str(artist.get("update_status", "")) in statuses
+            status_counter.get(status, 0)
+            for status in statuses
         )
 
     def calculate_ratio(

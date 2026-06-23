@@ -41,7 +41,7 @@ class BookmarkArtworkImporter:
             sample = file.read(2048)
             file.seek(0)
 
-            has_header = csv.Sniffer().has_header(sample)
+            has_header = self._has_csv_header(sample)
 
             if has_header:
                 return self._parse_csv_with_header(file)
@@ -111,6 +111,18 @@ class BookmarkArtworkImporter:
         ]
 
         return any(keyword in lowered_text for keyword in skip_keywords)
+
+    def _has_csv_header(
+        self,
+        sample: str,
+    ) -> bool:
+        if not sample.strip():
+            return False
+
+        try:
+            return csv.Sniffer().has_header(sample)
+        except csv.Error:
+            return False
 
     def _parse_csv_with_header(
         self,

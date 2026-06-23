@@ -132,6 +132,37 @@ class BookmarkArtworkRepository(BookmarkArtworkUpdateRepository):
 
             return dict(row)
 
+    def get_existing_artwork_ids(
+        self,
+        artwork_ids: list[str],
+    ) -> set[str]:
+        normalized_ids = self._normalize_unique_ids(artwork_ids)
+
+        if not normalized_ids:
+            return set()
+
+        placeholders = ", ".join("?" for _ in normalized_ids)
+
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                f"""
+                SELECT artwork_id
+                FROM bookmark_artworks
+                WHERE artwork_id IN ({placeholders})
+                """,
+                tuple(normalized_ids),
+            )
+
+            rows = cursor.fetchall()
+
+        return {
+            str(row["artwork_id"]).strip()
+            for row in rows
+            if str(row["artwork_id"]).strip()
+        }
+
     def get_by_artist_id(self, artist_id: str) -> list[dict]:
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -165,6 +196,14 @@ class BookmarkArtworkRepository(BookmarkArtworkUpdateRepository):
             rows = cursor.fetchall()
 
             return [dict(row) for row in rows]
+
+    def get_count(self) -> int:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT COUNT(*) FROM bookmark_artworks")
+
+            return int(cursor.fetchone()[0] or 0)
 
     def get_unmatched(self) -> list[dict]:
         with get_connection() as conn:
@@ -264,3 +303,22 @@ class BookmarkArtworkRepository(BookmarkArtworkUpdateRepository):
 
             cursor.execute("DELETE FROM bookmark_artworks")
             conn.commit()
+
+    def _normalize_unique_ids(
+        self,
+        values: list[str],
+    ) -> list[str]:
+        normalized_values = []
+
+        for value in values:
+            normalized_value = str(value or "").strip()
+
+            if not normalized_value:
+                continue
+
+            if normalized_value in normalized_values:
+                continue
+
+            normalized_values.append(normalized_value)
+
+        return normalized_values

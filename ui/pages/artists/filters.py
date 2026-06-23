@@ -55,7 +55,7 @@ def filter_artists(
         if unknown_only and artist.get("update_status") != "unknown":
             continue
 
-        if unrated_only and int(artist.get("rating", 0) or 0) != 0:
+        if unrated_only and parse_int(artist.get("rating", 0)) != 0:
             continue
 
         filtered.append(artist)
@@ -79,13 +79,14 @@ def get_search_targets(
 ) -> list[str]:
     artist_name = str(artist.get("artist_name", "")).lower()
     pixiv_id = str(artist.get("pixiv_id", "")).lower()
-    tags = get_artist_tag_search_text(artist)
 
     if search_mode == "artist_name":
         return [artist_name]
 
     if search_mode == "pixiv_id":
         return [pixiv_id]
+
+    tags = get_artist_tag_search_text(artist)
 
     if search_mode == "tags":
         return [tags]
@@ -98,6 +99,11 @@ def get_search_targets(
 
 
 def get_artist_tag_search_text(artist: dict) -> str:
+    cached_text = artist.get("_artist_tag_search_text")
+
+    if cached_text is not None:
+        return cached_text
+
     tags = parse_artist_tags(artist.get("artist_tags", ""))
     names = []
 
@@ -111,7 +117,10 @@ def get_artist_tag_search_text(artist: dict) -> str:
         if translated:
             names.append(translated)
 
-    return " ".join(names).lower()
+    search_text = " ".join(names).lower()
+    artist["_artist_tag_search_text"] = search_text
+
+    return search_text
 
 
 def matches_rating_filter(
@@ -119,7 +128,7 @@ def matches_rating_filter(
     rating_value: int,
     rating_filter_mode: str,
 ) -> bool:
-    rating = int(artist.get("rating", 0) or 0)
+    rating = parse_int(artist.get("rating", 0))
 
     if rating_filter_mode == "exact":
         return rating == rating_value
@@ -172,8 +181,8 @@ def sort_artists_by_field(
     if sort_field == "folder_artwork_count":
         return sorted(
             artists,
-            key=lambda artist: int(
-                artist.get("folder_artwork_count", 0) or 0
+            key=lambda artist: parse_int(
+                artist.get("folder_artwork_count", 0)
             ),
             reverse=sort_reverse,
         )
@@ -188,8 +197,8 @@ def sort_artists_by_field(
     if sort_field == "folder_file_count":
         return sorted(
             artists,
-            key=lambda artist: int(
-                artist.get("folder_file_count", 0) or 0
+            key=lambda artist: parse_int(
+                artist.get("folder_file_count", 0)
             ),
             reverse=sort_reverse,
         )
@@ -197,8 +206,8 @@ def sort_artists_by_field(
     if sort_field == "folder_size_bytes":
         return sorted(
             artists,
-            key=lambda artist: int(
-                artist.get("folder_size_bytes", 0) or 0
+            key=lambda artist: parse_int(
+                artist.get("folder_size_bytes", 0)
             ),
             reverse=sort_reverse,
         )
@@ -206,8 +215,8 @@ def sort_artists_by_field(
     if sort_field == "rating":
         return sorted(
             artists,
-            key=lambda artist: int(
-                artist.get("rating", 0) or 0
+            key=lambda artist: parse_int(
+                artist.get("rating", 0)
             ),
             reverse=sort_reverse,
         )
@@ -234,6 +243,11 @@ def sort_artists_by_field(
 
 
 def get_missing_artwork_count(artist: dict) -> int:
+    cached_count = artist.get("_missing_artwork_count")
+
+    if cached_count is not None:
+        return parse_int(cached_count)
+
     local_ids = parse_artwork_ids(
         artist.get("local_latest_artwork_ids", "")
     )
@@ -242,9 +256,13 @@ def get_missing_artwork_count(artist: dict) -> int:
     )
 
     if not pixiv_ids:
+        artist["_missing_artwork_count"] = 0
         return 0
 
-    return len(pixiv_ids - local_ids)
+    missing_count = len(pixiv_ids - local_ids)
+    artist["_missing_artwork_count"] = missing_count
+
+    return missing_count
 
 
 def parse_artwork_ids(value) -> set[str]:

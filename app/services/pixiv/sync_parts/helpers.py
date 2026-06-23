@@ -1,9 +1,18 @@
 from datetime import datetime
 
-from app.services.pixiv_update_service import PixivRequestError
+from app.services.pixiv_update_service import (
+    PixivRequestError,
+    PixivRequestReason,
+)
 
 
 class PixivSyncHelperMixin:
+    STOP_REASONS = {
+        PixivRequestReason.COOKIE_EXPIRED,
+        PixivRequestReason.COOKIE_MISSING,
+        PixivRequestReason.RATE_LIMIT,
+    }
+
     def _merge_pixiv_tags(
         self,
         existing_tags,
@@ -65,7 +74,12 @@ class PixivSyncHelperMixin:
         if isinstance(error, PixivRequestError):
             return error.to_display_text()
 
-        return str(error)
+        message = str(error).strip()
+
+        if message:
+            return message
+
+        return error.__class__.__name__
 
     def _get_error_log_result(
         self,
@@ -75,15 +89,36 @@ class PixivSyncHelperMixin:
             return "실패"
 
         if error.reason in (
-            "COOKIE_EXPIRED",
-            "COOKIE_MISSING",
+            PixivRequestReason.COOKIE_EXPIRED,
+            PixivRequestReason.COOKIE_MISSING,
         ):
             return "세션 오류"
 
-        if error.reason == "RATE_LIMIT":
+        if error.reason == PixivRequestReason.RATE_LIMIT:
             return "요청 제한"
 
         return "실패"
+
+    def _should_stop_on_error(
+        self,
+        error: Exception,
+    ) -> bool:
+        if not isinstance(error, PixivRequestError):
+            return False
+
+        if error.should_stop:
+            return True
+
+        return error.reason in self.STOP_REASONS
+
+    def _safe_retry_count(
+        self,
+        value,
+    ) -> int:
+        try:
+            return max(0, int(value or 0))
+        except (TypeError, ValueError):
+            return 0
 
     def _now(self) -> str:
         return datetime.now().isoformat()

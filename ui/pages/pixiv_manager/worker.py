@@ -9,17 +9,17 @@ from .worker_parts import (
 
 
 class PixivImportWorker(
+    QObject,
     FileImportMixin,
     PixivSyncMixin,
     ProgressMixin,
     ResultBuilderMixin,
-    QObject,
 ):
     progress_updated = Signal(int, int, str)
     estimated_time_updated = Signal(str)
-    log_requested = Signal(dict)
-    finished = Signal(dict)
-    failed = Signal(str)
+    log_requested = Signal(object)
+    finished = Signal()
+    failed = Signal()
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class PixivImportWorker(
         phpsessid: str = "",
         selected_items: list[dict] | None = None,
     ):
-        super().__init__()
+        QObject.__init__(self)
 
         self.target_type = target_type
         self.file_type = file_type
@@ -46,6 +46,9 @@ class PixivImportWorker(
         self.current_total = 0
         self.cancel_requested = False
 
+        self.result_payload = None
+        self.error_message = ""
+
     @Slot()
     def run(self):
         try:
@@ -56,9 +59,15 @@ class PixivImportWorker(
             else:
                 result = self._import_bookmark()
 
-            self.finished.emit(result)
+            self.result_payload = result
+            self.error_message = ""
+
+            self.finished.emit()
         except Exception as error:
-            self.failed.emit(str(error))
+            self.result_payload = None
+            self.error_message = f"{type(error).__name__}: {error}"
+
+            self.failed.emit()
 
     @Slot()
     def request_cancel(self):

@@ -137,6 +137,38 @@ class ArtistRepository(
 
             return dict(row)
 
+    def get_pixiv_id_map(self) -> dict[str, dict]:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT *
+                FROM artists
+                WHERE pixiv_id IS NOT NULL
+                  AND pixiv_id != ''
+                ORDER BY artist_name
+                """
+            )
+
+            rows = cursor.fetchall()
+
+        pixiv_id_map = {}
+
+        for row in rows:
+            artist = dict(row)
+            pixiv_id = str(artist.get("pixiv_id", "") or "").strip()
+
+            if not pixiv_id:
+                continue
+
+            if pixiv_id in pixiv_id_map:
+                continue
+
+            pixiv_id_map[pixiv_id] = artist
+
+        return pixiv_id_map
+
     def get_all(self) -> list[dict]:
         with get_connection() as conn:
             cursor = conn.cursor()

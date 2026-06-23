@@ -94,6 +94,15 @@ class PixivMetadataService:
                     f"{pixiv_user_id}/illustrations"
                 ),
             )
+        except PixivRequestError as error:
+            if error.reason in (
+                PixivRequestReason.COOKIE_EXPIRED,
+                PixivRequestReason.COOKIE_MISSING,
+                PixivRequestReason.RATE_LIMIT,
+            ):
+                raise
+
+            return "[]"
         except Exception:
             return "[]"
 
@@ -122,14 +131,16 @@ class PixivMetadataService:
         )
 
         body = self._get_body(artwork_data)
-        ai_type = int(body.get("aiType", 0) or 0)
+        ai_type = self._to_non_negative_int(body.get("aiType", 0))
 
         return PixivArtworkMetadata(
             artwork_id=artwork_id,
             title=str(body.get("title", "") or "").strip(),
             artist_id=str(body.get("userId", "") or "").strip(),
             artist_name=str(body.get("userName", "") or "").strip(),
-            page_count=int(body.get("pageCount", 0) or 0),
+            page_count=self._to_non_negative_int(
+                body.get("pageCount", 0)
+            ),
             ai_type=ai_type,
             is_ai_generated=ai_type == 2,
             pixiv_tags=self._extract_artwork_tags_json(body),
@@ -149,6 +160,7 @@ class PixivMetadataService:
         except PixivRequestError as error:
             if error.reason in (
                 PixivRequestReason.COOKIE_EXPIRED,
+                PixivRequestReason.COOKIE_MISSING,
                 PixivRequestReason.RATE_LIMIT,
             ):
                 raise

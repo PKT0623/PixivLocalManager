@@ -35,8 +35,6 @@ class ArtistTableRowRenderer:
         index: int,
         artist: dict,
     ):
-        self.table.artist_ids.append(artist.get("id"))
-
         self.set_item(
             row,
             COLUMN_NO,
@@ -190,6 +188,14 @@ class ArtistTableRowRenderer:
         )
 
     def get_missing_artwork_count(self, artist: dict) -> int:
+        cached_count = artist.get("_missing_artwork_count")
+
+        if cached_count is not None:
+            try:
+                return int(cached_count)
+            except (TypeError, ValueError):
+                return 0
+
         local_ids = self.parse_artwork_ids(
             artist.get("local_latest_artwork_ids", "")
         )
@@ -198,9 +204,13 @@ class ArtistTableRowRenderer:
         )
 
         if not pixiv_ids:
+            artist["_missing_artwork_count"] = 0
             return 0
 
-        return len(pixiv_ids - local_ids)
+        missing_count = len(pixiv_ids - local_ids)
+        artist["_missing_artwork_count"] = missing_count
+
+        return missing_count
 
     def parse_artwork_ids(self, value) -> set[str]:
         if not value:

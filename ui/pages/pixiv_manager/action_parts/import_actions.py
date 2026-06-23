@@ -28,10 +28,16 @@ class PixivManagerImportActions:
         if not file_type:
             return
 
+        file_path = self._get_file_path()
+
+        if not file_path:
+            return
+
         self._start_import(
             target_type=target_type,
             file_type=file_type,
             import_source="file",
+            file_path=file_path,
         )
 
     def import_pixiv_follow(self):
@@ -168,6 +174,20 @@ class PixivManagerImportActions:
         if not path.exists():
             self.page.status_label.setText(
                 f"파일을 찾을 수 없습니다: {file_path}"
+            )
+            return ""
+
+        if not path.is_file():
+            self.page.status_label.setText(
+                f"파일 경로가 올바르지 않습니다: {file_path}"
+            )
+            return ""
+
+        suffix = path.suffix.lower()
+
+        if suffix not in {".txt", ".csv"}:
+            self.page.status_label.setText(
+                "TXT 또는 CSV 파일만 가져올 수 있습니다."
             )
             return ""
 

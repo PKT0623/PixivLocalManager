@@ -45,6 +45,10 @@ class FollowService:
         error_count = 0
         errors = []
 
+        existing_ids = self.repo.get_existing_pixiv_user_ids(
+            self._extract_pixiv_user_ids(follow_users)
+        )
+
         for follow_user in follow_users:
             pixiv_user_id = str(
                 follow_user.get("pixiv_user_id", "") or ""
@@ -55,19 +59,16 @@ class FollowService:
                 continue
 
             try:
-                existing_user = self.repo.get_by_pixiv_user_id(
-                    pixiv_user_id
-                )
-
                 self.upsert_follow_user(
                     follow_user=follow_user,
                     match_local_artist=match_local_artist,
                 )
 
-                if existing_user is None:
-                    saved_count += 1
-                else:
+                if pixiv_user_id in existing_ids:
                     updated_count += 1
+                else:
+                    saved_count += 1
+                    existing_ids.add(pixiv_user_id)
             except Exception as exc:
                 error_count += 1
                 errors.append(
@@ -234,6 +235,9 @@ class FollowService:
         new_items = []
         duplicate_in_file_items = []
         duplicate_existing_items = []
+        existing_ids = self.repo.get_existing_pixiv_user_ids(
+            self._extract_pixiv_user_ids(follow_users)
+        )
 
         for follow_user in follow_users:
             pixiv_user_id = str(
@@ -252,11 +256,7 @@ class FollowService:
 
             seen_ids.add(pixiv_user_id)
 
-            existing_user = self.repo.get_by_pixiv_user_id(
-                pixiv_user_id
-            )
-
-            if existing_user is not None:
+            if pixiv_user_id in existing_ids:
                 duplicate_existing_items.append(item)
                 continue
 
@@ -271,3 +271,13 @@ class FollowService:
             "duplicate_in_file_items": duplicate_in_file_items,
             "duplicate_existing_items": duplicate_existing_items,
         }
+
+    def _extract_pixiv_user_ids(
+        self,
+        follow_users: list[dict],
+    ) -> list[str]:
+        return [
+            str(follow_user.get("pixiv_user_id", "") or "").strip()
+            for follow_user in follow_users
+            if str(follow_user.get("pixiv_user_id", "") or "").strip()
+        ]

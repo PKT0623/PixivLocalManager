@@ -45,6 +45,10 @@ class BookmarkService:
         error_count = 0
         errors = []
 
+        existing_ids = self.repo.get_existing_artwork_ids(
+            self._extract_artwork_ids(bookmark_artworks)
+        )
+
         for bookmark_artwork in bookmark_artworks:
             artwork_id = str(
                 bookmark_artwork.get("artwork_id", "") or ""
@@ -55,17 +59,16 @@ class BookmarkService:
                 continue
 
             try:
-                existing_artwork = self.repo.get_by_artwork_id(artwork_id)
-
                 self.upsert_bookmark_artwork(
                     bookmark_artwork=bookmark_artwork,
                     match_local_artist=match_local_artist,
                 )
 
-                if existing_artwork is None:
-                    saved_count += 1
-                else:
+                if artwork_id in existing_ids:
                     updated_count += 1
+                else:
+                    saved_count += 1
+                    existing_ids.add(artwork_id)
             except Exception as exc:
                 error_count += 1
                 errors.append(
@@ -238,6 +241,9 @@ class BookmarkService:
         new_items = []
         duplicate_in_file_items = []
         duplicate_existing_items = []
+        existing_ids = self.repo.get_existing_artwork_ids(
+            self._extract_artwork_ids(bookmark_artworks)
+        )
 
         for bookmark_artwork in bookmark_artworks:
             artwork_id = str(
@@ -256,9 +262,7 @@ class BookmarkService:
 
             seen_ids.add(artwork_id)
 
-            existing_artwork = self.repo.get_by_artwork_id(artwork_id)
-
-            if existing_artwork is not None:
+            if artwork_id in existing_ids:
                 duplicate_existing_items.append(item)
                 continue
 
@@ -273,3 +277,13 @@ class BookmarkService:
             "duplicate_in_file_items": duplicate_in_file_items,
             "duplicate_existing_items": duplicate_existing_items,
         }
+
+    def _extract_artwork_ids(
+        self,
+        bookmark_artworks: list[dict],
+    ) -> list[str]:
+        return [
+            str(bookmark_artwork.get("artwork_id", "") or "").strip()
+            for bookmark_artwork in bookmark_artworks
+            if str(bookmark_artwork.get("artwork_id", "") or "").strip()
+        ]

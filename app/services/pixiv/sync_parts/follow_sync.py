@@ -1,3 +1,5 @@
+from app.services.pixiv_update_service import PixivRequestError
+
 from .constants import PixivSyncStatus
 
 
@@ -19,6 +21,8 @@ class FollowSyncMixin:
         processed_count = 0
         errors = []
         cancelled = False
+        stopped = False
+        stop_reason = ""
 
         for index, follow_user in enumerate(follow_users, start=1):
             if self._is_cancel_requested(cancel_callback):
@@ -41,11 +45,13 @@ class FollowSyncMixin:
 
             if not pixiv_user_id:
                 skipped_count += 1
-                self._update_follow_sync_result(
+                self._safe_update_follow_sync_result(
                     follow_user_id,
                     PixivSyncStatus.SKIPPED,
                     "Pixiv 유저 ID가 비어 있습니다.",
-                    follow_user.get("sync_retry_count", 0),
+                    self._safe_retry_count(
+                        follow_user.get("sync_retry_count", 0)
+                    ),
                 )
                 self._emit_log(
                     log_callback,
@@ -103,12 +109,15 @@ class FollowSyncMixin:
                 failed_count += 1
                 consecutive_failures += 1
 
-                retry_count = int(
-                    follow_user.get("sync_retry_count", 0) or 0
-                ) + 1
+                retry_count = (
+                    self._safe_retry_count(
+                        follow_user.get("sync_retry_count", 0)
+                    )
+                    + 1
+                )
                 error_message = self._format_error(error)
 
-                self._update_follow_sync_result(
+                self._safe_update_follow_sync_result(
                     follow_user_id,
                     PixivSyncStatus.FAILED,
                     error_message,
@@ -131,14 +140,25 @@ class FollowSyncMixin:
                     ),
                 )
 
+                if self._should_stop_on_error(error):
+                    stopped = True
+                    stop_reason = self._format_stop_reason(error)
+                    self._emit_log(
+                        log_callback,
+                        self._get_error_log_result(error),
+                        f"{stop_reason} 작업을 중단합니다.",
+                    )
+                    break
+
                 if consecutive_failures >= max_consecutive_failures:
+                    stopped = True
+                    stop_reason = (
+                        f"연속 실패 {consecutive_failures}회 발생."
+                    )
                     self._emit_log(
                         log_callback,
                         "요청 제한",
-                        (
-                            f"연속 실패 {consecutive_failures}회 발생. "
-                            "작업을 중단합니다."
-                        ),
+                        f"{stop_reason} 작업을 중단합니다.",
                     )
                     break
 
@@ -157,8 +177,27 @@ class FollowSyncMixin:
             "skipped_count": skipped_count,
             "error_count": failed_count,
             "cancelled": cancelled,
+            "stopped": stopped,
+            "stop_reason": stop_reason,
             "errors": errors,
         }
+
+    def _safe_update_follow_sync_result(
+        self,
+        follow_user_id,
+        sync_status: str,
+        error_message: str,
+        retry_count: int,
+    ):
+        try:
+            self._update_follow_sync_result(
+                follow_user_id=follow_user_id,
+                sync_status=sync_status,
+                error_message=error_message,
+                retry_count=retry_count,
+            )
+        except Exception:
+            return
 
     def _update_follow_sync_result(
         self,
@@ -176,3 +215,12 @@ class FollowSyncMixin:
             error_message=error_message,
             retry_count=retry_count,
         )
+
+    def _format_stop_reason(
+        self,
+        error: Exception,
+    ) -> str:
+        if isinstance(error, PixivRequestError):
+            return error.to_display_text()
+
+        return self._format_error(error)

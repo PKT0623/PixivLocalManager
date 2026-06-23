@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from app.database.artist import ArtistRepository
 from app.database.connection import DATA_DIR
+
 from .json_utils import BackupJsonUtils
 
 
@@ -57,14 +58,14 @@ class DeletedArtistBackupService:
             raise ValueError("백업 파일의 작가 데이터 형식이 올바르지 않습니다.")
 
         restore_result = self._restore_artists(artists)
-
-        self.json_utils.delete_file_if_exists(file_path)
+        backup_deleted = self._delete_restored_backup_file(file_path)
 
         return {
             "restored_count": restore_result["restored_count"],
             "skipped_count": restore_result["skipped_count"],
             "skipped_artists": restore_result["skipped_artists"],
             "total_count": len(artists),
+            "backup_deleted": backup_deleted,
         }
 
     def _restore_artists(
@@ -93,7 +94,19 @@ class DeletedArtistBackupService:
                 )
                 continue
 
-            self.artist_repo.insert_restored_artist(artist)
+            try:
+                self.artist_repo.insert_restored_artist(artist)
+            except (KeyError, TypeError, ValueError) as error:
+                skipped_count += 1
+                skipped_artists.append(
+                    {
+                        "artist_name": artist.get("artist_name", "-"),
+                        "pixiv_id": self._get_artist_pixiv_id(artist) or "-",
+                        "reason": f"복원 실패: {error}",
+                    }
+                )
+                continue
+
             restored_count += 1
 
         return {
@@ -122,4 +135,15 @@ class DeletedArtistBackupService:
         self,
         artist: dict,
     ) -> str:
-        return str(artist.get("pixiv_id", "")).strip()
+        return str(artist.get("pixiv_id", "") or "").strip()
+
+    def _delete_restored_backup_file(
+        self,
+        file_path: str,
+    ) -> bool:
+        try:
+            self.json_utils.delete_file_if_exists(file_path)
+        except OSError:
+            return False
+
+        return True

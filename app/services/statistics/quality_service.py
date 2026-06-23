@@ -9,56 +9,45 @@ class StatisticsQualityService:
 
     def get_quality_statistics(self, artists: list[dict]) -> dict:
         total_count = len(artists)
+        unrated_count = 0
+        untagged_count = 0
+        memo_empty_count = 0
 
-        unrated_count = self._count_empty_field(
-            artists=artists,
-            field_name="rating",
-            empty_checker=self._is_empty_rating,
-        )
-        untagged_count = self._count_empty_field(
-            artists=artists,
-            field_name="artist_tags",
-            empty_checker=self._is_empty_text,
-        )
-        memo_empty_count = self._count_empty_field(
-            artists=artists,
-            field_name="memo",
-            empty_checker=self._is_empty_text,
-        )
+        for artist in artists:
+            if self._is_empty_rating(artist.get("rating")):
+                unrated_count += 1
+
+            if self._is_empty_text(artist.get("artist_tags")):
+                untagged_count += 1
+
+            if self._is_empty_text(artist.get("memo")):
+                memo_empty_count += 1
+
+        rating_input_count = total_count - unrated_count
+        tag_input_count = total_count - untagged_count
+        memo_input_count = total_count - memo_empty_count
 
         return {
             "total_count": total_count,
-            "rating_input_count": total_count - unrated_count,
-            "tag_input_count": total_count - untagged_count,
-            "memo_input_count": total_count - memo_empty_count,
+            "rating_input_count": rating_input_count,
+            "tag_input_count": tag_input_count,
+            "memo_input_count": memo_input_count,
             "unrated_count": unrated_count,
             "untagged_count": untagged_count,
             "memo_empty_count": memo_empty_count,
             "rating_input_ratio": self._calculate_ratio(
-                total_count - unrated_count,
+                rating_input_count,
                 total_count,
             ),
             "tag_input_ratio": self._calculate_ratio(
-                total_count - untagged_count,
+                tag_input_count,
                 total_count,
             ),
             "memo_input_ratio": self._calculate_ratio(
-                total_count - memo_empty_count,
+                memo_input_count,
                 total_count,
             ),
         }
-
-    def _count_empty_field(
-        self,
-        artists: list[dict],
-        field_name: str,
-        empty_checker,
-    ) -> int:
-        return sum(
-            1
-            for artist in artists
-            if empty_checker(artist.get(field_name))
-        )
 
     def _is_empty_rating(self, value) -> bool:
         try:

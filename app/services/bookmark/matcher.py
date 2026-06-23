@@ -10,33 +10,24 @@ class BookmarkArtworkMatcher:
         self,
         bookmark_artwork: dict,
     ) -> dict:
-        artist_id = str(
-            bookmark_artwork.get("artist_id", "") or ""
-        ).strip()
+        artist_map = self.artist_repo.get_pixiv_id_map()
 
-        if not artist_id:
-            return self._build_unmatched_result(bookmark_artwork)
-
-        artist = self.artist_repo.get_by_pixiv_id(artist_id)
-
-        if artist is None:
-            return self._build_unmatched_result(bookmark_artwork)
-
-        matched_artwork = dict(bookmark_artwork)
-        matched_artwork["local_artist_id"] = artist["id"]
-        matched_artwork["is_local_artist"] = 1
-
-        return matched_artwork
+        return self._match_bookmark_artwork_with_artist_map(
+            bookmark_artwork=bookmark_artwork,
+            artist_map=artist_map,
+        )
 
     def match_all(self) -> dict:
         bookmark_artworks = self.bookmark_artwork_repo.get_all()
+        artist_map = self.artist_repo.get_pixiv_id_map()
 
         matched_count = 0
         unmatched_count = 0
 
         for bookmark_artwork in bookmark_artworks:
-            matched_artwork = self.match_bookmark_artwork(
-                bookmark_artwork
+            matched_artwork = self._match_bookmark_artwork_with_artist_map(
+                bookmark_artwork=bookmark_artwork,
+                artist_map=artist_map,
             )
 
             local_artist_id = matched_artwork.get("local_artist_id")
@@ -57,6 +48,29 @@ class BookmarkArtworkMatcher:
             "matched_count": matched_count,
             "unmatched_count": unmatched_count,
         }
+
+    def _match_bookmark_artwork_with_artist_map(
+        self,
+        bookmark_artwork: dict,
+        artist_map: dict[str, dict],
+    ) -> dict:
+        artist_id = str(
+            bookmark_artwork.get("artist_id", "") or ""
+        ).strip()
+
+        if not artist_id:
+            return self._build_unmatched_result(bookmark_artwork)
+
+        artist = artist_map.get(artist_id)
+
+        if artist is None:
+            return self._build_unmatched_result(bookmark_artwork)
+
+        matched_artwork = dict(bookmark_artwork)
+        matched_artwork["local_artist_id"] = artist["id"]
+        matched_artwork["is_local_artist"] = 1
+
+        return matched_artwork
 
     def _build_unmatched_result(
         self,

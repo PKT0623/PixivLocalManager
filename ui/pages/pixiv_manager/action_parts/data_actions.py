@@ -24,8 +24,8 @@ class PixivManagerDataActions:
                 self.PAGE_SIZE_SETTING_KEY,
                 page_size,
             )
-        except Exception:
-            pass
+        except Exception as error:
+            self._log_message(f"페이지 크기 저장 실패: {error}")
 
         self.reset_page_and_apply_filters()
 
@@ -164,3 +164,14 @@ class PixivManagerDataActions:
             "bookmark_matched": bookmark_matched,
             "bookmark_unmatched": bookmark_total - bookmark_matched,
         }
+
+    def _log_message(
+        self,
+        message: str,
+    ):
+        if hasattr(self.page, "log_message"):
+            self.page.log_message(message)
+            return
+
+        if hasattr(self.page, "status_label"):
+            self.page.status_label.setText(message)

@@ -14,8 +14,8 @@ class ArtistLoadActions:
 
         try:
             self.page.artist_service.update_last_viewed(artist_id)
-        except Exception:
-            pass
+        except Exception as error:
+            print(f"[ArtistDetail] 최근 열람 갱신 실패: {error}")
 
         artist = self.page.artist_service.get_artist(artist_id)
 

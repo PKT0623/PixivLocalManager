@@ -68,38 +68,52 @@ class StatisticsService:
         average_rating: float,
     ) -> dict:
         total_artists = len(artists)
-        total_artworks = self.calculate_total(
-            artists=artists,
-            field_name="folder_artwork_count",
-        )
-        total_files = self.calculate_total(
-            artists=artists,
-            field_name="folder_file_count",
-        )
-        total_folder_size = self.calculate_total(
-            artists=artists,
-            field_name="folder_size_bytes",
-            maximum=10**18,
-        )
+        totals = self.calculate_totals(artists)
 
         return {
             "total_artists": total_artists,
-            "total_artworks": total_artworks,
-            "total_files": total_files,
-            "total_folder_size": total_folder_size,
+            "total_artworks": totals["total_artworks"],
+            "total_files": totals["total_files"],
+            "total_folder_size": totals["total_folder_size"],
             "average_rating": average_rating,
             "average_artworks": self.calculate_average(
-                total_value=total_artworks,
+                total_value=totals["total_artworks"],
                 total_count=total_artists,
             ),
             "average_files": self.calculate_average(
-                total_value=total_files,
+                total_value=totals["total_files"],
                 total_count=total_artists,
             ),
             "average_folder_size": self.calculate_average(
-                total_value=total_folder_size,
+                total_value=totals["total_folder_size"],
                 total_count=total_artists,
             ),
+        }
+
+    def calculate_totals(
+        self,
+        artists: list[dict],
+    ) -> dict:
+        total_artworks = 0
+        total_files = 0
+        total_folder_size = 0
+
+        for artist in artists:
+            total_artworks += to_int(
+                artist.get("folder_artwork_count", 0)
+            )
+            total_files += to_int(
+                artist.get("folder_file_count", 0)
+            )
+            total_folder_size += to_int(
+                artist.get("folder_size_bytes", 0),
+                maximum=10**18,
+            )
+
+        return {
+            "total_artworks": total_artworks,
+            "total_files": total_files,
+            "total_folder_size": total_folder_size,
         }
 
     def calculate_total(

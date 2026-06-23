@@ -1,12 +1,13 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
-    QAbstractItemDelegate,
+    QApplication,
     QStyle,
     QStyleOptionButton,
+    QStyledItemDelegate,
 )
 
 
-class CenterCheckBoxDelegate(QAbstractItemDelegate):
+class CenterCheckBoxDelegate(QStyledItemDelegate):
     def paint(
         self,
         painter,
@@ -23,20 +24,22 @@ class CenterCheckBoxDelegate(QAbstractItemDelegate):
         else:
             checkbox_option.state |= QStyle.State_Off
 
-        checkbox_rect = option.widget.style().subElementRect(
+        widget = option.widget
+        style = widget.style() if widget is not None else QApplication.style()
+
+        checkbox_rect = style.subElementRect(
             QStyle.SE_CheckBoxIndicator,
             checkbox_option,
-            option.widget,
+            widget,
         )
-
+        checkbox_rect.moveCenter(option.rect.center())
         checkbox_option.rect = checkbox_rect
-        checkbox_option.rect.moveCenter(option.rect.center())
 
-        option.widget.style().drawControl(
+        style.drawControl(
             QStyle.CE_CheckBox,
             checkbox_option,
             painter,
-            option.widget,
+            widget,
         )
 
     def sizeHint(
@@ -44,4 +47,4 @@ class CenterCheckBoxDelegate(QAbstractItemDelegate):
         option,
         index,
     ):
-        return option.rect.size()
+        return QSize(36, option.rect.height())

@@ -21,6 +21,8 @@ RESULT_COLORS = {
     "세션 오류": "#dc3545",
     "요청 제한": "#dc3545",
     "요약": "#6f42c1",
+    "취소": "#6c757d",
+    "스킵": "#6c757d",
 }
 
 
@@ -35,6 +37,8 @@ class PixivManagerLogTable(QTableWidget):
         "DB 중복",
         "오류",
     ]
+
+    MAX_LOG_ROWS = 1000
 
     def __init__(self):
         super().__init__()
@@ -72,38 +76,52 @@ class PixivManagerLogTable(QTableWidget):
         self,
         row_data: dict,
     ):
-        row = self.rowCount()
-        self.insertRow(row)
+        self.setUpdatesEnabled(False)
 
-        values = [
-            row_data.get("time", "-"),
-            row_data.get("target", "-"),
-            row_data.get("result", "-"),
-            row_data.get("message", "-"),
-            row_data.get("new_count", "-"),
-            row_data.get("duplicate_in_file_count", "-"),
-            row_data.get("duplicate_existing_count", "-"),
-            row_data.get("error_count", "-"),
-        ]
+        try:
+            self._trim_old_rows_if_needed()
 
-        for column, value in enumerate(values):
-            item = QTableWidgetItem(str(value))
+            row = self.rowCount()
+            self.insertRow(row)
 
-            if column == 3:
-                item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            else:
-                item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+            values = [
+                row_data.get("time", "-"),
+                row_data.get("target", "-"),
+                row_data.get("result", "-"),
+                row_data.get("message", "-"),
+                row_data.get("new_count", "-"),
+                row_data.get("duplicate_in_file_count", "-"),
+                row_data.get("duplicate_existing_count", "-"),
+                row_data.get("error_count", "-"),
+            ]
 
-            if column == 2:
-                color = RESULT_COLORS.get(str(value))
+            for column, value in enumerate(values):
+                item = QTableWidgetItem(str(value))
 
-                if color:
-                    item.setBackground(QColor(color))
-                    item.setForeground(QColor("white"))
+                if column == 3:
+                    item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+                else:
+                    item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-            self.setItem(row, column, item)
+                if column == 2:
+                    color = RESULT_COLORS.get(str(value))
 
-        self.scrollToBottom()
+                    if color:
+                        item.setBackground(QColor(color))
+                        item.setForeground(QColor("white"))
+
+                self.setItem(row, column, item)
+        finally:
+            self.setUpdatesEnabled(True)
 
     def clear_logs(self):
-        self.setRowCount(0)
+        self.setUpdatesEnabled(False)
+
+        try:
+            self.setRowCount(0)
+        finally:
+            self.setUpdatesEnabled(True)
+
+    def _trim_old_rows_if_needed(self):
+        while self.rowCount() >= self.MAX_LOG_ROWS:
+            self.removeRow(0)

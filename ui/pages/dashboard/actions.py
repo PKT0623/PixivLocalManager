@@ -75,7 +75,8 @@ class DashboardActions:
             limit=self.RECENT_ACTIVITY_LIMIT,
         )
         scan_statistics_data = build_scan_statistics_data(
-            recent_histories=recent_histories,
+            artists=artists,
+            latest_histories=latest_histories,
         )
         top_ranking_data = build_top_ranking_data(
             artists=artists,
@@ -200,10 +201,10 @@ class DashboardActions:
         return history_id > target_history_id
 
     def _count_follow_users(self) -> int:
-        return len(self.follow_user_repo.get_all())
+        return self.follow_user_repo.get_count()
 
     def _count_bookmark_artworks(self) -> int:
-        return len(self.bookmark_artwork_repo.get_all())
+        return self.bookmark_artwork_repo.get_count()
 
     def _to_int(self, value, default: int = 0) -> int:
         try:

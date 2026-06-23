@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from pathlib import Path
 from typing import Any, Dict
 
@@ -9,12 +10,25 @@ class BackupJsonUtils:
         self,
         file_path: str,
     ) -> Dict[str, Any]:
-        with open(
-            file_path,
-            "r",
-            encoding="utf-8",
-        ) as f:
-            data = json.load(f)
+        path = Path(file_path)
+
+        if not path.exists():
+            raise FileNotFoundError("백업 파일을 찾을 수 없습니다.")
+
+        if not path.is_file():
+            raise ValueError("백업 파일 경로가 올바르지 않습니다.")
+
+        try:
+            with open(
+                path,
+                "r",
+                encoding="utf-8",
+            ) as f:
+                data = json.load(f)
+        except JSONDecodeError as error:
+            raise ValueError(
+                f"백업 JSON 형식이 올바르지 않습니다: {error}"
+            ) from error
 
         if not isinstance(data, dict):
             raise ValueError("백업 파일 형식이 올바르지 않습니다.")
@@ -26,8 +40,14 @@ class BackupJsonUtils:
         file_path: str | Path,
         data: Dict[str, Any],
     ) -> str:
+        path = Path(file_path)
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
         with open(
-            file_path,
+            path,
             "w",
             encoding="utf-8",
         ) as f:
@@ -39,7 +59,7 @@ class BackupJsonUtils:
                 default=self.json_default,
             )
 
-        return str(file_path)
+        return str(path)
 
     def delete_file_if_exists(
         self,

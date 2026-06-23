@@ -30,33 +30,36 @@ class PixivSyncMixin:
                     "skipped_count": 0,
                     "error_count": 0,
                     "cancelled": False,
+                    "stopped": False,
+                    "stop_reason": "",
                     "errors": [],
                 },
             )
 
-        self._emit_direct_progress(
-            0,
-            total,
-            f"Pixiv {self.target_label} 세션 확인 중...",
-        )
-        self.estimated_time_updated.emit("계산 중")
+        if self.cancel_requested:
+            return self._build_cancelled_pixiv_result(
+                total=total,
+                processed_count=0,
+                success_count=0,
+                failed_count=0,
+                skipped_count=0,
+                errors=[],
+            )
 
         settings_service = SettingsService()
         pixiv_update_service = PixivUpdateService.from_settings(
             settings_service
         )
-        pixiv_update_service.set_request_callbacks(
-            log_callback=self._handle_sync_log,
-            status_callback=self._handle_rate_limit_status,
-        )
 
-        session_result = pixiv_update_service.test_phpsessid(self.phpsessid)
-
-        if not session_result.get("success"):
+        try:
+            session_result = pixiv_update_service.test_phpsessid(
+                self.phpsessid
+            )
+        except Exception as error:
             return self._build_pixiv_result(
                 success=False,
-                reason=session_result.get("reason"),
-                message=session_result.get("message"),
+                reason="SESSION_TEST_FAILED",
+                message=f"Pixiv 세션 확인 실패: {error}",
                 sync_result={
                     "total_count": total,
                     "processed_count": 0,
@@ -65,7 +68,44 @@ class PixivSyncMixin:
                     "skipped_count": 0,
                     "error_count": 1,
                     "cancelled": False,
-                    "errors": [],
+                    "stopped": True,
+                    "stop_reason": str(error),
+                    "errors": [
+                        {
+                            "target": "session",
+                            "error": str(error),
+                        }
+                    ],
+                },
+            )
+
+        if not session_result.get("success"):
+            reason = session_result.get("reason")
+            message = session_result.get(
+                "message",
+                "Pixiv 세션 확인에 실패했습니다.",
+            )
+
+            return self._build_pixiv_result(
+                success=False,
+                reason=reason,
+                message=message,
+                sync_result={
+                    "total_count": total,
+                    "processed_count": 0,
+                    "success_count": 0,
+                    "failed_count": 1,
+                    "skipped_count": 0,
+                    "error_count": 1,
+                    "cancelled": False,
+                    "stopped": True,
+                    "stop_reason": message,
+                    "errors": [
+                        {
+                            "target": "session",
+                            "error": message,
+                        }
+                    ],
                 },
             )
 
@@ -103,18 +143,19 @@ class PixivSyncMixin:
                 cancel_callback=self._is_cancel_requested,
             )
 
-        self._emit_direct_progress(
-            sync_result.get("processed_count", 0),
-            sync_result.get("total_count", 0),
-            f"Pixiv {self.target_label} 메타데이터 갱신 완료",
-        )
-        self.estimated_time_updated.emit("곧 완료")
-
         if sync_result.get("cancelled"):
             return self._build_pixiv_result(
                 success=False,
                 reason="CANCELLED",
                 message=self._format_cancelled_message(sync_result),
+                sync_result=sync_result,
+            )
+
+        if sync_result.get("stopped"):
+            return self._build_pixiv_result(
+                success=False,
+                reason="STOPPED",
+                message=self._format_stopped_message(sync_result),
                 sync_result=sync_result,
             )
 
@@ -142,6 +183,24 @@ class PixivSyncMixin:
     ) -> str:
         return (
             f"Pixiv {self.target_label} 메타데이터 갱신 취소: "
+            f"처리 {result.get('processed_count', 0)}개 / "
+            f"성공 {result.get('success_count', 0)}개 / "
+            f"실패 {result.get('failed_count', 0)}개 / "
+            f"스킵 {result.get('skipped_count', 0)}개"
+        )
+
+    def _format_stopped_message(
+        self,
+        result: dict,
+    ) -> str:
+        stop_reason = str(result.get("stop_reason", "") or "").strip()
+
+        if not stop_reason:
+            stop_reason = "중단 사유를 확인하세요."
+
+        return (
+            f"Pixiv {self.target_label} 메타데이터 갱신 중단: "
+            f"{stop_reason} / "
             f"처리 {result.get('processed_count', 0)}개 / "
             f"성공 {result.get('success_count', 0)}개 / "
             f"실패 {result.get('failed_count', 0)}개 / "

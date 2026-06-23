@@ -1,3 +1,5 @@
+from app.services.pixiv_update_service import PixivRequestError
+
 from .constants import PixivSyncStatus
 
 
@@ -19,6 +21,8 @@ class BookmarkSyncMixin:
         processed_count = 0
         errors = []
         cancelled = False
+        stopped = False
+        stop_reason = ""
 
         for index, bookmark_artwork in enumerate(
             bookmark_artworks,
@@ -44,11 +48,13 @@ class BookmarkSyncMixin:
 
             if not artwork_id:
                 skipped_count += 1
-                self._update_bookmark_sync_result(
+                self._safe_update_bookmark_sync_result(
                     bookmark_artwork_id,
                     PixivSyncStatus.SKIPPED,
                     "작품 ID가 비어 있습니다.",
-                    bookmark_artwork.get("sync_retry_count", 0),
+                    self._safe_retry_count(
+                        bookmark_artwork.get("sync_retry_count", 0)
+                    ),
                 )
                 self._emit_log(
                     log_callback,
@@ -110,12 +116,15 @@ class BookmarkSyncMixin:
                 failed_count += 1
                 consecutive_failures += 1
 
-                retry_count = int(
-                    bookmark_artwork.get("sync_retry_count", 0) or 0
-                ) + 1
+                retry_count = (
+                    self._safe_retry_count(
+                        bookmark_artwork.get("sync_retry_count", 0)
+                    )
+                    + 1
+                )
                 error_message = self._format_error(error)
 
-                self._update_bookmark_sync_result(
+                self._safe_update_bookmark_sync_result(
                     bookmark_artwork_id,
                     PixivSyncStatus.FAILED,
                     error_message,
@@ -138,14 +147,25 @@ class BookmarkSyncMixin:
                     ),
                 )
 
+                if self._should_stop_on_error(error):
+                    stopped = True
+                    stop_reason = self._format_stop_reason(error)
+                    self._emit_log(
+                        log_callback,
+                        self._get_error_log_result(error),
+                        f"{stop_reason} 작업을 중단합니다.",
+                    )
+                    break
+
                 if consecutive_failures >= max_consecutive_failures:
+                    stopped = True
+                    stop_reason = (
+                        f"연속 실패 {consecutive_failures}회 발생."
+                    )
                     self._emit_log(
                         log_callback,
                         "요청 제한",
-                        (
-                            f"연속 실패 {consecutive_failures}회 발생. "
-                            "작업을 중단합니다."
-                        ),
+                        f"{stop_reason} 작업을 중단합니다.",
                     )
                     break
 
@@ -164,8 +184,27 @@ class BookmarkSyncMixin:
             "skipped_count": skipped_count,
             "error_count": failed_count,
             "cancelled": cancelled,
+            "stopped": stopped,
+            "stop_reason": stop_reason,
             "errors": errors,
         }
+
+    def _safe_update_bookmark_sync_result(
+        self,
+        bookmark_artwork_id,
+        sync_status: str,
+        error_message: str,
+        retry_count: int,
+    ):
+        try:
+            self._update_bookmark_sync_result(
+                bookmark_artwork_id=bookmark_artwork_id,
+                sync_status=sync_status,
+                error_message=error_message,
+                retry_count=retry_count,
+            )
+        except Exception:
+            return
 
     def _update_bookmark_sync_result(
         self,
@@ -183,3 +222,12 @@ class BookmarkSyncMixin:
             error_message=error_message,
             retry_count=retry_count,
         )
+
+    def _format_stop_reason(
+        self,
+        error: Exception,
+    ) -> str:
+        if isinstance(error, PixivRequestError):
+            return error.to_display_text()
+
+        return self._format_error(error)

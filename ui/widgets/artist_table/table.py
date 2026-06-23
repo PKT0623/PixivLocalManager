@@ -138,22 +138,30 @@ class ArtistTable(QTableWidget):
 
     def set_artists(self, artists: list[dict]):
         self.artists = artists
-        self.artist_ids = []
+        self.artist_ids = [
+            artist.get("id")
+            for artist in artists
+        ]
 
-        self.setRowCount(0)
+        self.setUpdatesEnabled(False)
 
-        for index, artist in enumerate(
-            artists,
-            start=1,
-        ):
-            row = self.rowCount()
-            self.insertRow(row)
+        try:
+            self.setRowCount(0)
+            self.setRowCount(len(artists))
 
-            self.row_renderer.render_artist_row(
-                row,
-                index,
-                artist,
-            )
+            for index, artist in enumerate(
+                artists,
+                start=1,
+            ):
+                row = index - 1
+
+                self.row_renderer.render_artist_row(
+                    row,
+                    index,
+                    artist,
+                )
+        finally:
+            self.setUpdatesEnabled(True)
 
     def get_selected_artist_ids(self) -> list[int]:
         selected_rows = {
