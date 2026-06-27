@@ -1,19 +1,18 @@
-from PySide6.QtWidgets import QMessageBox
-
-
 class ArtistsDialogActions:
     def show_information(self, title: str, message: str):
-        message_box = QMessageBox(self.page)
-        message_box.setIcon(QMessageBox.NoIcon)
-        message_box.setWindowTitle(title)
-        message_box.setText(message)
-        message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
+        self._show_status_message(title, message)
 
     def show_warning(self, title: str, message: str):
-        message_box = QMessageBox(self.page)
-        message_box.setIcon(QMessageBox.NoIcon)
-        message_box.setWindowTitle(title)
-        message_box.setText(message)
-        message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
+        self._show_status_message(title, message)
+
+    def _show_status_message(self, title: str, message: str):
+        title = str(title or "").strip()
+        message = " ".join(
+            str(message or "").split()
+        )
+
+        if title and message:
+            self.page.show_status_message(f"{title}: {message}")
+            return
+
+        self.page.show_status_message(title or message)

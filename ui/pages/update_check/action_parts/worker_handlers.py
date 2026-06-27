@@ -37,9 +37,15 @@ class UpdateCheckWorkerHandlerActions:
         self.is_paused = False
 
         if self.is_cancel_requested:
-            self.page.status_label.setText("업데이트 확인이 중지되었습니다.")
+            self.page.status_label.setText(
+                "업데이트 확인이 중지되었습니다. "
+                "새로고침 버튼을 누르면 목록이 갱신됩니다."
+            )
         else:
-            self.page.status_label.setText("업데이트 확인이 완료되었습니다.")
+            self.page.status_label.setText(
+                "업데이트 확인이 완료되었습니다. "
+                "새로고침 버튼을 누르면 목록이 갱신됩니다."
+            )
 
         self.is_cancel_requested = False
         self.set_running_state(False)
@@ -79,5 +85,3 @@ class UpdateCheckWorkerHandlerActions:
                 f"{self.progress_offset} / {self.total_count}"
             )
             self.set_paused_state()
-        else:
-            self.page.load_artists()

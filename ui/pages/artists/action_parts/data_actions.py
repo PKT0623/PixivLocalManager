@@ -13,6 +13,10 @@ class ArtistsDataActions:
         self.page.all_artists = self.page.artist_service.get_all_artists()
         self.apply_filter_and_sort()
 
+    def refresh_artists(self):
+        self.load_artists()
+        self.page.show_status_message("작가 목록을 새로고침했습니다.")
+
     def reload_artists_keep_selection(
         self,
         artist_ids: list[int],
@@ -150,10 +154,13 @@ class ArtistsDataActions:
                 artist_id
             )
         except Exception as error:
-            print(error)
+            self.page.show_status_message(
+                f"즐겨찾기 변경에 실패했습니다: {error}"
+            )
             return
 
         self.load_artists()
+        self.page.show_status_message("즐겨찾기 상태를 변경했습니다.")
 
     def handle_rating_changed(
         self,
@@ -166,7 +173,12 @@ class ArtistsDataActions:
                 rating,
             )
         except Exception as error:
-            print(error)
+            self.page.show_status_message(
+                f"평점 변경에 실패했습니다: {error}"
+            )
             return
 
         self.reload_artists_keep_selection([artist_id])
+        self.page.show_status_message(
+            f"평점을 {rating}점으로 변경했습니다."
+        )

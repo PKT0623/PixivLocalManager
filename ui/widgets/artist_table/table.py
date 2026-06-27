@@ -36,6 +36,7 @@ class ArtistTable(QTableWidget):
     context_rating_requested = Signal(list)
     context_favorite_requested = Signal(list, bool)
     context_delete_requested = Signal(list)
+    folder_open_failed = Signal(str)
 
     def __init__(self):
         super().__init__()

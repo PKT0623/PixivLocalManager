@@ -45,6 +45,7 @@ class BookmarkService:
         error_count = 0
         errors = []
 
+        cleaned_bookmark_artworks = []
         existing_ids = self.repo.get_existing_artwork_ids(
             self._extract_artwork_ids(bookmark_artworks)
         )
@@ -58,25 +59,41 @@ class BookmarkService:
                 skipped_count += 1
                 continue
 
-            try:
-                self.upsert_bookmark_artwork(
-                    bookmark_artwork=bookmark_artwork,
-                    match_local_artist=match_local_artist,
+            item = dict(bookmark_artwork)
+            item["artwork_id"] = artwork_id
+            cleaned_bookmark_artworks.append(item)
+
+        try:
+            if match_local_artist:
+                artist_map = self.matcher.get_artist_map()
+                cleaned_bookmark_artworks = self.matcher.match_bookmark_artworks(
+                    bookmark_artworks=cleaned_bookmark_artworks,
+                    artist_map=artist_map,
                 )
 
-                if artwork_id in existing_ids:
-                    updated_count += 1
-                else:
-                    saved_count += 1
-                    existing_ids.add(artwork_id)
-            except Exception as exc:
-                error_count += 1
-                errors.append(
-                    {
-                        "artwork_id": artwork_id,
-                        "error": str(exc),
-                    }
-                )
+            save_result = self.repo.upsert_bookmark_artworks(
+                cleaned_bookmark_artworks
+            )
+            saved_count = save_result["saved_count"]
+            updated_count = save_result["updated_count"]
+            error_count = save_result["error_count"]
+            errors = save_result["errors"]
+        except Exception as exc:
+            error_count += len(cleaned_bookmark_artworks)
+            errors.append(
+                {
+                    "artwork_id": "-",
+                    "error": str(exc),
+                }
+            )
+
+        for bookmark_artwork in cleaned_bookmark_artworks:
+            artwork_id = str(
+                bookmark_artwork.get("artwork_id", "") or ""
+            ).strip()
+
+            if artwork_id and artwork_id not in existing_ids:
+                existing_ids.add(artwork_id)
 
         return {
             "total_count": len(bookmark_artworks),

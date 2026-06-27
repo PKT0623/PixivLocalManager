@@ -62,8 +62,9 @@ class ArtistDetailPage(QWidget):
         header_layout.addWidget(self.save_button)
         header_layout.addWidget(self.back_button)
 
-        self.status_message_label = QLabel("상태: 준비됨")
+        self.status_message_label = QLabel("")
         self.status_message_label.setObjectName("statusMessageLabel")
+        self.status_message_label.setMinimumHeight(20)
 
         self.status_message_timer = QTimer(self)
         self.status_message_timer.setSingleShot(True)
@@ -78,8 +79,8 @@ class ArtistDetailPage(QWidget):
         self.scroll_area.setWidget(self.info_section)
 
         layout.addLayout(header_layout)
-        layout.addWidget(self.status_message_label)
         layout.addWidget(self.scroll_area, 1)
+        layout.addWidget(self.status_message_label)
 
         self.setStyleSheet(ARTIST_DETAIL_STYLES)
 
@@ -128,8 +129,12 @@ class ArtistDetailPage(QWidget):
         message: str,
         timeout: int = 4000,
     ):
-        self.status_message_label.setText(f"상태: {message}")
+        normalized_message = " ".join(
+            str(message or "").split()
+        )
+
+        self.status_message_label.setText(normalized_message)
         self.status_message_timer.start(timeout)
 
     def clear_status_message(self):
-        self.status_message_label.setText("상태: 준비됨")
+        self.status_message_label.clear()

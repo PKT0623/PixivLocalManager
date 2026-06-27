@@ -41,6 +41,10 @@ ARTIST_COLUMN_MIGRATIONS = {
 
 
 FOLLOW_USER_COLUMN_MIGRATIONS = {
+    "file_count": (
+        "ALTER TABLE follow_users "
+        "ADD COLUMN file_count INTEGER NOT NULL DEFAULT 0"
+    ),
     "sync_status": (
         "ALTER TABLE follow_users "
         "ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'pending'"

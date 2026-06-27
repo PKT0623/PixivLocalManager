@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from app.services.artist import ArtistService
@@ -41,15 +41,33 @@ class ArtistsPage(QWidget):
         self.toolbar = ArtistsToolbar()
         self.artist_table = ArtistTable()
 
+        self.status_message_label = QLabel("")
+        self.status_message_label.setObjectName("statusMessageLabel")
+        self.status_message_label.setMinimumHeight(20)
+
+        self.status_message_timer = QTimer(self)
+        self.status_message_timer.setSingleShot(True)
+        self.status_message_timer.timeout.connect(self.clear_status_message)
+
         layout.addWidget(title_label)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.artist_table, 1)
+        layout.addWidget(self.status_message_label)
 
         self.setStyleSheet(
             """
             QLabel#pageTitle {
                 font-size: 28px;
                 font-weight: 700;
+            }
+
+            QLabel#statusMessageLabel {
+                color: #222222;
+                font-size: 13px;
+                font-weight: 400;
+                padding: 0;
+                margin: 0;
+                background-color: transparent;
             }
 
             QLineEdit {
@@ -127,7 +145,7 @@ class ArtistsPage(QWidget):
             self.actions.toggle_rating_display
         )
         self.toolbar.refresh_button.clicked.connect(
-            self.actions.load_artists
+            self.actions.refresh_artists
         )
         self.toolbar.restore_deleted_button.clicked.connect(
             self.actions.handle_restore_deleted_artists
@@ -154,6 +172,9 @@ class ArtistsPage(QWidget):
         self.artist_table.context_delete_requested.connect(
             self.actions.handle_delete_for_artist_ids
         )
+        self.artist_table.folder_open_failed.connect(
+            self.show_status_message
+        )
 
     def load_artists(self):
         self.actions.load_artists()
@@ -165,3 +186,18 @@ class ArtistsPage(QWidget):
         self.actions.load_artists()
         self.artist_table.select_artist_ids(artist_ids)
         self.artist_table.setFocus()
+
+    def show_status_message(
+        self,
+        message: str,
+        timeout: int = 4000,
+    ):
+        normalized_message = " ".join(
+            str(message or "").split()
+        )
+
+        self.status_message_label.setText(normalized_message)
+        self.status_message_timer.start(timeout)
+
+    def clear_status_message(self):
+        self.status_message_label.clear()

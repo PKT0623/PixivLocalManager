@@ -62,6 +62,9 @@ class ArtistsBulkActions:
             return
 
         self.reload_artists_keep_selection(artist_ids)
+        self.page.show_status_message(
+            f"{len(artist_ids)}명의 평점을 {rating}점으로 변경했습니다."
+        )
 
     def handle_bulk_favorite(self):
         self._handle_bulk_favorite_state(True)
@@ -101,6 +104,13 @@ class ArtistsBulkActions:
             return
 
         self.reload_artists_keep_selection(artist_ids)
+
+        if is_favorite:
+            message = f"{len(artist_ids)}명의 작가를 즐겨찾기에 추가했습니다."
+        else:
+            message = f"{len(artist_ids)}명의 작가를 즐겨찾기에서 해제했습니다."
+
+        self.page.show_status_message(message)
 
     def handle_bulk_delete(self):
         artist_ids = self._get_selected_artist_ids()
@@ -142,7 +152,12 @@ class ArtistsBulkActions:
             )
             return
 
+        deleted_count = len(artist_ids)
+
         self.load_artists()
+        self.page.show_status_message(
+            f"{deleted_count}명의 작가를 삭제했습니다."
+        )
 
     def handle_restore_deleted_artists(self):
         backup_dir = DATA_DIR / "backups" / "deleted_artists"
@@ -180,28 +195,28 @@ class ArtistsBulkActions:
 
     def _format_restore_result(self, result: dict) -> str:
         message = (
-            f"복구 시도: {result.get('total_count', 0)}명\n"
-            f"복구 완료: {result.get('restored_count', 0)}명\n"
-            f"건너뜀: {result.get('skipped_count', 0)}명"
+            f"복구 시도 {result.get('total_count', 0)}명, "
+            f"복구 완료 {result.get('restored_count', 0)}명, "
+            f"건너뜀 {result.get('skipped_count', 0)}명"
         )
 
         skipped_artists = result.get("skipped_artists", [])
 
         if skipped_artists:
             preview_items = skipped_artists[:5]
-            preview = "\n".join(
+            preview = ", ".join(
                 (
-                    f"- {item.get('artist_name', '-')}"
+                    f"{item.get('artist_name', '-')}"
                     f" / {item.get('pixiv_id', '-')}"
                     f" / {item.get('reason', '-')}"
                 )
                 for item in preview_items
             )
 
-            message += f"\n\n건너뛴 항목:\n{preview}"
+            message += f" | 건너뛴 항목: {preview}"
 
             if len(skipped_artists) > len(preview_items):
-                message += "\n..."
+                message += ", ..."
 
         return message
 

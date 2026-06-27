@@ -64,8 +64,10 @@ class UpdateCheckControlActions:
         self.page.export_csv_button.setEnabled(
             self.page.log_table.rowCount() > 0
         )
-        self.page.status_label.setText("업데이트 확인이 중지되었습니다.")
-        self.page.load_artists()
+        self.page.status_label.setText(
+            "업데이트 확인이 중지되었습니다. "
+            "새로고침 버튼을 누르면 목록이 갱신됩니다."
+        )
 
     def shutdown_worker(self):
         if self.cancel_event is not None:

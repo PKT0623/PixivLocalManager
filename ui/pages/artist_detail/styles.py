@@ -11,13 +11,12 @@ QLabel#sectionTitle {
 }
 
 QLabel#statusMessageLabel {
-    padding: 8px 12px;
-    border: 1px solid #cfe2ff;
-    border-radius: 6px;
-    background-color: #eef5ff;
-    color: #0d6efd;
-    font-size: 14px;
-    font-weight: 700;
+    color: #222222;
+    font-size: 13px;
+    font-weight: 400;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
 }
 
 QLabel#historySummaryLabel {

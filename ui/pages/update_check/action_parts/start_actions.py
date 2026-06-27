@@ -174,11 +174,6 @@ class UpdateCheckStartActions:
         worker.finished.connect(worker_thread.quit)
         worker.failed.connect(worker_thread.quit)
 
-        worker.paused.connect(worker.deleteLater)
-        worker.finished.connect(worker.deleteLater)
-        worker.failed.connect(worker.deleteLater)
-
-        worker_thread.finished.connect(worker_thread.deleteLater)
         worker_thread.finished.connect(self.cleanup_worker)
 
     def _save_current_request_settings(self):

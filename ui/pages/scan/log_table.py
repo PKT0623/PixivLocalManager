@@ -125,8 +125,6 @@ class ScanLogTable(QTableWidget):
 
             self._append_visible_row(row_data)
 
-        self.scrollToBottom()
-
     def _should_show_row(self, row_data: dict) -> bool:
         result = str(row_data.get("result", ""))
 

@@ -16,7 +16,6 @@ class PixivImportWorker(
     ResultBuilderMixin,
 ):
     progress_updated = Signal(int, int, str)
-    estimated_time_updated = Signal(str)
     log_requested = Signal(object)
     finished = Signal()
     failed = Signal()
@@ -49,6 +48,8 @@ class PixivImportWorker(
         self.result_payload = None
         self.error_message = ""
 
+        self._init_progress_state()
+
     @Slot()
     def run(self):
         try:
@@ -72,6 +73,3 @@ class PixivImportWorker(
     @Slot()
     def request_cancel(self):
         self.cancel_requested = True
-        self._handle_rate_limit_status(
-            "취소 요청됨: 현재 항목 처리 후 중단합니다."
-        )

@@ -4,6 +4,16 @@ class UpdateCheckDataMixin:
         self.artist_table.load_artists(self.artists)
         self.update_target_count()
 
+    def refresh_artists(self):
+        if self.worker is not None or self.worker_thread is not None:
+            self.status_label.setText(
+                "업데이트 확인 중에는 작가 목록을 새로고침할 수 없습니다."
+            )
+            return
+
+        self.load_artists()
+        self.status_label.setText("작가 목록을 새로고침했습니다.")
+
     def update_target_count(self):
         artist_ids = self.selection_actions.get_selected_artist_ids()
         count = len(artist_ids)

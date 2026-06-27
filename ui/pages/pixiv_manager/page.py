@@ -142,13 +142,9 @@ class PixivManagerPage(QWidget):
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
-        self.progress_bar.setFormat("0 / 0")
-
-        self.estimated_time_label = QLabel("예상 남은 시간: -")
-        self.estimated_time_label.setObjectName("statusLabel")
+        self.progress_bar.setFormat("0%")
 
         progress_layout.addWidget(self.progress_bar, 1)
-        progress_layout.addWidget(self.estimated_time_label)
 
         frame_layout.addWidget(title_label)
         frame_layout.addLayout(path_layout)

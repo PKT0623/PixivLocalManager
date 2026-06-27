@@ -1,8 +1,9 @@
-import time
-
-
 class ProgressMixin:
-    PIXIV_SYNC_UI_SIGNAL_ENABLED = False
+    PIXIV_SYNC_UI_SIGNAL_ENABLED = True
+    PROGRESS_PERCENT_STEP = 1
+
+    def _init_progress_state(self) -> None:
+        self._last_emitted_percent = -1
 
     def _handle_sync_progress(
         self,
@@ -16,15 +17,11 @@ class ProgressMixin:
         if not self._should_emit_ui_signal():
             return
 
-        self._emit_direct_progress(current, total, message)
-
-        elapsed = max(time.time() - self.started_at, 0.001)
-        average = elapsed / max(current, 1)
-        remain = max(total - current, 0)
-        remain_seconds = int(average * remain)
-
-        self.estimated_time_updated.emit(
-            self._format_seconds(remain_seconds)
+        self._emit_percent_progress(
+            current=current,
+            total=total,
+            message=message,
+            force=False,
         )
 
     def _handle_rate_limit_status(
@@ -34,10 +31,11 @@ class ProgressMixin:
         if not self._should_emit_ui_signal():
             return
 
-        self.progress_updated.emit(
-            self.current_progress,
-            self.current_total,
-            message,
+        self._emit_percent_progress(
+            current=self.current_progress,
+            total=self.current_total,
+            message=message,
+            force=True,
         )
 
     def _handle_sync_log(
@@ -45,24 +43,7 @@ class ProgressMixin:
         result: str,
         message: str,
     ):
-        if not self._should_emit_ui_signal():
-            return
-
-        self.log_requested.emit(
-            {
-                "target": self.target_label,
-                "result": result,
-                "message": message,
-                "new_count": 0,
-                "duplicate_in_file_count": 0,
-                "duplicate_existing_count": 0,
-                "error_count": (
-                    1
-                    if result in ("실패", "세션 오류", "요청 제한")
-                    else 0
-                ),
-            }
-        )
+        return
 
     def _emit_direct_progress(
         self,
@@ -70,34 +51,69 @@ class ProgressMixin:
         total: int,
         message: str,
     ):
-        self.current_progress = current
-        self.current_total = total
-
-        if not self._should_emit_ui_signal():
-            return
-
-        self.progress_updated.emit(current, total, message)
+        self._emit_percent_progress(
+            current=current,
+            total=total,
+            message=message,
+            force=True,
+        )
 
     def _emit_progress(
         self,
         index: int,
         total: int,
-        started_at: float,
+        started_at=None,
     ):
-        self._emit_direct_progress(
-            index,
-            total,
-            f"{index} / {total}",
+        self._emit_percent_progress(
+            current=index,
+            total=total,
+            message="가져오기 진행 중...",
+            force=False,
         )
 
-        elapsed = max(time.time() - started_at, 0.001)
-        average = elapsed / index
-        remain = max(total - index, 0)
-        remain_seconds = int(average * remain)
+    def _emit_percent_progress(
+        self,
+        current: int,
+        total: int,
+        message: str,
+        force: bool = False,
+    ):
+        self.current_progress = current
+        self.current_total = total
 
-        self.estimated_time_updated.emit(
-            self._format_seconds(remain_seconds)
-        )
+        percent = self._calculate_percent(current, total)
+
+        if not force and not self._should_emit_percent(percent):
+            return
+
+        self._last_emitted_percent = percent
+        self.progress_updated.emit(current, total, message)
+
+    def _should_emit_percent(
+        self,
+        percent: int,
+    ) -> bool:
+        if percent <= 0 and self._last_emitted_percent < 0:
+            return True
+
+        if percent >= 100:
+            return self._last_emitted_percent != 100
+
+        if percent == self._last_emitted_percent:
+            return False
+
+        return percent - self._last_emitted_percent >= self.PROGRESS_PERCENT_STEP
+
+    def _calculate_percent(
+        self,
+        current: int,
+        total: int,
+    ) -> int:
+        if total <= 0:
+            return 0
+
+        safe_current = min(max(current, 0), total)
+        return int(safe_current * 100 / total)
 
     def _should_emit_ui_signal(self) -> bool:
         if getattr(self, "import_source", "") != "pixiv":
@@ -107,18 +123,3 @@ class ProgressMixin:
 
     def _is_cancel_requested(self) -> bool:
         return self.cancel_requested
-
-    def _format_seconds(
-        self,
-        seconds: int,
-    ) -> str:
-        if seconds <= 0:
-            return "곧 완료"
-
-        minutes = seconds // 60
-        remain_seconds = seconds % 60
-
-        if minutes <= 0:
-            return f"약 {remain_seconds}초"
-
-        return f"약 {minutes}분 {remain_seconds}초"

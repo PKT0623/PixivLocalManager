@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication, QInputDialog, QMenu
@@ -18,10 +20,26 @@ class ArtistTableActions:
         folder_path = str(folder_path or "").strip()
 
         if not folder_path:
+            self.table.folder_open_failed.emit(
+                "작가 폴더 위치를 찾을 수 없습니다."
+            )
             return
 
-        url = QUrl.fromLocalFile(folder_path)
-        QDesktopServices.openUrl(url)
+        path = Path(folder_path)
+
+        if not path.exists():
+            self.table.folder_open_failed.emit(
+                "작가 폴더 위치를 찾을 수 없습니다."
+            )
+            return
+
+        url = QUrl.fromLocalFile(str(path))
+        opened = QDesktopServices.openUrl(url)
+
+        if not opened:
+            self.table.folder_open_failed.emit(
+                "작가 폴더를 열 수 없습니다."
+            )
 
     def open_pixiv_page(self, pixiv_id: str):
         pixiv_id = str(pixiv_id or "").strip()

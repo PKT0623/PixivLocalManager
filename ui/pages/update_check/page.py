@@ -1,5 +1,11 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from app.services.artist import ArtistService
 from app.services.settings_service import SettingsService
@@ -64,8 +70,17 @@ class UpdateCheckPage(
         layout.setContentsMargins(32, 32, 32, 24)
         layout.setSpacing(14)
 
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(10)
+
         title_label = QLabel("업데이트 확인")
         title_label.setObjectName("pageTitle")
+
+        self.refresh_button = QPushButton("새로고침")
+
+        header_layout.addWidget(title_label)
+        header_layout.addStretch()
+        header_layout.addWidget(self.refresh_button)
 
         self.option_frame = self._create_option_frame()
         self.summary_frame = self._create_summary_frame()
@@ -76,7 +91,7 @@ class UpdateCheckPage(
         self.status_label = QLabel("")
         self.status_label.setObjectName("statusLabel")
 
-        layout.addWidget(title_label)
+        layout.addLayout(header_layout)
         layout.addWidget(self.option_frame)
         layout.addWidget(self.summary_frame)
         layout.addWidget(self.progress_frame)
@@ -87,6 +102,9 @@ class UpdateCheckPage(
         self.setStyleSheet(UPDATE_CHECK_PAGE_STYLES)
 
     def _connect_signals(self):
+        self.refresh_button.clicked.connect(
+            self.refresh_artists
+        )
         self.select_all_button.clicked.connect(
             self.selection_actions.select_all
         )

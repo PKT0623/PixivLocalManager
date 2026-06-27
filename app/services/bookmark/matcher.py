@@ -6,20 +6,41 @@ class BookmarkArtworkMatcher:
         self.artist_repo = ArtistRepository()
         self.bookmark_artwork_repo = BookmarkArtworkRepository()
 
+    def get_artist_map(self) -> dict[str, dict]:
+        return self.artist_repo.get_pixiv_id_map()
+
     def match_bookmark_artwork(
         self,
         bookmark_artwork: dict,
+        artist_map: dict[str, dict] | None = None,
     ) -> dict:
-        artist_map = self.artist_repo.get_pixiv_id_map()
+        if artist_map is None:
+            artist_map = self.get_artist_map()
 
         return self._match_bookmark_artwork_with_artist_map(
             bookmark_artwork=bookmark_artwork,
             artist_map=artist_map,
         )
 
+    def match_bookmark_artworks(
+        self,
+        bookmark_artworks: list[dict],
+        artist_map: dict[str, dict] | None = None,
+    ) -> list[dict]:
+        if artist_map is None:
+            artist_map = self.get_artist_map()
+
+        return [
+            self._match_bookmark_artwork_with_artist_map(
+                bookmark_artwork=bookmark_artwork,
+                artist_map=artist_map,
+            )
+            for bookmark_artwork in bookmark_artworks
+        ]
+
     def match_all(self) -> dict:
         bookmark_artworks = self.bookmark_artwork_repo.get_all()
-        artist_map = self.artist_repo.get_pixiv_id_map()
+        artist_map = self.get_artist_map()
 
         matched_count = 0
         unmatched_count = 0

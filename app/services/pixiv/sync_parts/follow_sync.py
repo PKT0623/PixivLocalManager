@@ -1,9 +1,13 @@
+import time
+
 from app.services.pixiv_update_service import PixivRequestError
 
 from .constants import PixivSyncStatus
 
 
 class FollowSyncMixin:
+    UI_YIELD_SECONDS = 0.001
+
     def sync_follow_users(
         self,
         follow_users: list[dict],
@@ -58,6 +62,13 @@ class FollowSyncMixin:
                     "스킵",
                     f"({index}/{total}) Pixiv 유저 ID가 비어 있습니다.",
                 )
+                self._emit_progress(
+                    progress_callback,
+                    index,
+                    total,
+                    f"팔로우 메타데이터 갱신 중: {index} / {total}",
+                )
+                self._yield_for_ui()
                 continue
 
             self._emit_progress(
@@ -66,6 +77,7 @@ class FollowSyncMixin:
                 total,
                 f"({index}/{total}) {pixiv_user_id} 요청 준비 중",
             )
+            self._yield_for_ui()
 
             try:
                 metadata = self.metadata_service.fetch_user_metadata(
@@ -168,6 +180,7 @@ class FollowSyncMixin:
                 total,
                 f"팔로우 메타데이터 갱신 중: {index} / {total}",
             )
+            self._yield_for_ui()
 
         return {
             "total_count": total,
@@ -224,3 +237,6 @@ class FollowSyncMixin:
             return error.to_display_text()
 
         return self._format_error(error)
+
+    def _yield_for_ui(self):
+        time.sleep(self.UI_YIELD_SECONDS)

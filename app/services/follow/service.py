@@ -45,6 +45,7 @@ class FollowService:
         error_count = 0
         errors = []
 
+        cleaned_follow_users = []
         existing_ids = self.repo.get_existing_pixiv_user_ids(
             self._extract_pixiv_user_ids(follow_users)
         )
@@ -58,25 +59,39 @@ class FollowService:
                 skipped_count += 1
                 continue
 
-            try:
-                self.upsert_follow_user(
-                    follow_user=follow_user,
-                    match_local_artist=match_local_artist,
+            item = dict(follow_user)
+            item["pixiv_user_id"] = pixiv_user_id
+            cleaned_follow_users.append(item)
+
+        try:
+            if match_local_artist:
+                artist_map = self.matcher.get_artist_map()
+                cleaned_follow_users = self.matcher.match_follow_users(
+                    follow_users=cleaned_follow_users,
+                    artist_map=artist_map,
                 )
 
-                if pixiv_user_id in existing_ids:
-                    updated_count += 1
-                else:
-                    saved_count += 1
-                    existing_ids.add(pixiv_user_id)
-            except Exception as exc:
-                error_count += 1
-                errors.append(
-                    {
-                        "pixiv_user_id": pixiv_user_id,
-                        "error": str(exc),
-                    }
-                )
+            save_result = self.repo.upsert_follow_users(cleaned_follow_users)
+            saved_count = save_result["saved_count"]
+            updated_count = save_result["updated_count"]
+            error_count = save_result["error_count"]
+            errors = save_result["errors"]
+        except Exception as exc:
+            error_count += len(cleaned_follow_users)
+            errors.append(
+                {
+                    "pixiv_user_id": "-",
+                    "error": str(exc),
+                }
+            )
+
+        for follow_user in cleaned_follow_users:
+            pixiv_user_id = str(
+                follow_user.get("pixiv_user_id", "") or ""
+            ).strip()
+
+            if pixiv_user_id and pixiv_user_id not in existing_ids:
+                existing_ids.add(pixiv_user_id)
 
         return {
             "total_count": len(follow_users),

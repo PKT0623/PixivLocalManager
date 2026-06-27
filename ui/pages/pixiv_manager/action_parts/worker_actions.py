@@ -4,7 +4,7 @@ from ..worker import PixivImportWorker
 
 
 class PixivManagerWorkerActions:
-    RELOAD_DELAY_MS = 300
+    PIXIV_STATUS_POLL_INTERVAL_MS = 200
 
     def _start_import(
         self,
@@ -22,6 +22,7 @@ class PixivManagerWorkerActions:
             return
 
         self._cleanup_finished_worker_refs()
+        self._stop_pixiv_status_poll_timer()
 
         if import_source == "file" and not file_path:
             file_path = self._get_file_path()
@@ -31,13 +32,14 @@ class PixivManagerWorkerActions:
 
         self._set_import_running(True)
 
-        total = len(selected_items or [])
-
-        self.page.progress_bar.setRange(0, max(total, 1))
+        self.page.progress_bar.setRange(0, 100)
         self.page.progress_bar.setValue(0)
-        self.page.progress_bar.setFormat(f"0 / {total}")
-        self.page.estimated_time_label.setText("예상 남은 시간: 계산 중")
-        self.page.status_label.setText("가져오기 준비 중...")
+        self.page.progress_bar.setFormat("0%")
+
+        if import_source == "pixiv":
+            self.page.status_label.setText("Pixiv 동기화 준비 중...")
+        else:
+            self.page.status_label.setText("가져오기 준비 중...")
 
         self._pending_worker_result = None
         self._pending_worker_error_message = ""
@@ -59,59 +61,41 @@ class PixivManagerWorkerActions:
 
         worker_thread.started.connect(
             worker.run,
-            Qt.QueuedConnection,
+            Qt.ConnectionType.QueuedConnection,
         )
 
         worker.progress_updated.connect(
             self._handle_progress_updated,
-            Qt.QueuedConnection,
-        )
-        worker.estimated_time_updated.connect(
-            self._handle_estimated_time_updated,
-            Qt.QueuedConnection,
-        )
-        worker.log_requested.connect(
-            self._handle_worker_log,
-            Qt.QueuedConnection,
+            Qt.ConnectionType.QueuedConnection,
         )
 
         worker.finished.connect(
             lambda: self._capture_worker_result(worker),
-            Qt.DirectConnection,
+            Qt.ConnectionType.DirectConnection,
         )
         worker.failed.connect(
             lambda: self._capture_worker_result(worker),
-            Qt.DirectConnection,
-        )
-
-        worker.finished.connect(
-            worker.deleteLater,
-            Qt.DirectConnection,
-        )
-        worker.failed.connect(
-            worker.deleteLater,
-            Qt.DirectConnection,
+            Qt.ConnectionType.DirectConnection,
         )
 
         worker.finished.connect(
             worker_thread.quit,
-            Qt.QueuedConnection,
+            Qt.ConnectionType.QueuedConnection,
         )
         worker.failed.connect(
             worker_thread.quit,
-            Qt.QueuedConnection,
+            Qt.ConnectionType.QueuedConnection,
         )
 
         worker_thread.finished.connect(
             self._handle_worker_thread_finished,
-            Qt.QueuedConnection,
-        )
-        worker_thread.finished.connect(
-            worker_thread.deleteLater,
-            Qt.QueuedConnection,
+            Qt.ConnectionType.QueuedConnection,
         )
 
         worker_thread.start()
+
+        if import_source == "pixiv":
+            self._start_pixiv_status_poll_timer()
 
     def _capture_worker_result(
         self,
@@ -135,52 +119,30 @@ class PixivManagerWorkerActions:
         total: int,
         message: str,
     ):
-        if total <= 0:
-            self.page.progress_bar.setRange(0, 1)
-            self.page.progress_bar.setValue(1)
-            self.page.progress_bar.setFormat("0 / 0")
-        else:
-            self.page.progress_bar.setRange(0, total)
-            self.page.progress_bar.setValue(current)
-            self.page.progress_bar.setFormat(f"{current} / {total}")
+        worker = self.page.worker
 
-        self.page.status_label.setText(message)
-
-    @Slot(str)
-    def _handle_estimated_time_updated(
-        self,
-        text: str,
-    ):
-        self.page.estimated_time_label.setText(
-            f"예상 남은 시간: {text}"
-        )
-
-    @Slot(object)
-    def _handle_worker_log(
-        self,
-        row_data,
-    ):
-        if not isinstance(row_data, dict):
+        if worker is not None and getattr(worker, "import_source", "") == "pixiv":
             return
 
-        self._add_log(
-            target=row_data.get("target", "-"),
-            result=row_data.get("result", "-"),
-            message=row_data.get("message", "-"),
-            new_count=row_data.get("new_count", 0),
-            duplicate_in_file_count=row_data.get(
-                "duplicate_in_file_count",
-                0,
-            ),
-            duplicate_existing_count=row_data.get(
-                "duplicate_existing_count",
-                0,
-            ),
-            error_count=row_data.get("error_count", 0),
-        )
+        percent = self._calculate_percent(current, total)
+
+        self.page.progress_bar.setRange(0, 100)
+        self.page.progress_bar.setValue(percent)
+
+        if total <= 0:
+            self.page.progress_bar.setFormat(f"{percent}%")
+        else:
+            self.page.progress_bar.setFormat(
+                f"{percent}% ({current} / {total})"
+            )
+
+        if message:
+            self.page.status_label.setText(message)
 
     @Slot()
     def _handle_worker_thread_finished(self):
+        self._stop_pixiv_status_poll_timer()
+
         result = getattr(
             self,
             "_pending_worker_result",
@@ -192,16 +154,15 @@ class PixivManagerWorkerActions:
             "",
         )
 
+        self._process_worker_result(
+            result,
+            error_message,
+        )
+
         self.page.worker = None
         self.page.worker_thread = None
-
-        QTimer.singleShot(
-            0,
-            lambda: self._process_worker_result(
-                result,
-                error_message,
-            ),
-        )
+        self._pending_worker_result = None
+        self._pending_worker_error_message = ""
 
     def _process_worker_result(
         self,
@@ -249,6 +210,13 @@ class PixivManagerWorkerActions:
             cancelled=cancelled,
         )
 
+        self.page.progress_bar.setRange(0, 100)
+        self.page.progress_bar.setValue(100)
+        self.page.progress_bar.setFormat("100%")
+
+        self._set_import_running(False)
+        self.current_page = 1
+
         self._add_log(
             target=target_label,
             result=log_result,
@@ -265,9 +233,9 @@ class PixivManagerWorkerActions:
             error_count=save_result.get("error_count", 0),
         )
 
-        self._set_import_running(False)
-        self.current_page = 1
-        self._reload_data_later(message)
+        self.page.status_label.setText(
+            f"{message} 새로고침 버튼을 누르면 목록이 갱신됩니다."
+        )
 
     def _handle_pixiv_import_finished(
         self,
@@ -277,21 +245,15 @@ class PixivManagerWorkerActions:
         sync_result = result.get("sync_result", {})
         message = result.get("message", "")
 
-        total_count = sync_result.get("total_count", 0)
         processed_count = sync_result.get("processed_count", 0)
         success_count = sync_result.get("success_count", 0)
         failed_count = sync_result.get("failed_count", 0)
         skipped_count = sync_result.get("skipped_count", 0)
         error_count = sync_result.get("error_count", 0)
 
-        self._set_import_running(False)
-
-        self.page.progress_bar.setRange(0, max(total_count, 1))
-        self.page.progress_bar.setValue(processed_count)
-        self.page.progress_bar.setFormat(
-            f"{processed_count} / {total_count}"
-        )
-        self.page.estimated_time_label.setText("예상 남은 시간: 완료")
+        self.page.progress_bar.setRange(0, 100)
+        self.page.progress_bar.setValue(100)
+        self.page.progress_bar.setFormat("100%")
 
         result_label = "완료"
 
@@ -302,37 +264,43 @@ class PixivManagerWorkerActions:
         elif not result.get("success"):
             result_label = "오류"
 
+        status_message = (
+            f"{message} / "
+            f"처리 {processed_count}개, "
+            f"성공 {success_count}개, "
+            f"실패 {failed_count}개, "
+            f"스킵 {skipped_count}개"
+        )
+
+        self._set_import_running(False)
+        self.current_page = 1
+
         self._add_log(
             target=target_label,
             result=result_label,
-            message=message,
+            message=status_message,
             new_count=success_count,
             duplicate_in_file_count=skipped_count,
             duplicate_existing_count=0,
             error_count=error_count,
         )
 
-        status_message = (
-            f"{message} / "
-            f"성공 {success_count}개, "
-            f"실패 {failed_count}개, "
-            f"스킵 {skipped_count}개 "
+        self.page.status_label.setText(
+            f"{status_message} 새로고침 버튼을 누르면 목록이 갱신됩니다."
         )
-
-        self.current_page = 1
-        self._reload_data_later(status_message)
 
     @Slot(str)
     def _handle_import_failed(
         self,
         message: str,
     ):
+        self._stop_pixiv_status_poll_timer()
         self._set_import_running(False)
 
         self._add_log(
             target="-",
             result="오류",
-            message=message,
+            message=f"가져오기 실패: {message}",
             new_count=0,
             duplicate_in_file_count=0,
             duplicate_existing_count=0,
@@ -341,37 +309,57 @@ class PixivManagerWorkerActions:
 
         self.page.status_label.setText(f"가져오기 실패: {message}")
 
-    def _reload_data_later(
-        self,
-        message: str,
-    ):
-        self.page.status_label.setText(message)
+    def _start_pixiv_status_poll_timer(self):
+        self._stop_pixiv_status_poll_timer()
 
-        QTimer.singleShot(
-            self.RELOAD_DELAY_MS,
-            lambda: self._reload_data_safely(message),
+        timer = QTimer(self.page)
+        timer.setInterval(self.PIXIV_STATUS_POLL_INTERVAL_MS)
+        timer.timeout.connect(self._update_pixiv_status_from_worker)
+
+        self.page.pixiv_status_poll_timer = timer
+        timer.start()
+
+    def _stop_pixiv_status_poll_timer(self):
+        timer = getattr(self.page, "pixiv_status_poll_timer", None)
+
+        if timer is None:
+            return
+
+        timer.stop()
+        timer.deleteLater()
+        self.page.pixiv_status_poll_timer = None
+
+    def _update_pixiv_status_from_worker(self):
+        worker = self.page.worker
+
+        if worker is None:
+            return
+
+        if getattr(worker, "import_source", "") != "pixiv":
+            return
+
+        current = int(getattr(worker, "current_progress", 0) or 0)
+        total = int(getattr(worker, "current_total", 0) or 0)
+        percent = self._calculate_percent(current, total)
+
+        if total <= 0:
+            self.page.status_label.setText("Pixiv 동기화 중...")
+            return
+
+        self.page.status_label.setText(
+            f"Pixiv 동기화 중: {percent}% ({current} / {total})"
         )
 
-    def _reload_data_safely(
-        self,
-        message: str,
-    ):
-        self.page.setUpdatesEnabled(False)
-
-        try:
-            self.load_data()
-        finally:
-            self.page.setUpdatesEnabled(True)
-            self.page.status_label.setText(message)
-            self.page.update()
-
     def _cleanup_finished_worker_refs(self):
-        if self.page.worker_thread is not None:
-            if not self.page.worker_thread.isRunning():
-                self.page.worker = None
-                self.page.worker_thread = None
+        worker_thread = self.page.worker_thread
+
+        if worker_thread is not None and not worker_thread.isRunning():
+            self.page.worker = None
+            self.page.worker_thread = None
 
     def shutdown_worker(self):
+        self._stop_pixiv_status_poll_timer()
+
         if self.page.worker_thread is None:
             return
 
@@ -394,14 +382,6 @@ class PixivManagerWorkerActions:
         self.page.import_target_combo.setEnabled(not is_running)
         self.page.import_file_type_combo.setEnabled(not is_running)
         self.page.refresh_button.setEnabled(not is_running)
-        self.page.filter_combo.setEnabled(not is_running)
-        self.page.page_size_combo.setEnabled(not is_running)
-        self.page.tab_widget.setEnabled(not is_running)
-        self.page.select_all_button.setEnabled(not is_running)
-        self.page.clear_selection_button.setEnabled(not is_running)
-        self.page.open_selected_button.setEnabled(not is_running)
-        self.page.delete_selected_button.setEnabled(not is_running)
-        self.page.delete_displayed_button.setEnabled(not is_running)
         self.page.cancel_import_button.setEnabled(is_running)
 
         if hasattr(self.page, "pixiv_follow_button"):
@@ -415,3 +395,14 @@ class PixivManagerWorkerActions:
             self.page.worker_thread is not None
             and self.page.worker_thread.isRunning()
         )
+
+    def _calculate_percent(
+        self,
+        current: int,
+        total: int,
+    ) -> int:
+        if total <= 0:
+            return 0
+
+        safe_current = min(max(current, 0), total)
+        return int(safe_current * 100 / total)

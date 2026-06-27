@@ -6,20 +6,41 @@ class FollowUserMatcher:
         self.artist_repo = ArtistRepository()
         self.follow_user_repo = FollowUserRepository()
 
+    def get_artist_map(self) -> dict[str, dict]:
+        return self.artist_repo.get_pixiv_id_map()
+
     def match_follow_user(
         self,
         follow_user: dict,
+        artist_map: dict[str, dict] | None = None,
     ) -> dict:
-        artist_map = self.artist_repo.get_pixiv_id_map()
+        if artist_map is None:
+            artist_map = self.get_artist_map()
 
         return self._match_follow_user_with_artist_map(
             follow_user=follow_user,
             artist_map=artist_map,
         )
 
+    def match_follow_users(
+        self,
+        follow_users: list[dict],
+        artist_map: dict[str, dict] | None = None,
+    ) -> list[dict]:
+        if artist_map is None:
+            artist_map = self.get_artist_map()
+
+        return [
+            self._match_follow_user_with_artist_map(
+                follow_user=follow_user,
+                artist_map=artist_map,
+            )
+            for follow_user in follow_users
+        ]
+
     def match_all(self) -> dict:
         follow_users = self.follow_user_repo.get_all()
-        artist_map = self.artist_repo.get_pixiv_id_map()
+        artist_map = self.get_artist_map()
 
         matched_count = 0
         unmatched_count = 0

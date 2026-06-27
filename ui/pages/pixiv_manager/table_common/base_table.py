@@ -4,8 +4,6 @@ from PySide6.QtWidgets import (
     QTableView,
 )
 
-from .checkbox_delegate import CenterCheckBoxDelegate
-
 
 class PixivManagerBaseTable(QTableView):
     PIXIV_URL_TEMPLATE = ""
@@ -17,7 +15,6 @@ class PixivManagerBaseTable(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(True)
-        self.setItemDelegateForColumn(0, CenterCheckBoxDelegate(self))
 
         vertical_header = self.verticalHeader()
         vertical_header.setVisible(False)

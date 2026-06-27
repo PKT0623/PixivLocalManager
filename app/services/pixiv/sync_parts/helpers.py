@@ -17,13 +17,20 @@ class PixivSyncHelperMixin:
         self,
         existing_tags,
         new_tags,
+        sort_tags: bool = True,
+        prefer_new_order: bool = False,
     ) -> str:
         merged_tags = self.tag_service.merge_tags(
             existing_tags=existing_tags,
             new_tags=new_tags,
+            sort_tags=sort_tags,
+            prefer_new_order=prefer_new_order,
         )
 
-        return self.tag_service.serialize_tags(merged_tags)
+        return self.tag_service.serialize_tags(
+            merged_tags,
+            sort_tags=sort_tags,
+        )
 
     def _emit_progress(
         self,

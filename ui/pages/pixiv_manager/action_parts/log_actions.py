@@ -16,11 +16,24 @@ class PixivManagerLogActions:
     ) -> str:
         action_label = "취소" if cancelled else "완료"
 
+        read_count = result.get("total_count", 0)
+        new_count = result.get("new_count", 0)
+        duplicate_in_file_count = result.get("duplicate_in_file_count", 0)
+        duplicate_existing_count = result.get(
+            "duplicate_existing_count",
+            0,
+        )
+        saved_count = save_result.get("saved_count", 0)
+        error_count = save_result.get("error_count", 0)
+
         return (
             f"{target_label} {file_type.upper()} 가져오기 {action_label}: "
-            f"신규 {result.get('new_count', 0)}개 / "
-            f"저장 {save_result.get('saved_count', 0)}개 / "
-            f"오류 {save_result.get('error_count', 0)}개"
+            f"읽음 {read_count}개 / "
+            f"신규 {new_count}개 / "
+            f"파일 중복 {duplicate_in_file_count}개 / "
+            f"기존 중복 {duplicate_existing_count}개 / "
+            f"저장 {saved_count}개 / "
+            f"오류 {error_count}개"
         )
 
     def _add_log(

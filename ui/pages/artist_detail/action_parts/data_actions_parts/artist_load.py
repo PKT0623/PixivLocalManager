@@ -21,6 +21,7 @@ class ArtistLoadActions:
 
         if artist is None:
             self.clear_artist()
+            self.show_status_message("작가 정보를 찾을 수 없습니다.")
             return
 
         self.page.current_artist = artist
@@ -29,16 +30,19 @@ class ArtistLoadActions:
     def refresh_artist(self):
         if self.page.artist_id is None:
             self.clear_artist()
+            self.show_status_message("작가 정보를 찾을 수 없습니다.")
             return
 
         artist = self.page.artist_service.get_artist(self.page.artist_id)
 
         if artist is None:
             self.clear_artist()
+            self.show_status_message("작가 정보를 찾을 수 없습니다.")
             return
 
         self.page.current_artist = artist
         self.set_artist_data(artist)
+        self.show_status_message("작가 정보를 새로고침했습니다.")
 
     def set_artist_data(self, artist: dict):
         section = self.page.info_section

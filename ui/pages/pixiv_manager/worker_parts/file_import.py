@@ -1,5 +1,3 @@
-import time
-
 from app.services import BookmarkService, FollowService
 
 
@@ -59,48 +57,48 @@ class FileImportMixin:
         service: FollowService,
         items: list[dict],
     ) -> dict:
-        saved_count = 0
-        error_count = 0
-        errors = []
-
         total = len(items)
-        started_at = time.time()
 
         if total == 0:
-            self._emit_direct_progress(0, 0, "저장할 신규 항목이 없습니다.")
-            self.estimated_time_updated.emit("-")
+            self._emit_direct_progress(
+                0,
+                0,
+                "저장할 신규 항목이 없습니다.",
+            )
             return self._build_save_result(0, 0, 0, [], False)
 
-        for index, item in enumerate(items, start=1):
-            if self.cancel_requested:
-                self._emit_direct_progress(
-                    index - 1,
-                    total,
-                    "가져오기를 취소했습니다.",
-                )
-                break
-
-            try:
-                service.upsert_follow_user(item)
-                saved_count += 1
-            except Exception as error:
-                error_count += 1
-                errors.append(
-                    {
-                        "pixiv_user_id": item.get("pixiv_user_id", ""),
-                        "error": str(error),
-                    }
-                )
-
-            self._emit_progress(
-                index=index,
-                total=total,
-                started_at=started_at,
+        if self.cancel_requested:
+            self._emit_direct_progress(
+                0,
+                total,
+                "가져오기를 취소했습니다.",
             )
+            return self._build_save_result(0, 0, 0, [], True)
+
+        self._emit_direct_progress(
+            0,
+            total,
+            "가져오기 저장 준비 중...",
+        )
+
+        save_result = service.save_follow_users(items)
+
+        saved_count = save_result.get("saved_count", 0)
+        updated_count = save_result.get("updated_count", 0)
+        error_count = save_result.get("error_count", 0)
+        errors = save_result.get("errors", [])
+
+        processed_count = saved_count + updated_count + error_count
+
+        self._emit_direct_progress(
+            processed_count,
+            total,
+            "가져오기 저장 완료",
+        )
 
         return self._build_save_result(
             total=total,
-            saved_count=saved_count,
+            saved_count=saved_count + updated_count,
             error_count=error_count,
             errors=errors,
             cancelled=self.cancel_requested,
@@ -111,48 +109,48 @@ class FileImportMixin:
         service: BookmarkService,
         items: list[dict],
     ) -> dict:
-        saved_count = 0
-        error_count = 0
-        errors = []
-
         total = len(items)
-        started_at = time.time()
 
         if total == 0:
-            self._emit_direct_progress(0, 0, "저장할 신규 항목이 없습니다.")
-            self.estimated_time_updated.emit("-")
+            self._emit_direct_progress(
+                0,
+                0,
+                "저장할 신규 항목이 없습니다.",
+            )
             return self._build_save_result(0, 0, 0, [], False)
 
-        for index, item in enumerate(items, start=1):
-            if self.cancel_requested:
-                self._emit_direct_progress(
-                    index - 1,
-                    total,
-                    "가져오기를 취소했습니다.",
-                )
-                break
-
-            try:
-                service.upsert_bookmark_artwork(item)
-                saved_count += 1
-            except Exception as error:
-                error_count += 1
-                errors.append(
-                    {
-                        "artwork_id": item.get("artwork_id", ""),
-                        "error": str(error),
-                    }
-                )
-
-            self._emit_progress(
-                index=index,
-                total=total,
-                started_at=started_at,
+        if self.cancel_requested:
+            self._emit_direct_progress(
+                0,
+                total,
+                "가져오기를 취소했습니다.",
             )
+            return self._build_save_result(0, 0, 0, [], True)
+
+        self._emit_direct_progress(
+            0,
+            total,
+            "가져오기 저장 준비 중...",
+        )
+
+        save_result = service.save_bookmark_artworks(items)
+
+        saved_count = save_result.get("saved_count", 0)
+        updated_count = save_result.get("updated_count", 0)
+        error_count = save_result.get("error_count", 0)
+        errors = save_result.get("errors", [])
+
+        processed_count = saved_count + updated_count + error_count
+
+        self._emit_direct_progress(
+            processed_count,
+            total,
+            "가져오기 저장 완료",
+        )
 
         return self._build_save_result(
             total=total,
-            saved_count=saved_count,
+            saved_count=saved_count + updated_count,
             error_count=error_count,
             errors=errors,
             cancelled=self.cancel_requested,

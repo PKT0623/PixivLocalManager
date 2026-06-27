@@ -205,7 +205,10 @@ class PixivMetadataService:
         body: dict,
     ) -> str:
         tags = self.tag_parser.extract_artwork_tags(body)
-        return self.tag_service.serialize_tags(tags)
+        return self.tag_service.serialize_tags(
+            tags,
+            sort_tags=False,
+        )
 
     def _normalize_tag_list(
         self,

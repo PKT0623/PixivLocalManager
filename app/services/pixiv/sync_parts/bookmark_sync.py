@@ -1,9 +1,13 @@
+import time
+
 from app.services.pixiv_update_service import PixivRequestError
 
 from .constants import PixivSyncStatus
 
 
 class BookmarkSyncMixin:
+    UI_YIELD_SECONDS = 0.001
+
     def sync_bookmark_artworks(
         self,
         bookmark_artworks: list[dict],
@@ -61,6 +65,13 @@ class BookmarkSyncMixin:
                     "스킵",
                     f"({index}/{total}) 작품 ID가 비어 있습니다.",
                 )
+                self._emit_progress(
+                    progress_callback,
+                    index,
+                    total,
+                    f"북마크 메타데이터 갱신 중: {index} / {total}",
+                )
+                self._yield_for_ui()
                 continue
 
             self._emit_progress(
@@ -69,6 +80,7 @@ class BookmarkSyncMixin:
                 total,
                 f"({index}/{total}) {artwork_id} 요청 준비 중",
             )
+            self._yield_for_ui()
 
             try:
                 metadata = self.metadata_service.fetch_artwork_metadata(
@@ -79,6 +91,8 @@ class BookmarkSyncMixin:
                 merged_tags = self._merge_pixiv_tags(
                     existing_tags=bookmark_artwork.get("pixiv_tags", ""),
                     new_tags=metadata.pixiv_tags,
+                    sort_tags=False,
+                    prefer_new_order=True,
                 )
 
                 update_data = dict(bookmark_artwork)
@@ -175,6 +189,7 @@ class BookmarkSyncMixin:
                 total,
                 f"북마크 메타데이터 갱신 중: {index} / {total}",
             )
+            self._yield_for_ui()
 
         return {
             "total_count": total,
@@ -231,3 +246,6 @@ class BookmarkSyncMixin:
             return error.to_display_text()
 
         return self._format_error(error)
+
+    def _yield_for_ui(self):
+        time.sleep(self.UI_YIELD_SECONDS)
