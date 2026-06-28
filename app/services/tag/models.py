@@ -17,4 +17,3 @@ class TagData:
             "file_count": self.file_count,
             "custom_translation": self.custom_translation,
         }
-

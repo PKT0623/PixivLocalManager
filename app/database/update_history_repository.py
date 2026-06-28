@@ -1,7 +1,22 @@
 from datetime import datetime
 
 from app.database.connection import get_connection
-from app.database.update_history_utils import build_update_history_comparison
+from app.database.update_history_comparison_repository import (
+    build_compared_update_histories,
+    build_recent_missing_increased_histories,
+    build_update_history_comparison_data,
+    collect_artist_ids_from_histories,
+)
+from app.database.update_history_query_repository import (
+    delete_update_histories_by_artist_id,
+    get_latest_update_history_by_artist_id,
+    get_latest_update_history_per_artist,
+    get_recent_error_update_histories,
+    get_recent_update_histories,
+    get_today_update_histories,
+    get_update_histories_by_artist_id,
+    get_update_histories_by_artist_ids,
+)
 
 
 class ArtistUpdateHistoryRepository:
@@ -61,91 +76,20 @@ class ArtistUpdateHistoryRepository:
         artist_id: int,
         limit: int = 50,
     ) -> list[dict]:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM artist_update_history
-                WHERE artist_id = ?
-                ORDER BY checked_at DESC, id DESC
-                LIMIT ?
-                """,
-                (
-                    artist_id,
-                    limit,
-                ),
-            )
-
-            rows = cursor.fetchall()
-
-            return [dict(row) for row in rows]
+        return get_update_histories_by_artist_id(
+            artist_id=artist_id,
+            limit=limit,
+        )
 
     def get_by_artist_ids(
         self,
         artist_ids: list[int],
         limit_per_artist: int = 20,
     ) -> dict[int, list[dict]]:
-        normalized_artist_ids = []
-
-        for artist_id in artist_ids:
-            try:
-                normalized_artist_id = int(artist_id)
-            except (TypeError, ValueError):
-                continue
-
-            if normalized_artist_id in normalized_artist_ids:
-                continue
-
-            normalized_artist_ids.append(normalized_artist_id)
-
-        if not normalized_artist_ids:
-            return {}
-
-        placeholders = ", ".join("?" for _ in normalized_artist_ids)
-
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                f"""
-                SELECT *
-                FROM (
-                    SELECT
-                        history.*,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY artist_id
-                            ORDER BY checked_at DESC, id DESC
-                        ) AS row_number
-                    FROM artist_update_history AS history
-                    WHERE artist_id IN ({placeholders})
-                )
-                WHERE row_number <= ?
-                ORDER BY checked_at DESC, id DESC
-                """,
-                (*normalized_artist_ids, limit_per_artist),
-            )
-
-            rows = cursor.fetchall()
-
-        histories_by_artist_id = {
-            artist_id: []
-            for artist_id in normalized_artist_ids
-        }
-
-        for row in rows:
-            history = dict(row)
-            history.pop("row_number", None)
-
-            try:
-                artist_id = int(history.get("artist_id"))
-            except (TypeError, ValueError):
-                continue
-
-            histories_by_artist_id.setdefault(artist_id, []).append(history)
-
-        return histories_by_artist_id
+        return get_update_histories_by_artist_ids(
+            artist_ids=artist_ids,
+            limit_per_artist=limit_per_artist,
+        )
 
     def get_by_artist_id_with_comparison(
         self,
@@ -157,138 +101,31 @@ class ArtistUpdateHistoryRepository:
             limit=limit,
         )
 
-        compared_histories = []
-
-        for index, history in enumerate(histories):
-            previous_history = None
-
-            if index + 1 < len(histories):
-                previous_history = histories[index + 1]
-
-            compared_history = dict(history)
-            compared_history.update(
-                self.build_comparison(
-                    current_history=history,
-                    previous_history=previous_history,
-                )
-            )
-
-            compared_histories.append(compared_history)
-
-        return compared_histories
+        return build_compared_update_histories(histories)
 
     def get_recent(
         self,
         limit: int = 100,
     ) -> list[dict]:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM artist_update_history
-                ORDER BY checked_at DESC, id DESC
-                LIMIT ?
-                """,
-                (limit,),
-            )
-
-            rows = cursor.fetchall()
-
-            return [dict(row) for row in rows]
+        return get_recent_update_histories(limit=limit)
 
     def get_today_histories(self) -> list[dict]:
-        today = datetime.now().date().isoformat()
-
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM artist_update_history
-                WHERE date(checked_at) = ?
-                ORDER BY checked_at DESC, id DESC
-                """,
-                (today,),
-            )
-
-            rows = cursor.fetchall()
-
-            return [dict(row) for row in rows]
+        return get_today_update_histories()
 
     def get_recent_error_histories(
         self,
         limit: int = 20,
     ) -> list[dict]:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM artist_update_history
-                WHERE result_status = 'error'
-                   OR result_label = '확인 실패'
-                   OR action = 'error'
-                ORDER BY checked_at DESC, id DESC
-                LIMIT ?
-                """,
-                (limit,),
-            )
-
-            rows = cursor.fetchall()
-
-            return [dict(row) for row in rows]
+        return get_recent_error_update_histories(limit=limit)
 
     def get_latest_history_per_artist(self) -> list[dict]:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                SELECT history.*
-                FROM artist_update_history AS history
-                INNER JOIN (
-                    SELECT artist_id, MAX(checked_at) AS latest_checked_at
-                    FROM artist_update_history
-                    GROUP BY artist_id
-                ) AS latest
-                    ON history.artist_id = latest.artist_id
-                   AND history.checked_at = latest.latest_checked_at
-                ORDER BY history.checked_at DESC, history.id DESC
-                """
-            )
-
-            rows = cursor.fetchall()
-
-            latest_by_artist = {}
-
-            for row in rows:
-                history = dict(row)
-                artist_id = history.get("artist_id")
-
-                if artist_id in latest_by_artist:
-                    continue
-
-                latest_by_artist[artist_id] = history
-
-            return list(latest_by_artist.values())
+        return get_latest_update_history_per_artist()
 
     def get_latest_by_artist_id(
         self,
         artist_id: int,
     ):
-        rows = self.get_by_artist_id(
-            artist_id=artist_id,
-            limit=1,
-        )
-
-        if not rows:
-            return None
-
-        return rows[0]
+        return get_latest_update_history_by_artist_id(artist_id=artist_id)
 
     def get_previous_by_artist_id(
         self,
@@ -309,81 +146,31 @@ class ArtistUpdateHistoryRepository:
         limit: int = 20,
     ) -> list[dict]:
         recent_histories = self.get_recent(limit=limit * 3)
-        artist_ids = []
-
-        for history in recent_histories:
-            artist_id = history.get("artist_id")
-
-            if artist_id is None:
-                continue
-
-            try:
-                normalized_artist_id = int(artist_id)
-            except (TypeError, ValueError):
-                continue
-
-            if normalized_artist_id in artist_ids:
-                continue
-
-            artist_ids.append(normalized_artist_id)
+        artist_ids = collect_artist_ids_from_histories(recent_histories)
 
         histories_by_artist_id = self.get_by_artist_ids(
             artist_ids=artist_ids,
             limit_per_artist=2,
         )
-        increased_histories = []
 
-        for artist_id in artist_ids:
-            histories = histories_by_artist_id.get(artist_id, [])
-
-            if not histories:
-                continue
-
-            latest_history = dict(histories[0])
-            previous_history = histories[1] if len(histories) > 1 else None
-
-            latest_history.update(
-                self.build_comparison(
-                    current_history=latest_history,
-                    previous_history=previous_history,
-                )
-            )
-
-            missing_delta = int(latest_history.get("missing_delta", 0) or 0)
-
-            if missing_delta <= 0:
-                continue
-
-            increased_histories.append(latest_history)
-
-            if len(increased_histories) >= limit:
-                break
-
-        return increased_histories
+        return build_recent_missing_increased_histories(
+            recent_histories=recent_histories,
+            histories_by_artist_id=histories_by_artist_id,
+            limit=limit,
+        )
 
     def delete_by_artist_id(
         self,
         artist_id: int,
     ) -> None:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                DELETE FROM artist_update_history
-                WHERE artist_id = ?
-                """,
-                (artist_id,),
-            )
-
-            conn.commit()
+        delete_update_histories_by_artist_id(artist_id=artist_id)
 
     def build_comparison(
         self,
         current_history: dict,
         previous_history: dict | None,
     ) -> dict:
-        return build_update_history_comparison(
+        return build_update_history_comparison_data(
             current_history=current_history,
             previous_history=previous_history,
         )
